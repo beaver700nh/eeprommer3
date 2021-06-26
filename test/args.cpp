@@ -2,23 +2,23 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <tuple>
 
 #include "args.hpp"
 
-void parse_args(int argc, char **argv, Arg *args, int start) {
-  if (start == 0 || start >= argc) {
+void parse_args(int argc, char **argv, Arg *args) {
+  if (argc < 1) {
     args[0].type = END;
     return;
   }
 
   int index = 0;
-  int argn = start;
+  int argn = 1;
 
   while (argn < argc) {
     int offset = 0;
 
     if (argv[argn][0] == '-') {
-
       if (argv[argn][1] == '-') {
         args[index].type = LOPT;
         offset = 2;

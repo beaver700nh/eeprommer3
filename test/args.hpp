@@ -8,7 +8,7 @@ struct Arg {
   char contents[50];
 };
 
-void parse_args(int argc, char **argv, Arg *args, int start = 1);
+void parse_args(int argc, char **argv, Arg *args);
 void print_args(Arg *args);
 void print_args(int argc, char **argv);
 std::ptrdiff_t length_args(Arg *args);
