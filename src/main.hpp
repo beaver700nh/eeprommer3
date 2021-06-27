@@ -1,11 +1,15 @@
 #ifndef MAIN_HPP
 #define MAIN_HPP
 
+#include <wx/wx.h>
+
 #ifdef WX_PRECOMP
 #  include <wx/wxprec.h>
-#else
-#  include <wx/wx.h>
 #endif
+
+#include <wx/aboutdlg.h>
+#include <wx/display.h>
+#include <wx/icon.h>
 
 #undef __GXX_ABI_VERSION
 #define __GXX_ABI_VERSION 1013
@@ -40,6 +44,8 @@ private:
   wxMenu *file_menu, *tools_menu, *actions_menu;
 
   wxFont normal_font, header_font;
+
+  wxIcon png_logo_wxicon = wxIcon("../eeprommer3.png", wxBITMAP_TYPE_PNG_RESOURCE, 64, 64);
 
   const int data_ids = 200;
 };
