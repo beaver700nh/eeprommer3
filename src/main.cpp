@@ -49,5 +49,49 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 }
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
-EVT_MENU(wxID_EXIT, [=](wxCommandEvent &){ Close(false); })
+EVT_MENU(wxID_OPEN,  MainFrame::OnMenuFileOpen)
+EVT_MENU(wxID_SAVE,  MainFrame::OnMenuFileSave)
+EVT_MENU(ID_SAVEAS,  MainFrame::OnMenuFileSaveAs)
+EVT_MENU(ID_READ,    MainFrame::OnMenuToolsRead)
+EVT_MENU(ID_WRITE,   MainFrame::OnMenuToolsWrite)
+EVT_MENU(ID_VECTOR,  MainFrame::OnMenuToolsVector)
+EVT_MENU(wxID_ABOUT, MainFrame::OnMenuActionsAbout)
+EVT_MENU(ID_HELP,    MainFrame::OnMenuActionsHelp)
+EVT_MENU(wxID_EXIT,  MainFrame::OnMenuActionsQuit)
 END_EVENT_TABLE()
+
+void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
+
+}
+
+void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
+
+}
+
+void MainFrame::OnMenuFileSaveAs(wxCommandEvent &event) {
+  
+}
+
+void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {
+
+}
+
+void MainFrame::OnMenuToolsWrite(wxCommandEvent &event) {
+
+}
+
+void MainFrame::OnMenuToolsVector(wxCommandEvent &event) {
+
+}
+
+void MainFrame::OnMenuActionsAbout(wxCommandEvent &event) {
+  wxLogMessage("About");
+}
+
+void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
+  wxLogMessage("Help");
+}
+
+void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {
+  Close(true);
+}

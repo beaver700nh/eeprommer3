@@ -19,6 +19,18 @@ class MainFrame : public wxFrame {
 public:
   MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
 
+  void OnMenuFileOpen  (wxCommandEvent &event);
+  void OnMenuFileSave  (wxCommandEvent &event);
+  void OnMenuFileSaveAs(wxCommandEvent &event);
+
+  void OnMenuToolsRead  (wxCommandEvent &event);
+  void OnMenuToolsWrite (wxCommandEvent &event);
+  void OnMenuToolsVector(wxCommandEvent &event);
+
+  void OnMenuActionsAbout(wxCommandEvent &event);
+  void OnMenuActionsHelp (wxCommandEvent &event);
+  void OnMenuActionsQuit (wxCommandEvent &event);
+
   DECLARE_EVENT_TABLE()
 
 private:
