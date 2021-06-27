@@ -21,6 +21,9 @@ bool MainApp::OnInit() {
 
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
   : wxFrame((wxFrame *) nullptr, -1, title, pos, size) {
+  normal_font = wxFont(12, wxMODERN, wxNORMAL, wxNORMAL, false, "", wxFONTENCODING_DEFAULT);
+  header_font = wxFont(12, wxMODERN, wxNORMAL, wxBOLD,   false, "", wxFONTENCODING_DEFAULT);
+
   Centre();
 
   CreateStatusBar(1);
@@ -55,23 +58,44 @@ void MainFrame::add_menu() {
 }
 
 void MainFrame::add_contents() {
-  wxGridSizer *main_sizer = new wxGridSizer(17, 17, wxSize(2, 2));
+  const wxSize cell_size = wxSize(40, 30);
 
-  main_sizer->Add(new wxButton(this, -1, "++"), 0, 0, 0);
+  wxPanel *panel = new wxPanel(this);
 
-  for (int col = 0x0; col < 0x10; ++col) {
-    main_sizer->Add(new wxButton(this, -1, wxString::Format("0%x", col)), 0, 0, 0);
+  wxButton *port = new wxButton(
+    panel, wxID_ANY, "Port", wxPoint(0, 0), cell_size
+  );
+
+  wxStaticText *row_hdrs[16];
+  wxStaticText *col_hdrs[16];
+
+  wxStaticText *data[16][16];
+
+  for (int i = 0; i < 16; ++i) {
+    row_hdrs[i] = new wxStaticText(
+      panel, wxID_ANY, wxString::Format("%x0", i),
+      wxPoint(0, (i + 1) * cell_size.GetHeight()), cell_size
+    );
+
+    col_hdrs[i] = new wxStaticText(
+      panel, wxID_ANY, wxString::Format("0%x", i),
+      wxPoint((i + 1) * cell_size.GetWidth(), 0), cell_size
+    );
+
+    row_hdrs[i]->SetFont(header_font);
+    col_hdrs[i]->SetFont(header_font);
   }
 
-  for (int row = 0x0; row < 0x10; ++row) {
-    main_sizer->Add(new wxButton(this, -1, wxString::Format("%x0", row)), 0, 0, 0);
+  for (int i = 0; i < 16; ++i) {
+    for (int j = 0; j < 16; ++j) {
+      data[i][j] = new wxStaticText(
+        panel, data_ids + i*16 + j, "++",
+        wxPoint((j + 1) * cell_size.GetWidth(), (i + 1) * cell_size.GetHeight()), cell_size
+      );
 
-    for (int col = 0x0; col < 0x10; ++col) {
-      main_sizer->Add(new wxButton(this, -1, wxString::Format("%x%x", row, col)), 0, 0, 0);
+      data[i][j]->SetFont(normal_font);
     }
   }
-
-  SetSizer(main_sizer);
 }
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)

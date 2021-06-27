@@ -38,6 +38,10 @@ public:
 private:
   wxMenuBar *menu_bar;
   wxMenu *file_menu, *tools_menu, *actions_menu;
+
+  wxFont normal_font, header_font;
+
+  const int data_ids = 200;
 };
 
 int \
