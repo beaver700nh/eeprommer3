@@ -10,6 +10,7 @@
 #include <wx/aboutdlg.h>
 #include <wx/display.h>
 #include <wx/icon.h>
+#include <wx/msgdlg.h>
 
 #undef __GXX_ABI_VERSION
 #define __GXX_ABI_VERSION 1013

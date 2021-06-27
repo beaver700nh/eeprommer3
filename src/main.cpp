@@ -157,7 +157,27 @@ void MainFrame::OnMenuActionsAbout(wxCommandEvent &event) {
 }
 
 void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
-  wxLogMessage("Help");
+  wxMessageDialog dlg(this, "Help", "Help");
+
+  dlg.SetMessage(
+    "eeprommer3 Help Dialog"
+  );
+
+  dlg.SetExtendedMessage(
+    "EEPROM read: Tools > Read.\n"
+    "EEPROM write: Tools > Write.\n"
+    "Set vector**: Tools > Vector.\n"
+    "\n"
+    "Save read data to file: File > Save.\n"
+    "Upload file to EEPROM: File > Open.\n"
+    "\n"
+    "**Vectors are 6502 jump vectors, like\n"
+    "IRQ, NMI, and RES. ($FFFA-$FFFF)\n"
+  );
+
+  dlg.SetIcon(png_logo_wxicon);
+
+  dlg.ShowModal();
 }
 
 void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {
