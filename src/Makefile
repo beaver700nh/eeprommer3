@@ -1,14 +1,11 @@
-CC=gcc 
-CFLAGS=-Wall
+.SILENT: all build compile run
+.PHONY: all build compile run
 
-.SILENT: all build run
+all: compile run
+build: compile
 
-all:
-	clang++ -Wall *.cpp -o eeprommer3
-	./main
-
-build:
-	clang++ -Wall *.cpp -o eeprommer3
+compile:
+	clang++ `wx-config --cxxflags` -Wall *.cpp -o eeprommer3 `wx-config --libs`
 
 run:
 	./eeprommer3
