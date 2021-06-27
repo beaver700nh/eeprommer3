@@ -21,15 +21,21 @@ bool MainApp::OnInit() {
 
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
   : wxFrame((wxFrame *) nullptr, -1, title, pos, size) {
+  Centre();
+
   CreateStatusBar(1);
   SetStatusText("Hello, world!", 0);
 
+  add_menu();
+  add_contents();
+}
+
+void MainFrame::add_menu() {
   menu_bar = new wxMenuBar();
 
   file_menu = new wxMenu();
   file_menu->Append(wxID_OPEN, "Open\tCtrl-O",          "Open an existing file.");
   file_menu->Append(wxID_SAVE, "Save\tCtrl-S",          "Save to currently open file.");
-  file_menu->Append(ID_SAVEAS, "Save As\tCtrl-Shift-S", "Save this file under another name.");
 
   tools_menu = new wxMenu();
   tools_menu->Append(ID_READ,   "Read\tAlt-R",       "Read data from the EEPROM.");
@@ -48,10 +54,29 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   SetMenuBar(menu_bar);
 }
 
+void MainFrame::add_contents() {
+  wxGridSizer *main_sizer = new wxGridSizer(17, 17, wxSize(2, 2));
+
+  main_sizer->Add(new wxButton(this, -1, "++"), 0, 0, 0);
+
+  for (int col = 0x0; col < 0x10; ++col) {
+    main_sizer->Add(new wxButton(this, -1, wxString::Format("0%x", col)), 0, 0, 0);
+  }
+
+  for (int row = 0x0; row < 0x10; ++row) {
+    main_sizer->Add(new wxButton(this, -1, wxString::Format("%x0", row)), 0, 0, 0);
+
+    for (int col = 0x0; col < 0x10; ++col) {
+      main_sizer->Add(new wxButton(this, -1, wxString::Format("%x%x", row, col)), 0, 0, 0);
+    }
+  }
+
+  SetSizer(main_sizer);
+}
+
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_OPEN,  MainFrame::OnMenuFileOpen)
 EVT_MENU(wxID_SAVE,  MainFrame::OnMenuFileSave)
-EVT_MENU(ID_SAVEAS,  MainFrame::OnMenuFileSaveAs)
 EVT_MENU(ID_READ,    MainFrame::OnMenuToolsRead)
 EVT_MENU(ID_WRITE,   MainFrame::OnMenuToolsWrite)
 EVT_MENU(ID_VECTOR,  MainFrame::OnMenuToolsVector)
@@ -66,10 +91,6 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
 
 void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
 
-}
-
-void MainFrame::OnMenuFileSaveAs(wxCommandEvent &event) {
-  
 }
 
 void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {

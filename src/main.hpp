@@ -19,9 +19,11 @@ class MainFrame : public wxFrame {
 public:
   MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
 
+  void add_menu();
+  void add_contents();
+
   void OnMenuFileOpen  (wxCommandEvent &event);
   void OnMenuFileSave  (wxCommandEvent &event);
-  void OnMenuFileSaveAs(wxCommandEvent &event);
 
   void OnMenuToolsRead  (wxCommandEvent &event);
   void OnMenuToolsWrite (wxCommandEvent &event);
