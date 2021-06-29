@@ -2,11 +2,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <errno.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <unistd.h>
-
 #include "main.hpp"
 
 IMPLEMENT_APP(MainApp)
@@ -52,6 +47,7 @@ void MainFrame::add_menu() {
   actions_menu = new wxMenu();
   actions_menu->Append(wxID_ABOUT, "About\tF2",    "Shows information about eeprommer3.");
   actions_menu->Append(ID_HELP,    "Help\tF1",     "Shows a help screen.");
+  actions_menu->Append(ID_CLEAR,   "Clear\tAlt-C", "Clear the hex display.");
   actions_menu->Append(wxID_EXIT,  "Quit\tCtrl-Q", "Quit eeprommer3.");
 
   menu_bar->Append(file_menu,    "File");
@@ -64,23 +60,18 @@ void MainFrame::add_menu() {
 void MainFrame::add_contents() {
   const wxSize cell_size = wxSize(32, 22);
 
-  wxPanel *panel = new wxPanel(this);
+  panel = new wxPanel(this);
 
-  wxStaticText *hi = new wxStaticText(
+  hi = new wxStaticText(
     panel, wxNewId(), "H", wxPoint(13, 5), cell_size
   );
 
-  wxStaticText *lo = new wxStaticText(
+  lo = new wxStaticText(
     panel, wxNewId(), "L", wxPoint(25, 2), cell_size
   );
 
   hi->SetFont(normal_font);
   lo->SetFont(normal_font);
-
-  wxStaticText *row_hdrs[16];
-  wxStaticText *col_hdrs[16];
-
-  wxStaticText *data[16][16];
 
   for (int i = 0; i < 16; ++i) {
     row_hdrs[i] = new wxStaticText(
@@ -100,7 +91,7 @@ void MainFrame::add_contents() {
   for (int i = 0; i < 16; ++i) {
     for (int j = 0; j < 16; ++j) {
       data[i][j] = new wxStaticText(
-        panel, data_ids + i*16 + j, wxString::Format("%x%x", i, j),
+        panel, DATA_IDS + i*16 + j, "??",
         wxPoint(
           (j + 1) * cell_size.GetWidth() + 12,
           (i + 1) * cell_size.GetHeight() + 2
@@ -120,66 +111,30 @@ EVT_MENU(ID_WRITE,   MainFrame::OnMenuToolsWrite)
 EVT_MENU(ID_VECTOR,  MainFrame::OnMenuToolsVector)
 EVT_MENU(wxID_ABOUT, MainFrame::OnMenuActionsAbout)
 EVT_MENU(ID_HELP,    MainFrame::OnMenuActionsHelp)
+EVT_MENU(ID_CLEAR,   MainFrame::OnMenuActionsClear)
 EVT_MENU(wxID_EXIT,  MainFrame::OnMenuActionsQuit)
 END_EVENT_TABLE()
 
-void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
-
+void MainFrame::open_file(wxString fname) {
+  for (int i = 0; i < 16; ++i) {
+    for (int j = 0; j < 16; ++j) {
+      data[i][j]->SetLabel("..");
+    }
+  }
 }
 
-void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
-
+void MainFrame::save_file(wxString fname) {
+  for (int i = 0; i < 16; ++i) {
+    for (int j = 0; j < 16; ++j) {
+      printf("Data: %s\n", data[i][j]->GetLabel().ToUTF8().data());
+    }
+  }
 }
 
-void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {
-
-}
-
-void MainFrame::OnMenuToolsWrite(wxCommandEvent &event) {
-
-}
-
-void MainFrame::OnMenuToolsVector(wxCommandEvent &event) {
-
-}
-
-void MainFrame::OnMenuActionsAbout(wxCommandEvent &event) {
-  wxAboutDialogInfo info;
-
-  info.SetIcon(png_logo_wxicon);
-  info.SetName("eeprommer3");
-  info.SetVersion("0.0.3-dev");
-  info.SetDescription("This is an AT28C256 EEPROM programmer. (Frontend)");
-
-  info.AddDeveloper("Anon Ymus");
-
-  wxAboutBox(info);
-}
-
-void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
-  wxMessageDialog dlg(this, "Help", "Help");
-
-  dlg.SetMessage(
-    "eeprommer3 Help Dialog"
-  );
-
-  dlg.SetExtendedMessage(
-    "EEPROM read: Tools > Read.\n"
-    "EEPROM write: Tools > Write.\n"
-    "Set vector**: Tools > Vector.\n"
-    "\n"
-    "Save read data to file: File > Save.\n"
-    "Upload file to EEPROM: File > Open.\n"
-    "\n"
-    "**Vectors are 6502 jump vectors, like\n"
-    "IRQ, NMI, and RES. ($FFFA-$FFFF)\n"
-  );
-
-  dlg.SetIcon(png_logo_wxicon);
-
-  dlg.ShowModal();
-}
-
-void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {
-  Close(true);
+void MainFrame::clear_hex() {
+  for (int i = 0; i < 16; ++i) {
+    for (int j = 0; j < 16; ++j) {
+      data[i][j]->SetLabel("??");
+    }
+  }
 }
