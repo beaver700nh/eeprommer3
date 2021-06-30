@@ -14,14 +14,7 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
     return;
   }
 
-  hex_data.set_data(
-    [](uint8_t i, uint8_t j) -> wxString {
-      (void) i;
-      (void) j;
-
-      return wxString::Format("%02x", 0x00);
-    }
-  );
+  hex_data.open_file(fname);
 }
 
 void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
@@ -36,11 +29,7 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
     return;
   }
 
-  hex_data.for_each(
-    [](uint8_t i, uint8_t j, wxString v) -> void {
-      printf("At row %d col %d: %s", i, j, v.ToUTF8().data());
-    }
-  );
+  hex_data.save_file(fname);
 }
 
 void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {
@@ -93,11 +82,7 @@ void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
 }
 
 void MainFrame::OnMenuActionsClear(wxCommandEvent &event) {
-  hex_data.set_data(
-    [](uint8_t i, uint8_t j) -> wxString {
-      return wxString("??");
-    }
-  );
+  hex_data.clear_hex();
 }
 
 void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {

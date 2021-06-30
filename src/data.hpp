@@ -17,9 +17,13 @@ public:
   void setup_headers();
   void setup_data();
 
-  void open_file(wxString fname);
-  void save_file(wxString fname);
-  void clear_hex();
+  void set_data(wxString (*fn)(uint8_t i, uint8_t j));
+  void get_data(wxString (*out)[16][16]);
+
+  void set_data(uint8_t i, uint8_t j, wxString v);
+  wxString get_data(uint8_t i, uint8_t j);
+
+  void for_each(void (*fn)(uint8_t i, uint8_t j, wxString v));
 
 private:
   wxPanel *panel;

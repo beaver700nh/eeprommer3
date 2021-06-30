@@ -58,34 +58,34 @@ void HexData::setup_data() {
   }
 }
 
-void HexData::open_file(wxString fname) { // TODO: change to set_data(uint8_t[16][16])
+void HexData::set_data(wxString (*fn)(uint8_t i, uint8_t j)) {
   for (uint8_t i = 0; i < 16; ++i) {
     for (uint8_t j = 0; j < 16; ++j) {
-      data[i][j]->SetLabel("..");
+      data[i][j]->SetLabel(fn(i, j));
     }
   }
 }
 
-void HexData::save_file(wxString fname) { // TODO: change to get_data((*) uint8_t[16][16])
+void HexData::get_data(wxString (*out)[16][16]) {
   for (uint8_t i = 0; i < 16; ++i) {
     for (uint8_t j = 0; j < 16; ++j) {
-      printf("Data: %s\n", data[i][j]->GetLabel().ToUTF8().data());
+      (*out)[i][j] = data[i][j]->GetLabel();
     }
   }
 }
 
-void HexData::clear_hex() { // TODO: change to set_data_wxstr(wxString[16][16])
+void HexData::set_data(uint8_t i, uint8_t j, wxString v) {
+  data[i][j]->SetLabel(v);
+}
+
+wxString HexData::get_data(uint8_t i, uint8_t j) {
+  return data[i][j]->GetLabel();
+}
+
+void HexData::for_each(void (*fn)(uint8_t i, uint8_t j, wxString v)) {
   for (uint8_t i = 0; i < 16; ++i) {
     for (uint8_t j = 0; j < 16; ++j) {
-      data[i][j]->SetLabel("??");
+      fn(i, j, data[i][j]->GetLabel());
     }
   }
 }
-
-// TODO: add get_data_wxstr((*) wxString[16][16])
-
-// TODO: add set_data(uint8_t i, uint8_t j, uint8_t)
-// TODO: add get_data(uint8_t i, uint8_t j)
-
-// TODO: add set_data_wxstr(uint8_t i, uint8_t j, wxString)
-// TODO: add get_data_wxstr(uint8_t i, uint8_t j)
