@@ -2,7 +2,7 @@
 
 #include "main.hpp"
 
-void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
+void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
   wxString fname = wxLoadFileSelector(
     "Choose a file to open",
     "BIN file (*.bin)|*.bin|HEX file (*.hex)|*.hex",
@@ -24,7 +24,7 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
   );
 }
 
-void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
+void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
   wxString fname = wxSaveFileSelector(
     "Choose a file name to save as",
     "BIN file (*.bin)|*.bin|HEX file (*.hex)|*.hex",
@@ -43,19 +43,19 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
   );
 }
 
-void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {
+void MainFrame::OnMenuToolsRead(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Read\n");
 }
 
-void MainFrame::OnMenuToolsWrite(wxCommandEvent &event) {
+void MainFrame::OnMenuToolsWrite(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Write\n");
 }
 
-void MainFrame::OnMenuToolsVector(wxCommandEvent &event) {
+void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Vector\n");
 }
 
-void MainFrame::OnMenuActionsAbout(wxCommandEvent &event) {
+void MainFrame::OnMenuActionsAbout(wxCommandEvent &WXUNUSED(event)) {
   wxAboutDialogInfo info;
 
   info.SetIcon(png_logo_wxicon);
@@ -68,7 +68,7 @@ void MainFrame::OnMenuActionsAbout(wxCommandEvent &event) {
   wxAboutBox(info);
 }
 
-void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
+void MainFrame::OnMenuActionsHelp(wxCommandEvent &WXUNUSED(event)) {
   wxMessageDialog dlg(this, "Help", "Help");
 
   dlg.SetMessage(
@@ -92,7 +92,7 @@ void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
   dlg.ShowModal();
 }
 
-void MainFrame::OnMenuActionsClear(wxCommandEvent &event) {
+void MainFrame::OnMenuActionsClear(wxCommandEvent &WXUNUSED(event)) {
   hex_data.set_data(
     [](uint8_t i, uint8_t j) -> wxString {
       return wxString("??");
@@ -100,6 +100,6 @@ void MainFrame::OnMenuActionsClear(wxCommandEvent &event) {
   );
 }
 
-void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {
+void MainFrame::OnMenuActionsQuit(wxCommandEvent &WXUNUSED(event)) {
   Close(true);
 }
