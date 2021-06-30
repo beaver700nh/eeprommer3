@@ -25,7 +25,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   header_font = wxFont(13, wxMODERN, wxNORMAL, wxBOLD,  false, "", wxFONTENCODING_DEFAULT);
 
   CreateStatusBar(1);
-  SetStatusText("Hello, world!", 0);
+  SetStatusText("Hello, world!");
 
   menu_bar = MenuBar();
   SetMenuBar(menu_bar.get_wxMenuBar());

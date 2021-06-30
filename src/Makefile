@@ -1,7 +1,7 @@
 .SILENT: all build compile run
 .PHONY: all build compile run
 
-all: compile run
+all: compile
 build: compile
 
 compile:

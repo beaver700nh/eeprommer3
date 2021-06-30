@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <functional>
 
 #include "data.hpp"
 #include "main.hpp"
@@ -58,10 +59,14 @@ void HexData::setup_data() {
   }
 }
 
-void HexData::set_data(wxString (*fn)(uint8_t i, uint8_t j)) {
+void HexData::set_data(wxString (*in)[16][16], uint16_t count) {
   for (uint8_t i = 0; i < 16; ++i) {
     for (uint8_t j = 0; j < 16; ++j) {
-      data[i][j]->SetLabel(fn(i, j));
+      if (((i << 4) | j) >= (count - 1)) {
+        return;
+      }
+
+      data[i][j]->SetLabel((*in)[i][j]);
     }
   }
 }
@@ -74,6 +79,35 @@ void HexData::get_data(wxString (*out)[16][16]) {
   }
 }
 
+void HexData::set_data(uint8_t (*in)[16][16], uint16_t count) {
+  for (uint8_t i = 0; i < 16; ++i) {
+    for (uint8_t j = 0; j < 16; ++j) {
+      if (((i << 4) | j) >= (count - 1)) {
+        return;
+      }
+
+      data[i][j]->SetLabel(wxString::Format("%d", (*in)[i][j]));
+    }
+  }
+}
+
+uint16_t HexData::get_data(uint8_t (*out)[16][16]) {
+  for (uint8_t i = 0; i < 16; ++i) {
+    for (uint8_t j = 0; j < 16; ++j) {
+      long temp;
+
+      if (data[i][j]->GetLabel().ToLong(&temp, 16)) {
+        (*out)[i][j] = (uint8_t) temp;
+      }
+      else {
+        return (i << 4) | j;
+      }
+    }
+  }
+
+  return 0x100;
+}
+
 void HexData::set_data(uint8_t i, uint8_t j, wxString v) {
   data[i][j]->SetLabel(v);
 }
@@ -82,10 +116,22 @@ wxString HexData::get_data(uint8_t i, uint8_t j) {
   return data[i][j]->GetLabel();
 }
 
-void HexData::for_each(void (*fn)(uint8_t i, uint8_t j, wxString v)) {
+void HexData::set_data(std::function<wxString(uint8_t, uint8_t)> fn) {
   for (uint8_t i = 0; i < 16; ++i) {
     for (uint8_t j = 0; j < 16; ++j) {
-      fn(i, j, data[i][j]->GetLabel());
+      data[i][j]->SetLabel(fn(i, j));
+    }
+  }
+}
+
+void HexData::for_each(std::function<wxString(uint8_t, uint8_t, wxStaticText *)> fn) {
+  for (uint8_t i = 0; i < 16; ++i) {
+    for (uint8_t j = 0; j < 16; ++j) {
+      wxString temp = fn(i, j, data[i][j]);
+
+      if      (temp == "return")  return;
+      else if (temp == "nextrow") break;
+      else if (temp == "break")   break;
     }
   }
 }

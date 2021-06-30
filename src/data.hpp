@@ -1,6 +1,8 @@
 #ifndef DATA_HPP
 #define DATA_HPP
 
+#include <functional>
+
 #include "wx_dep.hpp"
 
 class HexData {
@@ -17,13 +19,17 @@ public:
   void setup_headers();
   void setup_data();
 
-  void set_data(wxString (*fn)(uint8_t i, uint8_t j));
+  void set_data(wxString (*in)[16][16], uint16_t count = 0x100);
   void get_data(wxString (*out)[16][16]);
+
+  void set_data(uint8_t (*in)[16][16], uint16_t count = 0x100);
+  uint16_t get_data(uint8_t (*out)[16][16]);
 
   void set_data(uint8_t i, uint8_t j, wxString v);
   wxString get_data(uint8_t i, uint8_t j);
 
-  void for_each(void (*fn)(uint8_t i, uint8_t j, wxString v));
+  void set_data(std::function<wxString(uint8_t, uint8_t)> fn);
+  void for_each(std::function<wxString(uint8_t, uint8_t, wxStaticText *)> fn);
 
 private:
   wxPanel *panel;

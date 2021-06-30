@@ -12,5 +12,6 @@
 #include <wx/filedlg.h>
 #include <wx/icon.h>
 #include <wx/msgdlg.h>
+#include <wx/wxchar.h>
 
 #endif
