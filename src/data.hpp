@@ -5,6 +5,12 @@
 
 #include "wx_dep.hpp"
 
+#define SETDATA_LAMBDA      (uint8_t i, uint8_t j) -> wxString
+#define SETDATA_LAMBDA_TYPE std::function<wxString(uint8_t, uint8_t)>
+
+#define FOREACH_LAMBDA      (uint8_t i, uint8_t j, wxStaticText *d) -> wxString
+#define FOREACH_LAMBDA_TYPE std::function<wxString(uint8_t, uint8_t, wxStaticText *)>
+
 class HexData {
 public:
   HexData() {};
@@ -29,7 +35,7 @@ public:
   wxString get_data(uint8_t i, uint8_t j);
 
   void set_data(std::function<wxString(uint8_t, uint8_t)> fn);
-  void for_each(std::function<wxString(uint8_t, uint8_t, wxStaticText *)> fn);
+  void for_each(FOREACH_LAMBDA_TYPE fn);
 
 private:
   wxPanel *panel;

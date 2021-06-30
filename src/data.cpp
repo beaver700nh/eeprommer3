@@ -60,52 +60,63 @@ void HexData::setup_data() {
 }
 
 void HexData::set_data(wxString (*in)[16][16], uint16_t count) {
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
+  for_each(
+    [=]FOREACH_LAMBDA {
       if (((i << 4) | j) >= (count - 1)) {
-        return;
+        return "return";
       }
 
-      data[i][j]->SetLabel((*in)[i][j]);
+      d->SetLabel((*in)[i][j]);
+
+      return "";
     }
-  }
+  );
 }
 
 void HexData::get_data(wxString (*out)[16][16]) {
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
-      (*out)[i][j] = data[i][j]->GetLabel();
+  for_each(
+    [=]FOREACH_LAMBDA {
+      (*out)[i][j] = d->GetLabel();
+
+      return "";
     }
-  }
+  );
 }
 
 void HexData::set_data(uint8_t (*in)[16][16], uint16_t count) {
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
+  for_each(
+    [=]FOREACH_LAMBDA {
       if (((i << 4) | j) >= (count - 1)) {
-        return;
+        return "return";
       }
 
-      data[i][j]->SetLabel(wxString::Format("%d", (*in)[i][j]));
+      d->SetLabel(wxString::Format("%d", (*in)[i][j]));
+
+      return "";
     }
-  }
+  );
 }
 
 uint16_t HexData::get_data(uint8_t (*out)[16][16]) {
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
+  uint16_t retval = 0x100;
+
+  for_each(
+    [&]FOREACH_LAMBDA {
       long temp;
 
-      if (data[i][j]->GetLabel().ToLong(&temp, 16)) {
+      if (d->GetLabel().ToLong(&temp, 16)) {
         (*out)[i][j] = (uint8_t) temp;
       }
       else {
-        return (i << 4) | j;
+        retval = (i << 4) | j;
+        return "return";
       }
-    }
-  }
 
-  return 0x100;
+      return "";
+    }
+  );
+
+  return retval;
 }
 
 void HexData::set_data(uint8_t i, uint8_t j, wxString v) {
@@ -116,22 +127,24 @@ wxString HexData::get_data(uint8_t i, uint8_t j) {
   return data[i][j]->GetLabel();
 }
 
-void HexData::set_data(std::function<wxString(uint8_t, uint8_t)> fn) {
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
-      data[i][j]->SetLabel(fn(i, j));
+void HexData::set_data(SETDATA_LAMBDA_TYPE fn) {
+  for_each(
+    [=]FOREACH_LAMBDA {
+      d->SetLabel(fn(i, j));
+
+      return "";
     }
-  }
+  );
 }
 
-void HexData::for_each(std::function<wxString(uint8_t, uint8_t, wxStaticText *)> fn) {
+void HexData::for_each(FOREACH_LAMBDA_TYPE fn) {
   for (uint8_t i = 0; i < 16; ++i) {
     for (uint8_t j = 0; j < 16; ++j) {
       wxString temp = fn(i, j, data[i][j]);
 
-      if      (temp == "return")  return;
-      else if (temp == "nextrow") break;
+      if      (temp == "nextrow") break;
       else if (temp == "break")   break;
+      else if (temp == "return")  break;
     }
   }
 }

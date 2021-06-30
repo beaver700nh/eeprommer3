@@ -131,12 +131,16 @@ void MainFrame::OnMenuActionsHelp(wxCommandEvent &WXUNUSED(event)) {
 
 void MainFrame::OnMenuActionsClear(wxCommandEvent &WXUNUSED(event)) {
   hex_data.set_data(
-    [](uint8_t i, uint8_t j) -> wxString {
+    []SETDATA_LAMBDA {
       return wxString("??");
     }
   );
+
+  SetStatusText("Hex display has been cleared.");
 }
 
 void MainFrame::OnMenuActionsQuit(wxCommandEvent &WXUNUSED(event)) {
+  SetStatusText("Goodbye, world!");
+
   Close(true);
 }
