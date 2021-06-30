@@ -1,90 +1,32 @@
-#include <cstdio>
+#include <string>
+#include <unordered_map>
 
-#include "main.hpp"
+#include "menu.hpp"
+#include "wx_dep.hpp"
 
-void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
-  wxString fname = wxLoadFileSelector(
-    "Choose a file to open",
-    "BIN file (*.bin)|*.bin|HEX file (*.hex)|*.hex",
-    "file.bin", this
-  );
+MenuBar::MenuBar(std::unordered_map<std::string, int> ids) {
+  menu_bar = new wxMenuBar();
 
-  if (fname.empty()) {
-    wxMessageBox("Couldn't open file.", "Error", wxOK, this);
-    return;
-  }
+  file_menu = new wxMenu();
+  file_menu->Append(ids.at("open"), "Open\tCtrl-O", "Open an existing file.");
+  file_menu->Append(ids.at("save"), "Save\tCtrl-S", "Save to currently open file.");
 
-  hex_data.open_file(fname);
+  tools_menu = new wxMenu();
+  tools_menu->Append(ids.at("read"),   "Read\tAlt-R",       "Read data from the EEPROM.");
+  tools_menu->Append(ids.at("write"),  "Write\tAlt-W",      "Write data to the EEPROM.");
+  tools_menu->Append(ids.at("vector"), "Set Vector\tAlt-V", "Set a 6502 jump vector.");
+
+  actions_menu = new wxMenu();
+  actions_menu->Append(ids.at("about"), "About\tF2",    "Shows information about eeprommer3.");
+  actions_menu->Append(ids.at("help"),  "Help\tF1",     "Shows a help screen.");
+  actions_menu->Append(ids.at("clear"), "Clear\tAlt-C", "Clear the hex display.");
+  actions_menu->Append(ids.at("exit"),  "Quit\tCtrl-Q", "Quit eeprommer3.");
+
+  menu_bar->Append(file_menu,    "File");
+  menu_bar->Append(tools_menu,   "Tools");
+  menu_bar->Append(actions_menu, "Actions");
 }
 
-void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
-  wxString fname = wxSaveFileSelector(
-    "Choose a file name to save as",
-    "BIN file (*.bin)|*.bin|HEX file (*.hex)|*.hex",
-    "file.bin", this
-  );
-
-  if (fname.empty()) {
-    wxMessageBox("Couldn't save file.", "Error", wxOK, this);
-    return;
-  }
-
-  hex_data.save_file(fname);
-}
-
-void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {
-  printf("Tools > Read\n");
-}
-
-void MainFrame::OnMenuToolsWrite(wxCommandEvent &event) {
-  printf("Tools > Write\n");
-}
-
-void MainFrame::OnMenuToolsVector(wxCommandEvent &event) {
-  printf("Tools > Vector\n");
-}
-
-void MainFrame::OnMenuActionsAbout(wxCommandEvent &event) {
-  wxAboutDialogInfo info;
-
-  info.SetIcon(png_logo_wxicon);
-  info.SetName("eeprommer3");
-  info.SetVersion("0.0.3-dev");
-  info.SetDescription("This is an AT28C256 EEPROM programmer. (Frontend)");
-
-  info.AddDeveloper("Anon Ymus");
-
-  wxAboutBox(info);
-}
-
-void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
-  wxMessageDialog dlg(this, "Help", "Help");
-
-  dlg.SetMessage(
-    "eeprommer3 Help Dialog"
-  );
-
-  dlg.SetExtendedMessage(
-    "EEPROM read: Tools > Read.\n"
-    "EEPROM write: Tools > Write.\n"
-    "Set vector**: Tools > Vector.\n"
-    "\n"
-    "Save read data to file: File > Save.\n"
-    "Upload file to EEPROM: File > Open.\n"
-    "\n"
-    "**Vectors are 6502 jump vectors, like\n"
-    "IRQ, NMI, and RES. ($FFFA-$FFFF)\n"
-  );
-
-  dlg.SetIcon(png_logo_wxicon);
-
-  dlg.ShowModal();
-}
-
-void MainFrame::OnMenuActionsClear(wxCommandEvent &event) {
-  hex_data.clear_hex();
-}
-
-void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {
-  Close(true);
+wxMenuBar *MenuBar::get_wxMenuBar() {
+  return menu_bar;
 }

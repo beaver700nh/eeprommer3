@@ -2,13 +2,6 @@
 
 #include "main.hpp"
 
-int \
-  ID_READ    = wxNewId(),
-  ID_WRITE   = wxNewId(),
-  ID_VECTOR  = wxNewId(),
-  ID_HELP    = wxNewId(),
-  ID_CLEAR   = wxNewId();
-
 void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
   wxString fname = wxLoadFileSelector(
     "Choose a file to open",
@@ -21,7 +14,7 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
     return;
   }
 
-  open_file(fname);
+  hex_data.open_file(fname);
 }
 
 void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
@@ -36,7 +29,7 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
     return;
   }
 
-  save_file(fname);
+  hex_data.save_file(fname);
 }
 
 void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {
@@ -89,8 +82,7 @@ void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
 }
 
 void MainFrame::OnMenuActionsClear(wxCommandEvent &event) {
-  printf("CALLED OMAC\n");
-  clear_hex();
+  hex_data.clear_hex();
 }
 
 void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {

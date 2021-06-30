@@ -1,3 +1,5 @@
+#include <cstdint>
+
 #include "data.hpp"
 #include "main.hpp"
 #include "wx_dep.hpp"
@@ -11,6 +13,12 @@ HexData::HexData(
 
   this->header_font = header_font;
   this->normal_font = normal_font;
+}
+
+void HexData::setup_gui() {
+  setup_hilo();
+  setup_headers();
+  setup_data();
 }
 
 void HexData::setup_hilo() {
@@ -37,8 +45,8 @@ void HexData::setup_headers() {
 }
 
 void HexData::setup_data() {
-  for (int i = 0; i < 16; ++i) {
-    for (int j = 0; j < 16; ++j) {
+  for (uint8_t i = 0; i < 16; ++i) {
+    for (uint8_t j = 0; j < 16; ++j) {
       wxPoint pos = wxPoint(
         (j + 1) * cell_size.GetWidth() + 12,
         (i + 1) * cell_size.GetHeight() + 2
@@ -50,26 +58,34 @@ void HexData::setup_data() {
   }
 }
 
-void HexData::open_file(wxString fname) {
-  for (int i = 0; i < 16; ++i) {
-    for (int j = 0; j < 16; ++j) {
+void HexData::open_file(wxString fname) { // TODO: change to set_data(uint8_t[16][16])
+  for (uint8_t i = 0; i < 16; ++i) {
+    for (uint8_t j = 0; j < 16; ++j) {
       data[i][j]->SetLabel("..");
     }
   }
 }
 
-void HexData::save_file(wxString fname) {
-  for (int i = 0; i < 16; ++i) {
-    for (int j = 0; j < 16; ++j) {
+void HexData::save_file(wxString fname) { // TODO: change to get_data((*) uint8_t[16][16])
+  for (uint8_t i = 0; i < 16; ++i) {
+    for (uint8_t j = 0; j < 16; ++j) {
       printf("Data: %s\n", data[i][j]->GetLabel().ToUTF8().data());
     }
   }
 }
 
-void HexData::clear_hex() {
-  for (int i = 0; i < 16; ++i) {
-    for (int j = 0; j < 16; ++j) {
+void HexData::clear_hex() { // TODO: change to set_data_wxstr(wxString[16][16])
+  for (uint8_t i = 0; i < 16; ++i) {
+    for (uint8_t j = 0; j < 16; ++j) {
       data[i][j]->SetLabel("??");
     }
   }
 }
+
+// TODO: add get_data_wxstr((*) wxString[16][16])
+
+// TODO: add set_data(uint8_t i, uint8_t j, uint8_t)
+// TODO: add get_data(uint8_t i, uint8_t j)
+
+// TODO: add set_data_wxstr(uint8_t i, uint8_t j, wxString)
+// TODO: add get_data_wxstr(uint8_t i, uint8_t j)

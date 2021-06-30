@@ -2,6 +2,7 @@
 #define MAIN_HPP
 
 #include "data.hpp"
+#include "menu.hpp"
 #include "wx_dep.hpp"
 
 #undef __GXX_ABI_VERSION
@@ -15,7 +16,6 @@ enum {
   ID_WRITE,
   ID_VECTOR,
   ID_HELP,
-  ID_CLEAR,
 };
 
 class MainApp : public wxApp {
@@ -26,9 +26,6 @@ public:
 class MainFrame : public wxFrame {
 public:
   MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
-
-  void add_menu();
-  void add_contents();
 
   void OnMenuFileOpen  (wxCommandEvent &event);
   void OnMenuFileSave  (wxCommandEvent &event);
@@ -45,18 +42,12 @@ public:
   DECLARE_EVENT_TABLE()
 
 private:
-  wxMenuBar *menu_bar;
-  wxMenu *file_menu, *tools_menu, *actions_menu;
-
+  MenuBar menu_bar;
   HexData hex_data;
 
   wxIcon png_logo_wxicon = wxIcon("../eeprommer3.png", wxBITMAP_TYPE_PNG_RESOURCE, 64, 64);
 
   wxFont normal_font, header_font;
-
-  void open_file(wxString fname);
-  void save_file(wxString fname);
-  void clear_hex();
 };
 
 DECLARE_APP(MainApp)

@@ -11,6 +11,8 @@ public:
     wxFont &header_font, wxFont &normal_font
   );
 
+  void setup_gui();
+
   void setup_hilo();
   void setup_headers();
   void setup_data();
