@@ -58,36 +58,40 @@ void MainFrame::add_menu() {
 }
 
 void MainFrame::add_contents() {
-  const wxSize cell_size = wxSize(32, 22);
-
   panel = new wxPanel(this);
 
-  hi = new wxStaticText(
-    panel, wxNewId(), "H", wxPoint(13, 5), cell_size
-  );
+  add_contents_hilo();
+  add_contents_headers();
+  add_contents_data();
+}
 
-  lo = new wxStaticText(
-    panel, wxNewId(), "L", wxPoint(25, 2), cell_size
-  );
+void MainFrame::add_contents_hilo() {
+  hi = new wxStaticText(panel, wxID_ANY, "H", wxPoint(13, 5), cell_size);
+  lo = new wxStaticText(panel, wxID_ANY, "L", wxPoint(25, 2), cell_size);
 
   hi->SetFont(normal_font);
   lo->SetFont(normal_font);
+}
 
+void MainFrame::add_contents_headers() {
   for (int i = 0; i < 16; ++i) {
+    wxPoint rhp = wxPoint(10, (i + 1) * cell_size.GetHeight());
+    wxPoint chp = wxPoint((i + 1) * cell_size.GetWidth() + 10, 0);
+
     row_hdrs[i] = new wxStaticText(
-      panel, wxNewId(), wxString::Format("%x0", i),
-      wxPoint(10, (i + 1) * cell_size.GetHeight()), cell_size
+      panel, wxID_ANY, wxString::Format("%x0", i), rhp, cell_size
     );
 
     col_hdrs[i] = new wxStaticText(
-      panel, wxNewId(), wxString::Format("0%x", i),
-      wxPoint((i + 1) * cell_size.GetWidth() + 10, 0), cell_size
+      panel, wxID_ANY, wxString::Format("0%x", i), chp, cell_size
     );
 
     row_hdrs[i]->SetFont(header_font);
     col_hdrs[i]->SetFont(header_font);
   }
+}
 
+void MainFrame::add_contents_data() {
   for (int i = 0; i < 16; ++i) {
     for (int j = 0; j < 16; ++j) {
       data[i][j] = new wxStaticText(

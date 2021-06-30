@@ -38,6 +38,9 @@ public:
 
   void add_menu();
   void add_contents();
+  void add_contents_hilo();
+  void add_contents_headers();
+  void add_contents_data();
 
   void OnMenuFileOpen  (wxCommandEvent &event);
   void OnMenuFileSave  (wxCommandEvent &event);
@@ -57,14 +60,16 @@ private:
   wxMenuBar *menu_bar;
   wxMenu *file_menu, *tools_menu, *actions_menu;
 
-  wxFont normal_font, header_font;
-
   wxIcon png_logo_wxicon = wxIcon("../eeprommer3.png", wxBITMAP_TYPE_PNG_RESOURCE, 64, 64);
+
+  wxFont normal_font, header_font;
 
   wxPanel *panel;
   wxStaticText *hi, *lo;
   wxStaticText *row_hdrs[16], *col_hdrs[16];
   wxStaticText *data[16][16];
+
+  wxSize cell_size = wxSize(32, 22);
 
   void open_file(wxString fname);
   void save_file(wxString fname);
