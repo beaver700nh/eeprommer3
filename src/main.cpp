@@ -1,6 +1,4 @@
 #include <cstdio>
-#include <string>
-#include <unordered_map>
 
 #include "main.hpp"
 #include "wx_dep.hpp"
@@ -29,19 +27,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   CreateStatusBar(1);
   SetStatusText("Hello, world!", 0);
 
-  menu_bar = MenuBar(
-    std::unordered_map<std::string, int>{
-      {"open",   wxID_OPEN},
-      {"save",   wxID_SAVE},
-      {"read",     ID_READ},
-      {"write",    ID_WRITE},
-      {"vector",   ID_VECTOR},
-      {"about",  wxID_ABOUT},
-      {"help",     ID_HELP},
-      {"clear",  wxID_CLEAR},
-      {"exit",   wxID_EXIT},
-    }
-  );
+  menu_bar = MenuBar();
   SetMenuBar(menu_bar.get_wxMenuBar());
 
   static wxPanel *panel = new wxPanel(this);

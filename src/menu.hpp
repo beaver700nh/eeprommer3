@@ -1,15 +1,18 @@
 #ifndef MENU_HPP
 #define MENU_HPP
 
-#include <string>
-#include <unordered_map>
-
 #include "wx_dep.hpp"
+
+enum {
+  ID_READ = 300,
+  ID_WRITE,
+  ID_VECTOR,
+  ID_HELP,
+};
 
 class MenuBar {
 public:
-  MenuBar() {};
-  MenuBar(std::unordered_map<std::string, int> ids);
+  MenuBar();
 
   wxMenuBar *get_wxMenuBar();
 

@@ -9,14 +9,6 @@
 #define __GXX_ABI_VERSION 1013
 
 #define DATA_IDS 200
-#define MENU_IDS 300
-
-enum {
-  ID_READ = MENU_IDS,
-  ID_WRITE,
-  ID_VECTOR,
-  ID_HELP,
-};
 
 class MainApp : public wxApp {
 public:
