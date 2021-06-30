@@ -66,16 +66,6 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
   file.write((char *) temp, count);
   file.close();
 
-  printf("Count: %d\n", count);
-
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
-      printf("%02x ", temp[(i << 4) | j]);
-    }
-
-    printf("\n");
-  }
-
   free(temp);
 
   SetStatusText(wxString::Format("Successfully saved to %s.", fname));

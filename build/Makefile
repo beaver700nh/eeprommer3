@@ -1,0 +1,14 @@
+.SILENT: all build compile run clean
+.PHONY: all build compile run clean
+
+all: compile
+build: compile
+
+compile:
+	clang++ `wx-config --cxxflags` -Wall -std=c++17 ../src/*.cpp -o eeprommer3 `wx-config --libs`
+
+run:
+	./eeprommer3
+
+clean:
+	rm -i ../src/*~

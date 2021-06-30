@@ -1,4 +1,0 @@
-#!/bin/bash
-
-cd ~/Coding/eeprommer3/src/
-make -j4 && make run
