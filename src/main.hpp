@@ -1,17 +1,8 @@
 #ifndef MAIN_HPP
 #define MAIN_HPP
 
-#include <wx/wx.h>
-
-#ifdef WX_PRECOMP
-#  include <wx/wxprec.h>
-#endif
-
-#include <wx/aboutdlg.h>
-#include <wx/display.h>
-#include <wx/filedlg.h>
-#include <wx/icon.h>
-#include <wx/msgdlg.h>
+#include "data.hpp"
+#include "wx_dep.hpp"
 
 #undef __GXX_ABI_VERSION
 #define __GXX_ABI_VERSION 1013
@@ -38,9 +29,6 @@ public:
 
   void add_menu();
   void add_contents();
-  void add_contents_hilo();
-  void add_contents_headers();
-  void add_contents_data();
 
   void OnMenuFileOpen  (wxCommandEvent &event);
   void OnMenuFileSave  (wxCommandEvent &event);
@@ -60,16 +48,11 @@ private:
   wxMenuBar *menu_bar;
   wxMenu *file_menu, *tools_menu, *actions_menu;
 
+  HexData hex_data;
+
   wxIcon png_logo_wxicon = wxIcon("../eeprommer3.png", wxBITMAP_TYPE_PNG_RESOURCE, 64, 64);
 
   wxFont normal_font, header_font;
-
-  wxPanel *panel;
-  wxStaticText *hi, *lo;
-  wxStaticText *row_hdrs[16], *col_hdrs[16];
-  wxStaticText *data[16][16];
-
-  wxSize cell_size = wxSize(32, 22);
 
   void open_file(wxString fname);
   void save_file(wxString fname);

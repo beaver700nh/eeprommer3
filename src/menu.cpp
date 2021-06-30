@@ -14,7 +14,7 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &event) {
     return;
   }
 
-  open_file(fname);
+  hex_data.open_file(fname);
 }
 
 void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
@@ -29,7 +29,7 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &event) {
     return;
   }
 
-  save_file(fname);
+  hex_data.save_file(fname);
 }
 
 void MainFrame::OnMenuToolsRead(wxCommandEvent &event) {
@@ -82,7 +82,7 @@ void MainFrame::OnMenuActionsHelp(wxCommandEvent &event) {
 }
 
 void MainFrame::OnMenuActionsClear(wxCommandEvent &event) {
-  clear_hex();
+  hex_data.clear_hex();
 }
 
 void MainFrame::OnMenuActionsQuit(wxCommandEvent &event) {
