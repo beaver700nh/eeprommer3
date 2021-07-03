@@ -28,17 +28,18 @@ download the whole thing, otherwise just download the executable.
 
 #### Just the executable
 
-Go to https://github.com/beaver700nh/eeprommer3/blob/master/build/eeprommer3
-and click `Download`. BOOM. Acquired. You can skip to the
-`Installing` step.
+Go to https://github.com/beaver700nh/eeprommer3/blob/master/build/binaries/.
+Then click on your computer's OS and architecture, followed by
+the `eeprommer3` file. Click `Download`. BOOM. Acquired.
+You can skip to the `Installing` step.
 
 #### The whole thing
 
 ##### The GUI way
 
-Click the `Download as ZIP` button on the GitHub page.
-Then `<path to eeprommer3>` will be wherever you downloaded
-the code to.
+Click the `📥 Code` button, then the `Download as ZIP`
+button on the GitHub page. Then `<path to eeprommer3>` will
+be wherever you downloaded the code to.
 
 ##### The CLI way
 
