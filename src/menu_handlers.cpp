@@ -114,7 +114,7 @@ void MainFrame::OnMenuActionsAbout(wxCommandEvent &WXUNUSED(event)) {
 
   info.SetIcon(png_logo_wxicon);
   info.SetName("eeprommer3");
-  info.SetVersion("0.0.6-dev");
+  info.SetVersion(EEPROMMER3_VERSION);
   info.SetDescription(
     "This is an AT28Cxxx EEPROM programmer frontend.\n"
     "It interfaces with a serial port which is connected\n"
