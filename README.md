@@ -14,6 +14,11 @@ that you can also use other hardware, but you will have to
 modify/redesign/fork some parts of the code (mostly just the
 hardware/firmware side, though).
 
+**NOTE: Because I am developing on Linux ARM, the
+executable for your system might either not exist
+or be outdated. Thus you will have to compile the
+code by yourself. Apologies for the inconvenience.**
+
 ## Introduction
 
 \[TODO - tell an overview of using eeprommer3]
@@ -62,12 +67,8 @@ $ make -j$(nproc)
 
 Then run the program to verify that it works:
 ```shell
-$ make run
-```
-This will only work if you are in the `eeprommer3/build`
-directory. If you aren't, you can use this command instead:
-```shell
-$ <path to eeprommer3>/build/eeprommer3
+$ cd <path to eeprommer3>/build/binaries/<your OS>/<your architecture>/
+$ ./eeprommer3
 ```
 
 ### Installing
@@ -76,7 +77,7 @@ If you wish to be able to access the `eeprommer3` from your
 entire system, you may want to create a link to the executable:
 ```shell
 $ cd /usr/local/bin/
-$ sudo ln <path to eeprommer3>/build/eeprommer3 eeprommer3
+$ sudo ln <path to eeprommer3>/build/binaries/<your OS>/<your architecture>/eeprommer3 eeprommer3
 ```
 Or if you just downloaded the executable by itself:
 ```shell
