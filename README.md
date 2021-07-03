@@ -1,5 +1,6 @@
-# EEPROMmer3
-## The 3rd revision of my EEPROM programmer
+# EEPROMmer3 -  The 3rd revision of my EEPROM programmer
+
+## About
 
 This repository contains the code for both the interface and
 hardware sides of eeprommer3, as well as the schematics and
@@ -12,6 +13,10 @@ which contains the actual EEPROM programming hardware. Note
 that you can also use other hardware, but you will have to
 modify/redesign/fork some parts of the code (mostly just the
 hardware/firmware side, though).
+
+## Introduction
+
+\[TODO - tell an overview of using eeprommer3]
 
 ## Obtaining eeprommer3
 
