@@ -12,6 +12,7 @@ MenuBar::MenuBar() {
   tools_menu->Append(ID_READ,   "Read\tAlt-R",       "Read data from the EEPROM.");
   tools_menu->Append(ID_WRITE,  "Write\tAlt-W",      "Write data to the EEPROM.");
   tools_menu->Append(ID_VECTOR, "Set Vector\tAlt-V", "Set a 6502 jump vector.");
+  tools_menu->Append(ID_PORT,   "Port\tAlt-P",       "Select the port with the hardware.");
 
   actions_menu = new wxMenu();
   actions_menu->Append(wxID_ABOUT, "About\tF2",    "Shows information about eeprommer3.");

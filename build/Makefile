@@ -4,8 +4,11 @@
 all: compile
 build: compile
 
+CXX_FLAGS := `wx-config --cxxflags` -Wpedantic -std=c++17
+CXX_LIBS  := `wx-config --libs` -lserialport
+
 compile:
-	clang++ `wx-config --cxxflags` -Wall -std=c++17 ../src/*.cpp -o eeprommer3 `wx-config --libs`
+	clang++ $(CXX_FLAGS) ../src/*.cpp -o eeprommer3 $(CXX_LIBS)
 
 run:
 	./eeprommer3

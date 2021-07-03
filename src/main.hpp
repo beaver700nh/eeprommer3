@@ -25,6 +25,7 @@ public:
   void OnMenuToolsRead  (wxCommandEvent &event);
   void OnMenuToolsWrite (wxCommandEvent &event);
   void OnMenuToolsVector(wxCommandEvent &event);
+  void OnMenuToolsPort  (wxCommandEvent &event);
 
   void OnMenuActionsAbout(wxCommandEvent &event);
   void OnMenuActionsHelp (wxCommandEvent &event);

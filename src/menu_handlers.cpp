@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 
+#include "backend.hpp"
 #include "main.hpp"
 
 #define FILE_WILDCARD "BIN file (*.bin)|*.bin|HEX file (*.hex)|*.hex"
@@ -83,20 +84,44 @@ void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Vector\n");
 }
 
+void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
+  char **ports = (char **) malloc(sizeof(char *) * 256);
+
+  for (uint8_t i = 0; true; ++i) {
+    ports[i] = (char *) malloc(sizeof(char) * 17);
+    if (i == 255) break;
+  }
+
+  if (!get_ports(ports)) {
+    printf("Error getting ports.\n");
+    return;
+  }
+
+  for (uint8_t i = 0; ports[i] != nullptr; ++i) {
+    printf("Port #%d:\t\t%s\n", i, ports[i]);
+  }
+
+  for (uint8_t i = 0; true; ++i) {
+    free(ports[i]);
+    if (i == 255) break;
+  }
+
+  free(ports);
+}
+
 void MainFrame::OnMenuActionsAbout(wxCommandEvent &WXUNUSED(event)) {
   wxAboutDialogInfo info;
 
   info.SetIcon(png_logo_wxicon);
   info.SetName("eeprommer3");
-  info.SetVersion("0.0.5-dev");
+  info.SetVersion("0.0.6-dev");
   info.SetDescription(
-    "This is an AT28C256 EEPROM programmer. (Frontend)\n"
-    "It uses the Unix API to interface with a serial port\n"
-    "which is connected to an Arduino Mega via a USB cable\n"
-    "in order to program an AT28C256 EEPROM.\n"
+    "This is an AT28Cxxx EEPROM programmer frontend.\n"
+    "It interfaces with a serial port which is connected\n"
+    "to some hardware in order to program an EEPROM.\n"
     "\n"
     "More information for both the frontend (this program)\n"
-    "and the backend (the Arduino) can be found on GitHub\n"
+    "and the backend (the hardware) can be found on GitHub\n"
     "at https://github.com/beaver700nh/eeprommer3/."
   );
 

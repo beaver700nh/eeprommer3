@@ -9,7 +9,7 @@ bool MainApp::OnInit() {
   const wxSize win_size = wxSize(560, 460);
 
   MainFrame *win = new MainFrame(
-    "eeprommer3 - AT28C256 Programmer",
+    "eeprommer3 - AT28Cxxx Programmer",
     wxDefaultPosition, win_size
   );
 
@@ -41,6 +41,7 @@ EVT_MENU(wxID_SAVE,  MainFrame::OnMenuFileSave)
 EVT_MENU(ID_READ,    MainFrame::OnMenuToolsRead)
 EVT_MENU(ID_WRITE,   MainFrame::OnMenuToolsWrite)
 EVT_MENU(ID_VECTOR,  MainFrame::OnMenuToolsVector)
+EVT_MENU(ID_PORT,    MainFrame::OnMenuToolsPort)
 EVT_MENU(wxID_ABOUT, MainFrame::OnMenuActionsAbout)
 EVT_MENU(ID_HELP,    MainFrame::OnMenuActionsHelp)
 EVT_MENU(wxID_CLEAR, MainFrame::OnMenuActionsClear)

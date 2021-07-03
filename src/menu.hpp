@@ -7,6 +7,7 @@ enum {
   ID_READ = 300,
   ID_WRITE,
   ID_VECTOR,
+  ID_PORT,
   ID_HELP,
 };
 
