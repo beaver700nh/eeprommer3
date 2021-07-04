@@ -22,17 +22,8 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
 
   hex_data.set_data(
     [&](uint8_t i, uint8_t j) -> wxString {
-      (void) i;
-      (void) j;
-
       char val = file.get();
-
-      if (!file.eof()) {
-        return wxString::Format("%02x", (uint8_t) val);
-      }
-      else {
-        return "??";
-      }
+      return (file.eof() ? "??" : wxString::Format("%02x", (uint8_t) val));
     }
   );
 
