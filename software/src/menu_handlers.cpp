@@ -1,66 +1,35 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <fstream>
+#include <tuple>
 
 #include "backend.hpp"
+#include "file.hpp"
 #include "main.hpp"
-
-#define FILE_WILDCARD "BIN file (*.bin)|*.bin|HEX file (*.hex)|*.hex"
+#include "wx_dep.hpp"
 
 void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
-  wxString fname = wxLoadFileSelector(
-    "Choose a file to open", FILE_WILDCARD, "file.bin", this
-  );
+  FileIO_Status res = FileIO::open_file("file.bin", hex_data, this);
+  wxString fname = std::get<1>(res);
 
-  if (fname.empty()) {
-    wxMessageBox("Couldn't open file.", "Error", wxOK, this);
-    return;
+  if (std::get<0>(res)) {
+    SetStatusText(wxString::Format("Successfully opened file %s.", fname));
   }
-
-  std::ifstream file(fname);
-
-  hex_data.set_data(
-    [&](uint8_t i, uint8_t j) -> wxString {
-      char val = file.get();
-      return (file.eof() ? "??" : wxString::Format("%02x", (uint8_t) val));
-    }
-  );
-
-  file.close();
-
-  SetStatusText(wxString::Format("Successfully opened file %s.", fname));
+  else {
+    SetStatusText(wxString::Format("Failed to open file %s. (Does it exist?)", fname));
+  }
 }
 
 void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
-  wxString fname = wxSaveFileSelector(
-    "Choose a file name to save as", FILE_WILDCARD, "file.bin", this
-  );
+  FileIO_Status res = FileIO::save_file("file.bin", hex_data, this);
+  wxString fname = std::get<1>(res);
 
-  if (fname.empty()) {
-    wxMessageBox("Couldn't save file.", "Error", wxOK, this);
-    return;
+  if (std::get<0>(res)) {
+    SetStatusText(wxString::Format("Successfully saved to file %s.", fname));
   }
-
-  std::ofstream file(fname);
-
-  uint8_t arr[16][16];
-  uint16_t count = hex_data.get_data(&arr);
-
-  uint8_t *temp = (uint8_t *) malloc(sizeof(uint8_t) * 256);
-
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
-      temp[(i << 4) | j] = arr[i][j];
-    }
+  else {
+    SetStatusText(wxString::Format("Failed to save to file %s. (Out of space?)", fname));
   }
-
-  file.write((char *) temp, count);
-  file.close();
-
-  free(temp);
-
-  SetStatusText(wxString::Format("Successfully saved to %s.", fname));
 }
 
 void MainFrame::OnMenuToolsRead(wxCommandEvent &WXUNUSED(event)) {
