@@ -9,10 +9,11 @@ FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
 
   if (fname.empty()) {
     wxMessageBox("Couldn't open file.", "Error", wxOK, parent);
-    return std::make_tuple(false, "");
+    return std::make_tuple(false, f);
   }
 
   std::ifstream file(fname);
+  if (!file) return std::make_tuple(false, fname);
 
   hd.set_data(
     [&](uint8_t i, uint8_t j) -> wxString {
@@ -22,6 +23,7 @@ FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
   );
 
   file.close();
+  if (file.bad() || file.fail()) return std::make_tuple(false, fname);
 
   return std::make_tuple(true, fname);
 }
@@ -31,15 +33,15 @@ FileIO_Status FileIO::save_file(wxString f, HexData &hd, wxFrame *parent) {
 
   if (fname.empty()) {
     wxMessageBox("Couldn't save file.", "Error", wxOK, parent);
-    return std::make_tuple(false, "");
+    return std::make_tuple(false, f);
   }
-
-  std::ofstream file(fname);
 
   uint8_t arr[16][16];
   uint16_t count = hd.get_data(&arr);
 
   uint8_t *temp = (uint8_t *) malloc(sizeof(uint8_t) * 256);
+
+  if (temp == nullptr) return std::make_tuple(false, fname);
 
   for (uint8_t i = 0; i < 16; ++i) {
     for (uint8_t j = 0; j < 16; ++j) {
@@ -47,8 +49,12 @@ FileIO_Status FileIO::save_file(wxString f, HexData &hd, wxFrame *parent) {
     }
   }
 
+  std::ofstream file(fname);
+  if (!file) return std::make_tuple(false, fname);
   file.write((char *) temp, count);
+  if (file.bad() || file.fail()) return std::make_tuple(false, fname);
   file.close();
+  if (file.bad() || file.fail()) return std::make_tuple(false, fname);
 
   free(temp);
 

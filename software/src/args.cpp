@@ -65,6 +65,11 @@ void print_args(int argc, char **argv) {
 char *str_argtype(ArgType t) {
   char *buf = (char *) malloc(sizeof(char) * (10 + 1));
 
+  if (buf == nullptr) {
+    printf("FATAL ERROR: could not allocate memory.\n\n");
+    exit(1);
+  }
+
   if      (t == SOPT) strcpy(buf, "SOPT");
   else if (t == LOPT) strcpy(buf, "LOPT");
   else if (t == ARG)  strcpy(buf, "ARG");

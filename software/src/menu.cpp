@@ -15,8 +15,8 @@ MenuBar::MenuBar() {
   tools_menu->Append(ID_PORT,   "Port\tAlt-P",       "Select the port with the hardware.");
 
   actions_menu = new wxMenu();
-  actions_menu->Append(wxID_ABOUT, "About\tF2",    "Shows information about eeprommer3.");
   actions_menu->Append(ID_HELP,    "Help\tF1",     "Shows a help screen.");
+  actions_menu->Append(wxID_ABOUT, "About\tF2",    "Shows information about eeprommer3.");
   actions_menu->Append(wxID_CLEAR, "Clear\tAlt-C", "Clear the hex display.");
   actions_menu->Append(wxID_EXIT,  "Quit\tCtrl-Q", "Quit eeprommer3.");
 

@@ -35,6 +35,15 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   hex_data.setup_gui();
 }
 
+void MainFrame::crash(wxString message, wxString title, int type) {
+  error(message, title, type);
+  Close(false);
+}
+
+void MainFrame::error(wxString message, wxString title, int type) {
+  wxMessageBox(message, title, type, this);
+}
+
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_OPEN,  MainFrame::OnMenuFileOpen)
 EVT_MENU(wxID_SAVE,  MainFrame::OnMenuFileSave)
@@ -42,8 +51,8 @@ EVT_MENU(ID_READ,    MainFrame::OnMenuToolsRead)
 EVT_MENU(ID_WRITE,   MainFrame::OnMenuToolsWrite)
 EVT_MENU(ID_VECTOR,  MainFrame::OnMenuToolsVector)
 EVT_MENU(ID_PORT,    MainFrame::OnMenuToolsPort)
-EVT_MENU(wxID_ABOUT, MainFrame::OnMenuActionsAbout)
 EVT_MENU(ID_HELP,    MainFrame::OnMenuActionsHelp)
+EVT_MENU(wxID_ABOUT, MainFrame::OnMenuActionsAbout)
 EVT_MENU(wxID_CLEAR, MainFrame::OnMenuActionsClear)
 EVT_MENU(wxID_EXIT,  MainFrame::OnMenuActionsQuit)
 END_EVENT_TABLE()

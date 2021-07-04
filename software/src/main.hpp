@@ -27,18 +27,19 @@ public:
   void OnMenuToolsVector(wxCommandEvent &event);
   void OnMenuToolsPort  (wxCommandEvent &event);
 
-  void OnMenuActionsAbout(wxCommandEvent &event);
   void OnMenuActionsHelp (wxCommandEvent &event);
+  void OnMenuActionsAbout(wxCommandEvent &event);
   void OnMenuActionsClear(wxCommandEvent &event);
   void OnMenuActionsQuit (wxCommandEvent &event);
+
+  void crash(wxString message, wxString title, int type);
+  void error(wxString message, wxString title, int type);
 
   DECLARE_EVENT_TABLE()
 
 private:
   MenuBar menu_bar;
   HexData hex_data;
-
-  wxIcon png_logo_wxicon = wxIcon("../../eeprommer3.png", wxBITMAP_TYPE_PNG_RESOURCE, 64, 64);
 
   wxFont normal_font, header_font;
 };
