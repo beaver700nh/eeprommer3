@@ -38,7 +38,7 @@ private:
   MenuBar menu_bar;
   HexData hex_data;
 
-  wxIcon png_logo_wxicon = wxIcon("../eeprommer3.png", wxBITMAP_TYPE_PNG_RESOURCE, 64, 64);
+  wxIcon png_logo_wxicon = wxIcon("../../eeprommer3.png", wxBITMAP_TYPE_PNG_RESOURCE, 64, 64);
 
   wxFont normal_font, header_font;
 };

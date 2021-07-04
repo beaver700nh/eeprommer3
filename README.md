@@ -18,7 +18,7 @@ hardware/firmware side, though).
 
 \[TODO - tell an overview of using eeprommer3]
 
-## Obtaining eeprommer3
+## Obtaining the eeprommer3 software
 
 ### Downloading
 
@@ -28,10 +28,21 @@ download the whole thing, otherwise just download the executable.
 
 #### Just the executable
 
-Go to https://github.com/beaver700nh/eeprommer3/blob/master/build/binaries/.
+##### The GUI way
+
+Go to https://github.com/beaver700nh/eeprommer3/blob/master/software/build/binaries/.
 Then click on your computer's OS and architecture, followed by
 the `eeprommer3` file. Click `Download`. BOOM. Acquired.
 You can skip to the `Installing` step.
+
+##### The CLI way
+
+You can use `wget` to download the executable.
+
+```shell
+$ cd <where you want to download the executable>/
+$ wget https://github.com/beaver700nh/eeprommer3/blob/master/software/build/binaries/<your OS>/<your system architecture>/eeprommer3.
+```
 
 #### The whole thing
 
@@ -56,7 +67,7 @@ the code to.
 
 Compile the code using make:
 ```shell
-$ cd <path to eeprommer3>/build/
+$ cd <path to eeprommer3>/software/build/
 $ make -j$(nproc)
 ```
 
@@ -67,7 +78,7 @@ $ make run
 This will only work if you are in the `eeprommer3/build`
 directory. If you aren't, you can use this command instead:
 ```shell
-$ <path to eeprommer3>/build/eeprommer3
+$ <path to eeprommer3>/software/build/eeprommer3
 ```
 
 ### Installing
@@ -76,7 +87,7 @@ If you wish to be able to access the `eeprommer3` from your
 entire system, you may want to create a link to the executable:
 ```shell
 $ cd /usr/local/bin/
-$ sudo ln <path to eeprommer3>/build/eeprommer3 eeprommer3
+$ sudo ln <path to eeprommer3>/software/build/eeprommer3 eeprommer3
 ```
 Or if you just downloaded the executable by itself:
 ```shell
