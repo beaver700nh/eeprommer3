@@ -7,6 +7,7 @@
 #include "file.hpp"
 #include "info.hpp"
 #include "main.hpp"
+#include "util.hpp"
 #include "wx_dep.hpp"
 
 void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
@@ -53,22 +54,14 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
     return;
   }
 
-  for (uint8_t i = 0; true; ++i) {
+  for (uint16_t i = 0; i < 256; ++i) {
     ports[i] = (char *) malloc(sizeof(char) * 17);
 
     if (ports[i] == nullptr) {
       error("Could not allocate memory.", "Memory Error", wxOK);
-
-      for (uint8_t j = 0; j < i; ++j) {
-        free(ports[j]);
-      }
-
-      free(ports);
-
+      free2d((void **) ports, i);
       return;
     }
-
-    if (i == 255) break;
   }
 
   /////////////////////////////////////////////////
@@ -84,12 +77,7 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
 
   /////////////////////////////////////////////////
 
-  for (uint8_t i = 0; true; ++i) {
-    free(ports[i]);
-    if (i == 255) break;
-  }
-
-  free(ports);
+  free2d((void **) ports, 256);
 }
 
 void MainFrame::OnMenuActionsHelp(wxCommandEvent &WXUNUSED(event)) {
