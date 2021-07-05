@@ -63,7 +63,7 @@ void test_write_port(const char *name, const char *data) {
   sp_free_config(config);
 }
 
-int check_sp(enum sp_return status) {
+int check_sp(sp_return status) {
   char *error_message;
 
   switch (status) {
