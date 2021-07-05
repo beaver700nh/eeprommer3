@@ -54,7 +54,7 @@ void test_write_port(const char *name, const char *data) {
     printf("Sent %d bytes successfully.\n", size);
   }
   else {
-    printf("Timed out, %d/%d bytes sent.\n", result, size);
+    printf("Timed out, sent %d/%d bytes.\n", result, size);
   }
 
   check_sp(sp_close(port));
