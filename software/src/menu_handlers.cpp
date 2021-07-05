@@ -75,6 +75,8 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
     printf("Port #%d:\t\t%s\n", i, ports[i]);
   }
 
+  test_write_port("/dev/ttyACM0", "<<testing!>>");
+
   /////////////////////////////////////////////////
 
   free2d((void **) ports, 256);
