@@ -25,6 +25,6 @@ MenuBar::MenuBar() {
   menu_bar->Append(actions_menu, "Actions");
 }
 
-wxMenuBar *MenuBar::get_wxMenuBar() {
+wxMenuBar *MenuBar::get_menu_bar() {
   return menu_bar;
 }

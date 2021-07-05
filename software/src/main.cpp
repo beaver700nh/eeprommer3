@@ -28,7 +28,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   SetStatusText("Hello, world!");
 
   menu_bar = MenuBar();
-  SetMenuBar(menu_bar.get_wxMenuBar());
+  SetMenuBar(menu_bar.get_menu_bar());
 
   static wxPanel *panel = new wxPanel(this);
   hex_data = HexData(panel, wxSize(32, 22), header_font, normal_font);

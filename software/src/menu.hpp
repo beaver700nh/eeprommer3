@@ -15,7 +15,7 @@ class MenuBar {
 public:
   MenuBar();
 
-  wxMenuBar *get_wxMenuBar();
+  wxMenuBar *get_menu_bar();
 
 private:
   wxMenuBar *menu_bar;
