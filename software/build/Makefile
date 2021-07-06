@@ -1,8 +1,7 @@
-.SILENT: all build compile clean run
-.PHONY: all build compile clean run
+.SILENT: all build clean run
+.PHONY: all build clean run
 
-all: compile
-build: compile
+all: build
 
 VERSION := "\"0.0.7-dev\""
 
@@ -34,17 +33,20 @@ endif
 .ONESHELL:
 SHELL := /bin/bash
 
-compile:
+build:
 	echo "Output path: $(BIN_PATH)"
 	echo "$(BIN_PATH)" >binpath
 
 	if clang++ $(CXX_FLAGS) ../src/*.cpp -o $(BIN_PATH) $(CXX_LIBS); then
 		echo "Done compiling - PASSED!"
+		exit 0
 	else
 		echo "Done compiling - FAILED!"
+		exit 1
 	fi
 
 clean:
+	echo "Cleaning temporary~ files"
 	rm -i ../src/*~
 
 run:

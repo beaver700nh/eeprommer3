@@ -5,7 +5,7 @@
 #include "wx_dep.hpp"
 
 FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
-  wxString fname = wxLoadFileSelector("Choose a file to open", FILE_WILDCARD, f, parent);
+  auto fname = wxLoadFileSelector("Choose a file to open", FILE_WILDCARD, f, parent);
 
   if (fname.empty()) {
     wxMessageBox("Couldn't open file.", "Error", wxOK, parent);
@@ -29,7 +29,7 @@ FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
 }
 
 FileIO_Status FileIO::save_file(wxString f, HexData &hd, wxFrame *parent) {
-  wxString fname = wxSaveFileSelector("Choose a file name to save as", FILE_WILDCARD, f, parent);
+  auto fname = wxSaveFileSelector("Choose a file name to save as", FILE_WILDCARD, f, parent);
 
   if (fname.empty()) {
     wxMessageBox("Couldn't save file.", "Error", wxOK, parent);

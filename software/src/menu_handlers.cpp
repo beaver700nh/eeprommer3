@@ -11,8 +11,8 @@
 #include "wx_dep.hpp"
 
 void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
-  FileIO_Status res = FileIO::open_file("file.bin", hex_data, this);
-  wxString fname = std::get<1>(res);
+  auto res = FileIO::open_file("file.bin", hex_data, this);
+  auto fname = std::get<1>(res);
 
   if (std::get<0>(res)) {
     SetStatusText(wxString::Format("Successfully opened file '%s.'", fname));
@@ -23,8 +23,8 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
-  FileIO_Status res = FileIO::save_file("file.bin", hex_data, this);
-  wxString fname = std::get<1>(res);
+  auto res = FileIO::save_file("file.bin", hex_data, this);
+  auto fname = std::get<1>(res);
 
   if (std::get<0>(res)) {
     SetStatusText(wxString::Format("Successfully saved to file '%s.'", fname));
@@ -45,9 +45,9 @@ void MainFrame::OnMenuToolsWrite(wxCommandEvent &WXUNUSED(event)) {
 void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Vector\n");
 
-  wxWindow *test = new wxWindow(
-    this, wxID_ANY, wxDefaultPosition, wxSize(100, 100),
-    wxBORDER_SUNKEN, "Test Window!"
+  auto *test = new wxFrame(
+    (wxFrame *) nullptr, wxID_ANY, "Test window",
+    wxDefaultPosition, wxSize(700, 700)
   );
 
   test->Show(true);

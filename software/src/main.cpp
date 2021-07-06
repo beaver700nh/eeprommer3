@@ -7,9 +7,9 @@
 IMPLEMENT_APP(MainApp)
 
 bool MainApp::OnInit() {
-  const wxSize win_size = wxSize(560, 460);
+  const auto win_size = wxSize(560, 460);
 
-  MainFrame *win = new MainFrame(
+  auto *win = new MainFrame(
     "eeprommer3 - AT28Cxxx Programmer",
     wxDefaultPosition, win_size
   );
@@ -21,7 +21,7 @@ bool MainApp::OnInit() {
 }
 
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
-  : wxFrame((wxFrame *) nullptr, -1, title, pos, size) {
+  : wxFrame((wxFrame *) nullptr, wxID_ANY, title, pos, size) {
   normal_font = wxFont(10, wxMODERN, wxSLANT,  wxLIGHT, false, "", wxFONTENCODING_DEFAULT);
   header_font = wxFont(13, wxMODERN, wxNORMAL, wxBOLD,  false, "", wxFONTENCODING_DEFAULT);
 
@@ -31,7 +31,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   menu_bar = MenuBar();
   SetMenuBar(menu_bar.get_menu_bar());
 
-  static wxPanel *panel = new wxPanel(this);
+  static auto *panel = new wxPanel(this);
   hex_data = HexData(panel, wxSize(32, 22), header_font, normal_font);
   hex_data.setup_gui();
 
