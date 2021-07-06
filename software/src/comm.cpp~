@@ -4,9 +4,18 @@
 #include <cstring>
 #include <libserialport.h>
 
-#include "backend.hpp"
+#include "comm.hpp"
 
-bool get_ports(char **list) {
+PortCtrl::PortCtrl(const char *name) {
+  initialized = true;
+  set_cur_port(name);
+}
+
+bool PortCtrl::is_initialized() {
+  return initialized;
+}
+
+bool PortCtrl::get_ports(char **list) {
   sp_port **port_list;
 
   sp_return result = sp_list_ports(&port_list);
@@ -30,9 +39,17 @@ bool get_ports(char **list) {
   return true;
 }
 
-void test_write_port(const char *name, const char *data) {
+void PortCtrl::set_cur_port(const char *name) {
+  strcpy(cur_port, name);
+}
+
+const char *PortCtrl::get_cur_port() {
+  return cur_port;
+}
+
+void PortCtrl::test_write(const char *data) {
   sp_port *port;
-  sp_get_port_by_name(name, &port);
+  sp_get_port_by_name(cur_port, &port);
 
   check_sp(sp_open(port, SP_MODE_READ_WRITE));
 

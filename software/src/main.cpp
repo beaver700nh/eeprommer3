@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include "comm.hpp"
 #include "main.hpp"
 #include "wx_dep.hpp"
 
@@ -33,11 +34,13 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   static wxPanel *panel = new wxPanel(this);
   hex_data = HexData(panel, wxSize(32, 22), header_font, normal_font);
   hex_data.setup_gui();
+
+  set_default_port_config();
 }
 
 void MainFrame::crash(wxString message, wxString title, int type) {
   error(message, title, type);
-  Close(false);
+  Close(true);
 }
 
 void MainFrame::error(wxString message, wxString title, int type) {

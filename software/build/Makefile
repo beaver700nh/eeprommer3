@@ -31,11 +31,18 @@ endif
 
 endif
 
+.ONESHELL:
+SHELL := /bin/bash
+
 compile:
 	echo "Output path: $(BIN_PATH)"
 	echo "$(BIN_PATH)" >binpath
 
-	clang++ $(CXX_FLAGS) ../src/*.cpp -o $(BIN_PATH) $(CXX_LIBS)
+	if clang++ $(CXX_FLAGS) ../src/*.cpp -o $(BIN_PATH) $(CXX_LIBS); then
+		echo "Done compiling - PASSED!"
+	else
+		echo "Done compiling - FAILED!"
+	fi
 
 clean:
 	rm -i ../src/*~

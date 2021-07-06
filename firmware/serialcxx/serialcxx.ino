@@ -10,11 +10,19 @@
 #define BLACK   0x0000
 
 enum class PacketState {
-  NONE, START, CONTENT, END, ESCAPED
+  NONE, ESCAPED,
+  DATA_START, DATA, DATA_END,
+  CMD_START,  CMD,  CMD_END,
 };
 
 enum class PacketMarker {
-  SMA = '\x3c', SMB = '\x3c', EMA = '\x3e', EMB = '\x3e', ESC = '\x5c'
+  DSA = '\x3c', DSB = '\x3c', DEA = '\x3e', DEB = '\x3e',
+  CSA = '\x5b', CSB = '\x5b', CEA = '\x5d', CEB = '\x5d',
+  ESC = '\x5c'
+};
+
+enum class PacketType {
+  NONE, WAITING, DATA, CMD
 };
 
 PacketState state = PacketState::NONE;
@@ -23,7 +31,7 @@ Elegoo_TFTLCD tft(A3, A2, A1, A0, A4);
 
 char **bufs;
 
-bool read_incoming(char *buf);
+PacketType read_incoming(char *buf);
 void scroll_bufs(char ***bufs);
 void update_tft(char **bufs);
 
@@ -58,83 +66,147 @@ void setup() {
 
   while (true) {
     if (Serial.available() > 0) {
-      if (read_incoming(temp)) {
+      PacketType result = read_incoming(temp);
+
+      if (result == PacketType::DATA) {
         scroll_bufs(&bufs);
         strcpy(bufs[7], temp);
+        update_tft(bufs);
+      }
+      else if (result == PacketType::CMD) {
+        scroll_bufs(&bufs);
+
+        char temp2[22];
+        sprintf(temp2, "Cmd: %s", temp);
+        strcpy(bufs[7], temp2);
+
         update_tft(bufs);
       }
     }
   }
 }
 
-bool read_incoming(char *buf) {
+PacketType read_incoming(char *buf) {
   static uint16_t idx = 0;
+  static PacketType type = PacketType::WAITING;
 
   if (idx >= 16) {
-    Serial.println("Length exceeded!");
     state = PacketState::NONE;
+    PacketType temp = type;
+    type = PacketType::NONE;
+
     buf[16] = '\0';
     idx = 0;
-    flush_serial_input_until_end();
-    Serial.println("Done flushing!");
 
-    return true;
+    flush_serial_input_until_end();
+
+    return temp;
   }
 
-  char data = Serial.read();
+  char ch = Serial.read();
 
   if (state == PacketState::NONE) {
-    if (data == (char) PacketMarker::SMA) {
-      state = PacketState::START;
+    if (ch == (char) PacketMarker::DSA) {
+      state = PacketState::DATA_START;
+    }
+    else if (ch == (char) PacketMarker::CSA) {
+      state = PacketState::CMD_START;
     }
   }
-  else if (state == PacketState::START) {
-    if (data == (char) PacketMarker::SMB) {
-      state = PacketState::CONTENT;
+  else if (state == PacketState::DATA_START) {
+    if (ch == (char) PacketMarker::DSB) {
+      state = PacketState::DATA;
+      type = PacketType::DATA;
     }
     else {
       state = PacketState::NONE;
     }
   }
-  else if (state == PacketState::CONTENT) {
-    if (data == (char) PacketMarker::ESC) {
+  else if (state == PacketState::DATA) {
+    if (ch == (char) PacketMarker::ESC) {
       state = PacketState::ESCAPED;
     }
-    else if (data == (char) PacketMarker::EMA) {
-      state = PacketState::END;
+    else if (ch == (char) PacketMarker::DEA) {
+      state = PacketState::DATA_END;
     }
     else {
-      buf[idx++] = data;
+      buf[idx++] = ch;
     }
   }
   else if (state == PacketState::ESCAPED) {
-    state = PacketState::CONTENT;
-    buf[idx++] = data;
+    state = (type == PacketType::DATA ? PacketState::DATA : PacketState::CMD);
+    buf[idx++] = ch;
   }
-  else if (state == PacketState::END) {
-    if (data == (char) PacketMarker::EMB) {
+  else if (state == PacketState::DATA_END) {
+    if (ch == (char) PacketMarker::DEB) {
       state = PacketState::NONE;
+      type = PacketType::NONE;
 
       buf[idx] = '\0';
       idx = 0;
 
-      return true;
+      return PacketType::DATA;
     }
     else {
-      state = PacketState::CONTENT;
-      buf[idx++] = (char) PacketMarker::EMA;
+      state = PacketState::DATA;
+      buf[idx++] = (char) PacketMarker::DEA;
 
-      if (data == (char) PacketMarker::ESC) {
-        while (Serial.available() <= 0); /* wait for a char */
-        buf[idx++] = Serial.read();
+      if (ch == (char) PacketMarker::ESC) {
+        state = PacketState::ESCAPED;
       }
       else {
-        buf[idx++] = data;
+        buf[idx++] = ch;
+      }
+    }
+  }
+  else if (state == PacketState::CMD_START) {
+    if (ch == (char) PacketMarker::CSB) {
+      state = PacketState::CMD;
+      type = PacketType::CMD;
+    }
+    else {
+      state = PacketState::NONE;
+    }
+  }
+  else if (state == PacketState::CMD) {
+    if (ch == (char) PacketMarker::ESC) {
+      state = PacketState::ESCAPED;
+    }
+    else if (ch == (char) PacketMarker::CEA) {
+      state = PacketState::CMD_END;
+    }
+    else {
+      buf[idx++] = ch;
+    }
+  }
+  else if (state == PacketState::ESCAPED) {
+    state = PacketState::CMD;
+    buf[idx++] = ch;
+  }
+  else if (state == PacketState::CMD_END) {
+    if (ch == (char) PacketMarker::CEB) {
+      state = PacketState::NONE;
+      type = PacketType::NONE;
+
+      buf[idx] = '\0';
+      idx = 0;
+
+      return PacketType::CMD;
+    }
+    else {
+      state = PacketState::CMD;
+      buf[idx++] = (char) PacketMarker::CEA;
+
+      if (ch == (char) PacketMarker::ESC) {
+        state = PacketState::ESCAPED;
+      }
+      else {
+        buf[idx++] = ch;
       }
     }
   }
 
-  return false;
+  return PacketType::WAITING;
 }
 
 void scroll_bufs(char ***bufs) {
@@ -157,24 +229,24 @@ void flush_serial_input() {
 }
 
 void flush_serial_input_until_end() {
-  PacketState ps = PacketState::CONTENT;
+  PacketState ps = PacketState::DATA;
 
   while (ps != PacketState::NONE) {
     while (Serial.available() <= 0); /* wait for character */
 
     char c = Serial.read();
 
-    if (ps == PacketState::CONTENT) {
-      if (c == (char) PacketMarker::EMA) {
-        ps = PacketState::END;
+    if (ps == PacketState::DATA) {
+      if (c == (char) PacketMarker::DEA) {
+        ps = PacketState::DATA_END;
       }
     }
-    else if (ps == PacketState::END) {
-      if (c == (char) PacketMarker::EMB) {
+    else if (ps == PacketState::DATA_END) {
+      if (c == (char) PacketMarker::DEB) {
         ps = PacketState::NONE;
       }
       else {
-        ps = PacketState::CONTENT;
+        ps = PacketState::DATA;
       }
     }
   }

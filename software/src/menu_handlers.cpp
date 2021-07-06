@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <tuple>
 
-#include "backend.hpp"
+#include "comm.hpp"
 #include "file.hpp"
 #include "info.hpp"
 #include "main.hpp"
@@ -15,10 +15,10 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
   wxString fname = std::get<1>(res);
 
   if (std::get<0>(res)) {
-    SetStatusText(wxString::Format("Successfully opened file \"%s.\"", fname));
+    SetStatusText(wxString::Format("Successfully opened file '%s.'", fname));
   }
   else {
-    SetStatusText(wxString::Format("Failed to open file \"%s\". (Does it exist?)", fname));
+    SetStatusText(wxString::Format("Failed to open file '%s.' (Does it exist?)", fname));
   }
 }
 
@@ -27,10 +27,10 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
   wxString fname = std::get<1>(res);
 
   if (std::get<0>(res)) {
-    SetStatusText(wxString::Format("Successfully saved to file \"%s.\"", fname));
+    SetStatusText(wxString::Format("Successfully saved to file '%s.'", fname));
   }
   else {
-    SetStatusText(wxString::Format("Failed to save to file \"%s\". (Out of space?)", fname));
+    SetStatusText(wxString::Format("Failed to save to file '%s.' (Out of space?)", fname));
   }
 }
 
@@ -44,6 +44,13 @@ void MainFrame::OnMenuToolsWrite(wxCommandEvent &WXUNUSED(event)) {
 
 void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Vector\n");
+
+  wxWindow *test = new wxWindow(
+    this, wxID_ANY, wxDefaultPosition, wxSize(100, 100),
+    wxBORDER_SUNKEN, "Test Window!"
+  );
+
+  test->Show(true);
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
@@ -64,20 +71,30 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
     }
   }
 
-  /////////////////////////////////////////////////
-
-  if (!get_ports(ports)) {
-    printf("Error getting ports.\n");
+  if (!port_ctrl.list_ports(ports)) {
+    error("Error getting list of ports.", "Port Error", wxOK);
     return;
   }
 
-  for (uint8_t i = 0; ports[i] != nullptr; ++i) {
-    printf("Port #%d:\t\t%s\n", i, ports[i]);
+  // Show dialog box with chooser
+
+  // If ok
+  //   Init portctrl
+  //   Write status
+  //   Update menu
+
+  int8_t res = port_ctrl.set_cur_port("/dev/ttyACM0");
+
+  if (res == 0) {
+    port_ctrl.test_write("<<data :)>>");
+    port_ctrl.test_write("[[cmd!]]");
   }
-
-  test_write_port("/dev/ttyACM0", "<<testing!>>");
-
-  /////////////////////////////////////////////////
+  else if (res == 1) {
+    error("Error closing previous port.", "Port Error", wxOK);
+  }
+  else if (res == 2) {
+    error("Error opening new port.", "Port Error", wxOK);
+  }
 
   free2d((void **) ports, 256);
 }

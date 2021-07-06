@@ -1,8 +1,9 @@
 #ifndef MAIN_HPP
 #define MAIN_HPP
 
-#include "data.hpp"
 #include "menu.hpp"
+#include "data.hpp"
+#include "comm.hpp"
 #include "wx_dep.hpp"
 
 #undef __GXX_ABI_VERSION
@@ -38,8 +39,9 @@ public:
   DECLARE_EVENT_TABLE()
 
 private:
-  MenuBar menu_bar;
-  HexData hex_data;
+  MenuBar  menu_bar;
+  HexData  hex_data;
+  PortCtrl port_ctrl;
 
   wxFont normal_font, header_font;
 };

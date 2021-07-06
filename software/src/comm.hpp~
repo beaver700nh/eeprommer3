@@ -1,0 +1,30 @@
+#ifndef COMM_HPP
+#define COMM_HPP
+
+#include <cstdint>
+#include <libserialport.h>
+
+typedef enum sp_return sp_return;
+
+class PortCtrl {
+public:
+  PortCtrl() {};
+  PortCtrl(const char *name);
+
+  bool is_initialized();
+
+  bool get_ports(char **list); /* Assumes #ports < 256 */
+
+  void set_cur_port(const char *name);
+  const char *get_cur_port();
+
+  void test_write(const char *data);
+
+private:
+  bool initialized = false;
+  char cur_port[20];
+};
+
+int check_sp(sp_return status);
+
+#endif
