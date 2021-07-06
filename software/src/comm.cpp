@@ -25,13 +25,13 @@ bool PortCtrl::is_initialized() {
   return initialized;
 }
 
-bool PortCtrl::list_ports(char **list) {
+int16_t PortCtrl::list_ports(char **list) {
   sp_port **port_list;
 
   sp_return result = sp_list_ports(&port_list);
 
   if (result != SP_OK) {
-    return false;
+    return -1;
   }
 
   uint8_t i = 0;
@@ -46,7 +46,7 @@ bool PortCtrl::list_ports(char **list) {
 
   sp_free_port_list(port_list);
 
-  return true;
+  return i;
 }
 
 int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {

@@ -44,13 +44,6 @@ void MainFrame::OnMenuToolsWrite(wxCommandEvent &WXUNUSED(event)) {
 
 void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Vector\n");
-
-  auto *test = new wxFrame(
-    (wxFrame *) nullptr, wxID_ANY, "Test window",
-    wxDefaultPosition, wxSize(700, 700)
-  );
-
-  test->Show(true);
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
@@ -71,29 +64,34 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
     }
   }
 
-  if (!port_ctrl.list_ports(ports)) {
+  int16_t num_ports = port_ctrl.list_ports(ports);
+
+  if (num_ports < 0) {
     error("Error getting list of ports.", "Port Error", wxOK);
     return;
   }
 
-  // Show dialog box with chooser
+  auto *chooser_box = new wxSingleChoiceDialog(
+    (wxFrame *) nullptr,
+    "Select a port from the list that the system has detected.",
+    "Choose a Port", wxArrayString(num_ports, (const char **) ports)
+  );
 
-  // If ok
-  //   Init portctrl
-  //   Write status
-  //   Update menu
+  int8_t res;
 
-  int8_t res = port_ctrl.set_cur_port("/dev/ttyACM0");
+  if (chooser_box->ShowModal() == wxID_OK) {
+    char *chosen_port = chooser_box->GetStringSelection().ToUTF8().data();
+    res = port_ctrl.set_cur_port(chosen_port);
+    // Update status bar
+    // Update menu item
+    error(wxString::Format("Task failed successfully! %s", chosen_port), "FOO", wxOK);
 
-  if (res == 0) {
-    port_ctrl.test_write("<<data :)>>");
-    port_ctrl.test_write("[[cmd!]]");
-  }
-  else if (res == 1) {
-    error("Error closing previous port.", "Port Error", wxOK);
-  }
-  else if (res == 2) {
-    error("Error opening new port.", "Port Error", wxOK);
+    if (res == 1) {
+      error("Error closing previous port.", "Port Error", wxOK);
+    }
+    else if (res == 2) {
+      error("Error opening new port.", "Port Error", wxOK);
+    }
   }
 
   free2d((void **) ports, 256);

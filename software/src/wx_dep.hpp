@@ -8,10 +8,12 @@
 #endif
 
 #include <wx/aboutdlg.h>
+#include <wx/choicdlg.h>
 #include <wx/display.h>
 #include <wx/filedlg.h>
 #include <wx/icon.h>
 #include <wx/msgdlg.h>
+#include <wx/popupwin.h>
 #include <wx/wxchar.h>
 
 #endif

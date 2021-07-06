@@ -18,7 +18,7 @@ public:
 
   bool is_initialized();
 
-  bool list_ports(char **list); /* Assumes #ports < 256 */
+  int16_t list_ports(char **list); /* Assumes #ports < 256 */
 
   int8_t set_cur_port(const char *name, sp_port_config *config = default_config);
   const char *get_cur_port();
