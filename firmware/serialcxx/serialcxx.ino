@@ -25,24 +25,29 @@ enum class PacketType {
   NONE, WAITING, DATA, CMD
 };
 
+typedef struct {
+  PacketType type = PacketType::NONE;
+  char contents[17];
+} Packet;
+
 PacketState state = PacketState::NONE;
 
 Elegoo_TFTLCD tft(A3, A2, A1, A0, A4);
 
-char **bufs;
+Packet bufs[8];
 
-PacketType read_incoming(char *buf);
-void scroll_bufs(char ***bufs);
-void update_tft(char **bufs);
+bool read_incoming(Packet *buf);
+void scroll_bufs(Packet (*bufs)[8]);
+void update_tft(Packet (*bufs)[8]);
 
 void flush_serial_input();
 void flush_serial_input_until_end();
 
-void setup() {
-  bufs = (char **) malloc(sizeof(char *) * 8);
+void pckt_copy(Packet *to, Packet *from);
 
+void setup() {
   for (uint8_t i = 0; i < 8; ++i) {
-    bufs[i] = (char *) malloc(sizeof(char) * (16 + 1));
+    bufs[i].type = PacketType::NONE;
   }
 
   delay(1000);
@@ -57,36 +62,25 @@ void setup() {
   tft.setTextSize(3);
 
   for (uint8_t i = 0; i < 8; ++i) {
-    sprintf(bufs[i], "Buffer #%d.......", i);
+    sprintf(bufs[i].contents, "Buffer #%d.......", i);
   }
 
-  update_tft(bufs);
+  update_tft(&bufs);
 
-  char temp[17];
+  Packet this_pckt;
 
   while (true) {
     if (Serial.available() > 0) {
-      PacketType result = read_incoming(temp);
-
-      if (result == PacketType::DATA) {
+      if (read_incoming(&this_pckt)) {
         scroll_bufs(&bufs);
-        strcpy(bufs[7], temp);
-        update_tft(bufs);
-      }
-      else if (result == PacketType::CMD) {
-        scroll_bufs(&bufs);
-
-        char temp2[22];
-        sprintf(temp2, "Cmd: %s", temp);
-        strcpy(bufs[7], temp2);
-
-        update_tft(bufs);
+        pckt_copy(&(bufs[7]), &this_pckt);
+        update_tft(&bufs);
       }
     }
   }
 }
 
-PacketType read_incoming(char *buf) {
+bool read_incoming(Packet *buf) {
   static uint16_t idx = 0;
   static PacketType type = PacketType::WAITING;
 
@@ -95,12 +89,13 @@ PacketType read_incoming(char *buf) {
     PacketType temp = type;
     type = PacketType::NONE;
 
-    buf[16] = '\0';
+    buf->contents[16] = '\0';
     idx = 0;
+    buf->type = temp;
 
     flush_serial_input_until_end();
 
-    return temp;
+    return true;
   }
 
   char ch = Serial.read();
@@ -130,32 +125,33 @@ PacketType read_incoming(char *buf) {
       state = PacketState::DATA_END;
     }
     else {
-      buf[idx++] = ch;
+      buf->contents[idx++] = ch;
     }
   }
   else if (state == PacketState::ESCAPED) {
     state = (type == PacketType::DATA ? PacketState::DATA : PacketState::CMD);
-    buf[idx++] = ch;
+    buf->contents[idx++] = ch;
   }
   else if (state == PacketState::DATA_END) {
     if (ch == (char) PacketMarker::DEB) {
       state = PacketState::NONE;
       type = PacketType::NONE;
 
-      buf[idx] = '\0';
+      buf->contents[idx] = '\0';
       idx = 0;
+      buf->type = PacketType::DATA;
 
-      return PacketType::DATA;
+      return true;
     }
     else {
       state = PacketState::DATA;
-      buf[idx++] = (char) PacketMarker::DEA;
+      buf->contents[idx++] = (char) PacketMarker::DEA;
 
       if (ch == (char) PacketMarker::ESC) {
         state = PacketState::ESCAPED;
       }
       else {
-        buf[idx++] = ch;
+        buf->contents[idx++] = ch;
       }
     }
   }
@@ -176,51 +172,62 @@ PacketType read_incoming(char *buf) {
       state = PacketState::CMD_END;
     }
     else {
-      buf[idx++] = ch;
+      buf->contents[idx++] = ch;
     }
   }
   else if (state == PacketState::ESCAPED) {
     state = PacketState::CMD;
-    buf[idx++] = ch;
+    buf->contents[idx++] = ch;
   }
   else if (state == PacketState::CMD_END) {
     if (ch == (char) PacketMarker::CEB) {
       state = PacketState::NONE;
       type = PacketType::NONE;
 
-      buf[idx] = '\0';
+      buf->contents[idx] = '\0';
       idx = 0;
+      buf->type = PacketType::CMD;
 
-      return PacketType::CMD;
+      return true;
     }
     else {
       state = PacketState::CMD;
-      buf[idx++] = (char) PacketMarker::CEA;
+      buf->contents[idx++] = (char) PacketMarker::CEA;
 
       if (ch == (char) PacketMarker::ESC) {
         state = PacketState::ESCAPED;
       }
       else {
-        buf[idx++] = ch;
+        buf->contents[idx++] = ch;
       }
     }
   }
 
-  return PacketType::WAITING;
+  return false;
 }
 
-void scroll_bufs(char ***bufs) {
+void scroll_bufs(Packet (*bufs)[8]) {
   for (uint8_t i = 1; i < 8; ++i) {
-    strcpy((*bufs)[i - 1], (*bufs)[i]);
+    pckt_copy(&((*bufs)[i - 1]), &((*bufs)[i]));
   }
 }
 
-void update_tft(char **bufs) {
+void update_tft(Packet (*bufs)[8]) {
   tft.fillScreen(BLACK);
   tft.setCursor(0, 0);
 
   for (uint8_t i = 0; i < 8; ++i) {
-    tft.println(bufs[i]);
+    uint16_t color = YELLOW;
+
+    switch ((*bufs)[i].type) {
+    case PacketType::NONE:    color = MAGENTA; break;
+    case PacketType::WAITING: color = RED;     break;
+    case PacketType::DATA:    color = CYAN;    break;
+    case PacketType::CMD:     color = GREEN;   break;
+    }
+
+    tft.setTextColor(color);
+    tft.println((*bufs)[i].contents);
   }
 }
 
@@ -250,6 +257,11 @@ void flush_serial_input_until_end() {
       }
     }
   }
+}
+
+void pckt_copy(Packet *to, Packet *from) {
+  strcpy(to->contents, from->contents);
+  to->type = from->type;
 }
 
 void loop() {}
