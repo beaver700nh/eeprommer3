@@ -44,6 +44,8 @@ void MainFrame::OnMenuToolsWrite(wxCommandEvent &WXUNUSED(event)) {
 
 void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Vector\n");
+
+  port_ctrl.test_write(R"r(abc<<foo>>def[[bar]]ghi<<<<\\\>\>>>jkl[[[[\\\]\]]])r");
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
