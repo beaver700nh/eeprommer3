@@ -64,6 +64,13 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
     }
   }
 
+  const char *old_port = port_ctrl.get_cur_port();
+  const char *old_label = (
+    port_ctrl.is_initialized() ?
+    wxString::Format("Port (%s)", old_port).ToUTF8().data() :
+    "Port"
+  );
+
   int16_t num_ports = port_ctrl.list_ports(ports);
 
   if (num_ports < 0) {
@@ -72,21 +79,25 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
   }
 
   auto *chooser_box = new wxSingleChoiceDialog(
-    (wxFrame *) nullptr,
-    "Select a port from the list that the system has detected.",
-    "Choose a Port", wxArrayString(num_ports, (const char **) ports)
+    (wxFrame *) nullptr, "Choose a port.", "Port",
+    wxArrayString(num_ports, (const char **) ports)
   );
 
-  int8_t res;
-
   if (chooser_box->ShowModal() == wxID_OK) {
-    char *chosen_port = chooser_box->GetStringSelection().ToUTF8().data();
-    res = port_ctrl.set_cur_port(chosen_port);
-    // Update status bar
-    // Update menu item
-    error(wxString::Format("Task failed successfully! %s", chosen_port), "FOO", wxOK);
+    char new_port[20];
+    strcpy(new_port, chooser_box->GetStringSelection().ToUTF8().data());
 
-    if (res == 1) {
+    int8_t res = port_ctrl.set_cur_port(new_port);
+
+    if (res == 0) {
+      SetStatusText(wxString::Format("Successfully set port to %s.", new_port));
+
+      menu_bar.get_menu_bar()->SetLabel(
+        menu_bar.get_menu_bar()->FindMenuItem("Tools", old_label),
+        wxString::Format("Port (%s)", new_port)
+      );
+    }
+    else if (res == 1) {
       error("Error closing previous port.", "Port Error", wxOK);
     }
     else if (res == 2) {
