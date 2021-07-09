@@ -7,7 +7,7 @@
 #include "wx_dep.hpp"
 
 #define OnErrFunc std::function<void(wxString, wxString, int)>
-#define OnErrFuncLambda (wxString message, wxString caption, int style)
+#define OnErrFuncLambda (wxString message, wxString title, int style)
 
 template<typename Type>
 Type **init2d(uint16_t x, uint16_t y, OnErrFunc on_err);

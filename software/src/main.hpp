@@ -27,6 +27,7 @@ public:
   void OnMenuToolsWrite (wxCommandEvent &event);
   void OnMenuToolsVector(wxCommandEvent &event);
   void OnMenuToolsPort  (wxCommandEvent &event);
+  void OMTP_show_dialog(wxArrayString ports, wxString old_port);
 
   void OnMenuActionsHelp (wxCommandEvent &event);
   void OnMenuActionsAbout(wxCommandEvent &event);

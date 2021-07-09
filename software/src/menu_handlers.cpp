@@ -50,25 +50,7 @@ void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
-  // char **ports = (char **) malloc(sizeof(char *) * 256);
-
-  // if (ports == nullptr) {
-  //   error("Could not allocate memory.", "Memory Error", wxOK);
-  //   return;
-  // }
-
-  // for (uint16_t i = 0; i < 256; ++i) {
-  //   ports[i] = (char *) malloc(sizeof(char) * 17);
-
-  //   if (ports[i] == nullptr) {
-  //     error("Could not allocate memory.", "Memory Error", wxOK);
-  //     free2d((void **) ports, i);
-  //     return;
-  //   }
-  // }
-  // // Extract into util T init2d<T>(x, y, std::function<void(wxString, wxString, int)>)
-
-  auto **ports = init2d<char>(256, 17, [=]OnErrFuncLambda { error(message, caption, style); });
+  auto **ports = init2d<char>(256, 17, [=]OnErrFuncLambda { error(message, title, style); });
 
   int16_t num_ports = port_ctrl.list_ports(ports);
 
@@ -77,42 +59,39 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
     return;
   }
 
-  auto *chooser_box = new wxSingleChoiceDialog( // 1
-    (wxFrame *) nullptr, "Choose a port.", "Port",
-    wxArrayString(num_ports, (const char **) ports)
+  OMTP_show_dialog(wxArrayString(num_ports, (const char **) ports), port_ctrl.get_cur_port());
+
+  free2d((void **) ports, 256);
+}
+
+void MainFrame::OMTP_show_dialog(wxArrayString ports, wxString old_port) {
+  auto *chooser_box = new wxSingleChoiceDialog(
+    (wxFrame *) nullptr, "Choose a port.", "Port", ports
   );
 
   if (chooser_box->ShowModal() == wxID_OK) {
-    const char *old_port = port_ctrl.get_cur_port();
-    const char *old_label = (
-      port_ctrl.is_initialized() ?
-      wxString::Format("Port (%s)", old_port).ToUTF8().data() :
-      "Port"
-    );
+    wxString port_hint = (port_ctrl.is_initialized() ? " (" + old_port + ")." : "");
+    wxString old_label = "Port" + port_hint + "\tAlt-P";
 
-    char new_port[20];
-    strcpy(new_port, chooser_box->GetStringSelection().ToUTF8().data());
+    wxString new_port = chooser_box->GetStringSelection();
 
     int8_t res = port_ctrl.set_cur_port(new_port);
 
     if (res == 0) {
-      SetStatusText(wxString::Format("Successfully set port to %s.", new_port));
+      SetStatusText("Successfully set port to " + new_port + ".");
 
       menu_bar.get_menu_bar()->SetLabel(
         menu_bar.get_menu_bar()->FindMenuItem("Tools", old_label),
-        wxString::Format("Port (%s)", new_port)
+        "Port (" + new_port + ")\tAlt-P"
       );
     }
     else if (res == 1) {
-      error(wxString::Format("Error closing previous port (%s).", old_port), "Port Error", wxOK);
+      error("Error closing previous port (" + old_port + ").", "Port Error", wxOK);
     }
     else if (res == 2) {
-      error(wxString::Format("Error opening new port (%s).", new_port), "Port Error", wxOK);
+      error("Error opening new port (" + new_port + ").", "Port Error", wxOK);
     }
-  } // 2
-  // Extract into void MainFrame::OMTP_show_dialog(wxString old_port, wxString new_port)
-
-  free2d((void **) ports, 256);
+  }
 }
 
 void MainFrame::OnMenuActionsHelp(wxCommandEvent &WXUNUSED(event)) {
