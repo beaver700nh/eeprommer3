@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <tuple>
 
@@ -70,7 +71,7 @@ void MainFrame::OMTP_show_dialog(wxArrayString ports, wxString old_port) {
   );
 
   if (chooser_box->ShowModal() == wxID_OK) {
-    wxString port_hint = (port_ctrl.is_initialized() ? " (" + old_port + ")." : "");
+    wxString port_hint = (port_ctrl.is_initialized() ? " (" + old_port + ")" : "");
     wxString old_label = "Port" + port_hint + "\tAlt-P";
 
     wxString new_port = chooser_box->GetStringSelection();
