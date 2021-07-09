@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <tuple>
 
 #include "comm.hpp"
@@ -49,23 +50,25 @@ void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
-  char **ports = (char **) malloc(sizeof(char *) * 256); // 1
+  // char **ports = (char **) malloc(sizeof(char *) * 256);
 
-  if (ports == nullptr) {
-    error("Could not allocate memory.", "Memory Error", wxOK);
-    return;
-  }
+  // if (ports == nullptr) {
+  //   error("Could not allocate memory.", "Memory Error", wxOK);
+  //   return;
+  // }
 
-  for (uint16_t i = 0; i < 256; ++i) {
-    ports[i] = (char *) malloc(sizeof(char) * 17);
+  // for (uint16_t i = 0; i < 256; ++i) {
+  //   ports[i] = (char *) malloc(sizeof(char) * 17);
 
-    if (ports[i] == nullptr) {
-      error("Could not allocate memory.", "Memory Error", wxOK);
-      free2d((void **) ports, i);
-      return;
-    }
-  } // 2
-  // Extract into util T init2d<T>(x, y, std:function<void(wxString, wxString, int)>)
+  //   if (ports[i] == nullptr) {
+  //     error("Could not allocate memory.", "Memory Error", wxOK);
+  //     free2d((void **) ports, i);
+  //     return;
+  //   }
+  // }
+  // // Extract into util T init2d<T>(x, y, std::function<void(wxString, wxString, int)>)
+
+  auto **ports = init2d<char>(256, 17, [=]OnErrFuncLambda { error(message, caption, style); });
 
   int16_t num_ports = port_ctrl.list_ports(ports);
 

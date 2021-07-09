@@ -14,6 +14,7 @@ bool MainApp::OnInit() {
     wxDefaultPosition, win_size
   );
 
+  win->CenterOnScreen();
   win->Show(true);
   SetTopWindow(win);
 

@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cstdlib>
+#include <functional>
 
 #include "util.hpp"
 
