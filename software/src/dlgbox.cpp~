@@ -1,0 +1,9 @@
+#include "dlgbox.hpp"
+#include "wx_dep.hpp"
+
+namespace DlgBox {
+  void crash(wxString message, wxString title, int type)
+  void error(wxString message, wxString title, int type);
+  void warn (wxString message, wxString title, int type);
+  void info (wxString message, wxString title, int type);
+}

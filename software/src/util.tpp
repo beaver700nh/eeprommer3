@@ -5,7 +5,7 @@
 #include "util.hpp"
 
 template<typename Type>
-Type **init2d(uint16_t x, uint16_t y, OnErrFunc on_err) {
+Type **init2d(uint16_t x, uint16_t y, ON_ERR_FUNC on_err) {
   auto **out = (Type **) malloc(sizeof(Type *) * x);
 
   if (out == nullptr) {

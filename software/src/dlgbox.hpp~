@@ -1,0 +1,9 @@
+#ifndef DLGBOX_HPP
+#define DLGBOX_HPP
+
+namespace DlgBox {
+  void crash(wxString message, wxString title, int type);
+  void error(wxString message, wxString title, int type);
+  void warn (wxString message, wxString title, int type);
+  void info (wxString message, wxString title, int type);
+}

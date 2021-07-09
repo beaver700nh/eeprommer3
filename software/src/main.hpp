@@ -35,7 +35,6 @@ public:
   void OnMenuActionsQuit (wxCommandEvent &event);
 
   void crash(wxString message, wxString title, int type);
-  void error(wxString message, wxString title, int type);
 
   DECLARE_EVENT_TABLE()
 

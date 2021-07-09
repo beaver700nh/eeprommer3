@@ -5,6 +5,7 @@
 #include <libserialport.h>
 
 #include "comm.hpp"
+#include "dlgbox.hpp"
 
 sp_port_config *default_config;
 
@@ -57,19 +58,28 @@ int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {
     if (check_sp(sp_close(cur_port)) != SP_OK) {
       return 1;
     }
+
+    DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Closed old port.", wxOK);
   }
 
   sp_get_port_by_name(name, &cur_port);
+
+  DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Found new port.", wxOK);
 
   if (check_sp(sp_open(cur_port, SP_MODE_READ_WRITE)) != SP_OK) {
     return 2;
   }
 
+  DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Opened new port.", wxOK);
+
   if (check_sp(sp_set_config(cur_port, config)) != SP_OK) {
     return 3;
   }
 
+  DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Configurated new port.", wxOK);
+
   initialized = true;
+  DlgBox::info("Done!", "Done!", wxOK);
   return 0;
 }
 

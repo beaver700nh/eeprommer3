@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "comm.hpp"
+#include "dlgbox.hpp"
 #include "file.hpp"
 #include "info.hpp"
 #include "main.hpp"
@@ -51,12 +52,12 @@ void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
-  auto **ports = init2d<char>(256, 17, [=]OnErrFuncLambda { error(message, title, style); });
+  auto **ports = init2d<char>(256, 17, DlgBox::error);
 
   int16_t num_ports = port_ctrl.list_ports(ports);
 
   if (num_ports < 0) {
-    error("Error getting list of ports.", "Port Error", wxOK);
+    DlgBox::error("Error getting list of ports.", "Port Error", wxOK);
     return;
   }
 
@@ -87,10 +88,10 @@ void MainFrame::OMTP_show_dialog(wxArrayString ports, wxString old_port) {
       );
     }
     else if (res == 1) {
-      error("Error closing previous port (" + old_port + ").", "Port Error", wxOK);
+      DlgBox::error("Error closing previous port (" + old_port + ").", "Port Error", wxOK);
     }
     else if (res == 2) {
-      error("Error opening new port (" + new_port + ").", "Port Error", wxOK);
+      DlgBox::error("Error opening new port (" + new_port + ").", "Port Error", wxOK);
     }
   }
 }

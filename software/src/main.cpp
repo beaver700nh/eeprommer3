@@ -1,6 +1,7 @@
 #include <cstdio>
 
 #include "comm.hpp"
+#include "dlgbox.hpp"
 #include "main.hpp"
 #include "wx_dep.hpp"
 
@@ -40,12 +41,8 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 }
 
 void MainFrame::crash(wxString message, wxString title, int type) {
-  error(message, title, type);
+  DlgBox::error(message, "FATAL ERROR | " + title, type);
   Close(true);
-}
-
-void MainFrame::error(wxString message, wxString title, int type) {
-  wxMessageBox(message, title, type, this);
 }
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
