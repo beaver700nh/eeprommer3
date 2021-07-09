@@ -23,7 +23,7 @@ public:
   int8_t set_cur_port(const char *name, sp_port_config *config = default_config);
   const char *get_cur_port();
 
-  void test_write(const char *data);
+  int16_t test_write(const char *data);
 
 private:
   bool initialized = false;

@@ -58,28 +58,19 @@ int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {
     if (check_sp(sp_close(cur_port)) != SP_OK) {
       return 1;
     }
-
-    DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Closed old port.", wxOK);
   }
 
   sp_get_port_by_name(name, &cur_port);
-
-  DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Found new port.", wxOK);
 
   if (check_sp(sp_open(cur_port, SP_MODE_READ_WRITE)) != SP_OK) {
     return 2;
   }
 
-  DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Opened new port.", wxOK);
-
   if (check_sp(sp_set_config(cur_port, config)) != SP_OK) {
     return 3;
   }
 
-  DlgBox::info("qwertyuiopasdfghjklzxcvbnm", "Configurated new port.", wxOK);
-
   initialized = true;
-  DlgBox::info("Done!", "Done!", wxOK);
   return 0;
 }
 
@@ -92,22 +83,32 @@ const char *PortCtrl::get_cur_port() {
   }
 }
 
-void PortCtrl::test_write(const char *data) {
-  if (!initialized) return;
+int16_t PortCtrl::test_write(const char *data) {
+  if (!initialized) return 0;
 
   uint32_t size = strlen(data);
   int16_t result = check_sp(sp_blocking_write(cur_port, data, size, 1000));
 
   if (result < 100) {
     if (result == size) {
-      printf("Sent %d bytes successfully.\n", size);
+      DlgBox::info(
+        wxString::Format("Sent %d bytes successfully.", size), "Success", wxOK
+      );
+
+      return 0;
     }
     else {
-      printf("Timed out, sent %d/%d bytes.\n", result, size);
+      DlgBox::info(
+        wxString::Format("Timed out, sent %d/%d bytes.", result, size), "Timed Out", wxOK
+      );
+
+      return 1;
     }
   }
   else {
-    printf("Operation failed!\n");
+    DlgBox::error("Operation failed!", "Error", wxOK);
+
+    return result;
   }
 }
 
@@ -116,21 +117,21 @@ int16_t check_sp(sp_return status) {
 
   switch (status) {
   case SP_ERR_ARG:
-    printf("Serial Error: Invalid argument.\n");
+    DlgBox::error("Invalid argument", "Serial Error", wxOK);
     return 100;
 
   case SP_ERR_FAIL:
     error_message = sp_last_error_message();
-    printf("Serial Error: Failed: %s\n", error_message);
+    DlgBox::error(wxString::Format("Failed: %s", error_message), "Serial Error", wxOK);
     sp_free_error_message(error_message);
     return 101;
 
   case SP_ERR_SUPP:
-    printf("Serial Error: Operation not supported.\n");
+    DlgBox::error("Operation not supported", "Serial Error", wxOK);
     return 102;
 
   case SP_ERR_MEM:
-    printf("Serial Error: Couldn't allocate memory.\n");
+    DlgBox::error("Couldn't allocate Memory", "Serial Error", wxOK);
     return 103;
 
   case SP_OK:

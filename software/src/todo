@@ -1,5 +1,3 @@
 - add comments
-- better error/port handling
-  - fix close port glitch
 - test reading
 - actually implement this thing
