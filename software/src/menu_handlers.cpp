@@ -67,11 +67,14 @@ void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void MainFrame::OMTP_show_dialog(wxArrayString ports, wxString old_port) {
+  // Initialize a dialog
   auto *chooser_box = new wxSingleChoiceDialog(
     (wxFrame *) nullptr, "Choose a port.", "Port", ports
   );
 
+  // Show the dialog
   if (chooser_box->ShowModal() == wxID_OK) {
+    // User pressed [OK]
     wxString port_hint = (port_ctrl.is_initialized() ? " (" + old_port + ")" : "");
     wxString old_label = "Port" + port_hint + "\tAlt-P";
 
@@ -80,6 +83,7 @@ void MainFrame::OMTP_show_dialog(wxArrayString ports, wxString old_port) {
     int8_t res = port_ctrl.set_cur_port(new_port);
 
     if (res == 0) {
+      // Success
       SetStatusText("Successfully set port to " + new_port + ".");
 
       menu_bar.get_menu_bar()->SetLabel(
@@ -88,9 +92,11 @@ void MainFrame::OMTP_show_dialog(wxArrayString ports, wxString old_port) {
       );
     }
     else if (res == 1) {
+      // Closing error
       DlgBox::error("Error closing previous port (" + old_port + ").", "Port Error", wxOK);
     }
     else if (res == 2) {
+      // Opening error
       DlgBox::error("Error opening new port (" + new_port + ").", "Port Error", wxOK);
     }
   }
@@ -107,6 +113,7 @@ void MainFrame::OnMenuActionsAbout(wxCommandEvent &WXUNUSED(event)) {
 void MainFrame::OnMenuActionsClear(wxCommandEvent &WXUNUSED(event)) {
   hex_data.set_data(
     []SETDATA_LAMBDA {
+      // Set all cells to "??"
       return wxString("??");
     }
   );
