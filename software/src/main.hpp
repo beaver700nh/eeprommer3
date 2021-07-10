@@ -20,15 +20,20 @@ class MainFrame : public wxFrame {
 public:
   MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
 
+  // Menu event handlers
+
+  // [File] menu
   void OnMenuFileOpen  (wxCommandEvent &event);
   void OnMenuFileSave  (wxCommandEvent &event);
 
+  // [Tools] menu
   void OnMenuToolsRead  (wxCommandEvent &event);
   void OnMenuToolsWrite (wxCommandEvent &event);
   void OnMenuToolsVector(wxCommandEvent &event);
   void OnMenuToolsPort  (wxCommandEvent &event);
   void OMTP_show_dialog(wxArrayString ports, wxString old_port);
 
+  // [Actions] menu
   void OnMenuActionsHelp (wxCommandEvent &event);
   void OnMenuActionsAbout(wxCommandEvent &event);
   void OnMenuActionsClear(wxCommandEvent &event);

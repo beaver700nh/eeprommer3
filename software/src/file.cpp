@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "file.hpp"
+#include "util.hpp"
 #include "wx_dep.hpp"
 
 FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
@@ -17,6 +18,7 @@ FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
 
   hd.set_data(
     [&](uint8_t i, uint8_t j) -> wxString {
+      // Write the next byte from file
       char val = file.get();
       return (file.eof() ? "??" : wxString::Format("%02x", (uint8_t) val));
     }
@@ -43,12 +45,10 @@ FileIO_Status FileIO::save_file(wxString f, HexData &hd, wxFrame *parent) {
 
   if (temp == nullptr) return std::make_tuple(false, fname);
 
-  for (uint8_t i = 0; i < 16; ++i) {
-    for (uint8_t j = 0; j < 16; ++j) {
-      temp[(i << 4) | j] = arr[i][j];
-    }
-  }
+  // Flatten arr into temp
+  flatten_2d21d<uint8_t, 16, 16>(&arr, &temp, 4);
 
+  // Write temp into file
   std::ofstream file(fname);
   if (!file) return std::make_tuple(false, fname);
   file.write((char *) temp, count);

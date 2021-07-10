@@ -9,6 +9,7 @@ typedef enum sp_return sp_return;
 int16_t check_sp(sp_return status);
 void set_default_port_config();
 
+// Defined and configures in comm.cpp
 extern sp_port_config *default_config;
 
 class PortCtrl {

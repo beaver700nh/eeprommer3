@@ -24,6 +24,7 @@ bool MainApp::OnInit() {
 
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
   : wxFrame((wxFrame *) nullptr, wxID_ANY, title, pos, size) {
+  // Initialize the fonts
   normal_font = wxFont(10, wxMODERN, wxSLANT,  wxLIGHT, false, "", wxFONTENCODING_DEFAULT);
   header_font = wxFont(13, wxMODERN, wxNORMAL, wxBOLD,  false, "", wxFONTENCODING_DEFAULT);
 
@@ -38,6 +39,8 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   hex_data.setup_gui();
 
   set_default_port_config();
+
+  CenterOnScreen();
 }
 
 void MainFrame::crash(wxString message, wxString title, int type) {

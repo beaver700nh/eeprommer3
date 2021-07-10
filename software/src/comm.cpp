@@ -11,10 +11,10 @@ sp_port_config *default_config;
 
 void set_default_port_config() {
   check_sp(sp_new_config(&default_config));
-  check_sp(sp_set_config_baudrate   (default_config, 19200));
-  check_sp(sp_set_config_bits       (default_config, 8));
+  check_sp(sp_set_config_baudrate   (default_config, 19200)); // 19200 baud
+  check_sp(sp_set_config_bits       (default_config, 8));     // 8N1
   check_sp(sp_set_config_parity     (default_config, SP_PARITY_NONE));
-  check_sp(sp_set_config_stopbits   (default_config, 1));
+  check_sp(sp_set_config_stopbits   (default_config, 1));     // No flow control
   check_sp(sp_set_config_flowcontrol(default_config, SP_FLOWCONTROL_NONE));
 }
 
@@ -29,6 +29,7 @@ bool PortCtrl::is_initialized() {
 int16_t PortCtrl::list_ports(char **list) {
   sp_port **port_list;
 
+  // Get the ports
   sp_return result = sp_list_ports(&port_list);
 
   if (result != SP_OK) {
@@ -40,9 +41,11 @@ int16_t PortCtrl::list_ports(char **list) {
   while (port_list[i] != nullptr) {
     sp_port *port = port_list[i];
 
+    // Record the port name
     strcpy(list[i++], sp_get_port_name(port));
   }
 
+  // End the list
   list[i] = nullptr;
 
   sp_free_port_list(port_list);
@@ -55,17 +58,21 @@ int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {
   initialized = false;
 
   if (was_initialized) {
+    // Close old port only if there was one
     if (check_sp(sp_close(cur_port)) != SP_OK) {
       return 1;
     }
   }
 
+  // Get the new port
   sp_get_port_by_name(name, &cur_port);
 
+  // Open the new port
   if (check_sp(sp_open(cur_port, SP_MODE_READ_WRITE)) != SP_OK) {
     return 2;
   }
 
+  // Configure the new port
   if (check_sp(sp_set_config(cur_port, config)) != SP_OK) {
     return 3;
   }
@@ -76,6 +83,7 @@ int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {
 
 const char *PortCtrl::get_cur_port() {
   if (initialized) {
+    // Return port name if there is a port open
     return sp_get_port_name(cur_port);
   }
   else {
@@ -86,10 +94,11 @@ const char *PortCtrl::get_cur_port() {
 int16_t PortCtrl::test_write(const char *data) {
   if (!initialized) return 0;
 
+  // Write the data
   uint32_t size = strlen(data);
   int16_t result = check_sp(sp_blocking_write(cur_port, data, size, 1000));
 
-  if (result < 100) {
+  if (result < 100) { // >= 100 is an error code
     if (result == size) {
       DlgBox::info(
         wxString::Format("Sent %d bytes successfully.", size), "Success", wxOK
@@ -135,7 +144,7 @@ int16_t check_sp(sp_return status) {
     return 103;
 
   case SP_OK:
-  default:
+  default: // Data transfers return number of bytes sent as a status
     return status;
   }
 }

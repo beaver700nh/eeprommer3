@@ -34,7 +34,7 @@ void HexData::setup_headers() {
   wxStaticText *row_hdrs[16], *col_hdrs[16];
 
   for (int i = 0; i < 16; ++i) {
-    auto rhp = wxPoint(10, (i + 1) * cell_size.GetHeight());
+    auto rhp = wxPoint(10, (i + 1) * cell_size.GetHeight()); // location of row and col hdrs
     auto chp = wxPoint((i + 1) * cell_size.GetWidth() + 10, 0);
 
     row_hdrs[i] = new wxStaticText(panel, wxID_ANY, wxString::Format("%x0", i), rhp, cell_size);
@@ -62,6 +62,7 @@ void HexData::setup_data() {
 void HexData::set_data(wxString (*in)[16][16], uint16_t count) {
   for_each(
     [=]FOREACH_LAMBDA {
+      // Return if reached max count
       if (((i << 4) | j) >= (count - 1)) {
         return "return";
       }
@@ -86,6 +87,7 @@ void HexData::get_data(wxString (*out)[16][16]) {
 void HexData::set_data(uint8_t (*in)[16][16], uint16_t count) {
   for_each(
     [=]FOREACH_LAMBDA {
+      // Return if reached max count
       if (((i << 4) | j) >= (count - 1)) {
         return "return";
       }
@@ -104,10 +106,12 @@ uint16_t HexData::get_data(uint8_t (*out)[16][16]) {
     [&]FOREACH_LAMBDA {
       long temp;
 
+      // If the data can be converted to a number
       if (d->GetLabel().ToLong(&temp, 16)) {
         (*out)[i][j] = (uint8_t) temp;
       }
       else {
+        // Return the amount of data converted
         retval = (i << 4) | j;
         return "return";
       }
