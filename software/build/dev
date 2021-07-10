@@ -2,6 +2,6 @@
 
 make -j4 && make run
 
-if [[ "$1" -eq "clean" ]]; then
+if [ "$1" -eq "clean" ]; then
   make clean
 fi
