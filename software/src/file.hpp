@@ -12,8 +12,8 @@ typedef std::tuple<bool, wxString> FileIO_Status;
 
 class FileIO {
 public:
-  static FileIO_Status open_file(wxString f, HexData &hd, wxFrame *parent);
-  static FileIO_Status save_file(wxString f, HexData &hd, wxFrame *parent);
+  static FileIO_Status open_file(wxString f, HexData &hd);
+  static FileIO_Status save_file(wxString f, HexData &hd);
 };
 
 #endif

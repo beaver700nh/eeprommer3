@@ -1,4 +1,3 @@
-- replace parent with nullptr in file.cpp:6 and :31
 - add comments
 - test reading
 - actually implement this thing

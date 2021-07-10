@@ -14,7 +14,7 @@
 #include "wx_dep.hpp"
 
 void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
-  auto res = FileIO::open_file("file.bin", hex_data, this);
+  auto res = FileIO::open_file("file.bin", hex_data);
   auto fname = std::get<1>(res);
 
   if (std::get<0>(res)) {
@@ -26,7 +26,7 @@ void MainFrame::OnMenuFileOpen(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
-  auto res = FileIO::save_file("file.bin", hex_data, this);
+  auto res = FileIO::save_file("file.bin", hex_data);
   auto fname = std::get<1>(res);
 
   if (std::get<0>(res)) {

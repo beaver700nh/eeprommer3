@@ -1,15 +1,16 @@
 #include <cstdlib>
 #include <fstream>
 
+#include "dlgbox.hpp"
 #include "file.hpp"
 #include "util.hpp"
 #include "wx_dep.hpp"
 
-FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
-  auto fname = wxLoadFileSelector("Choose a file to open", FILE_WILDCARD, f, parent);
+FileIO_Status FileIO::open_file(wxString f, HexData &hd) {
+  auto fname = wxLoadFileSelector("Choose a file to open", FILE_WILDCARD, f);
 
   if (fname.empty()) {
-    wxMessageBox("Couldn't open file.", "Error", wxOK, parent);
+    DlgBox::error("Couldn't open file.", "File Error", wxOK);
     return std::make_tuple(false, f);
   }
 
@@ -30,11 +31,11 @@ FileIO_Status FileIO::open_file(wxString f, HexData &hd, wxFrame *parent) {
   return std::make_tuple(true, fname);
 }
 
-FileIO_Status FileIO::save_file(wxString f, HexData &hd, wxFrame *parent) {
-  auto fname = wxSaveFileSelector("Choose a file name to save as", FILE_WILDCARD, f, parent);
+FileIO_Status FileIO::save_file(wxString f, HexData &hd) {
+  auto fname = wxSaveFileSelector("Choose a file name to save as", FILE_WILDCARD, f);
 
   if (fname.empty()) {
-    wxMessageBox("Couldn't save file.", "Error", wxOK, parent);
+    DlgBox::error("Couldn't save file.", "File Error", wxOK);
     return std::make_tuple(false, f);
   }
 
