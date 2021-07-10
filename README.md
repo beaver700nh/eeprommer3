@@ -88,11 +88,7 @@ If you wish to be able to access the `eeprommer3` from your
 entire system, you may want to create a link to the executable:
 ```shell
 $ cd /usr/local/bin/
-<<<<<<< HEAD
-$ sudo ln <path to eeprommer3>/software/build/eeprommer3 eeprommer3
-=======
 $ sudo ln <path to eeprommer3>/build/binaries/<your OS>/<your architecture>/eeprommer3 eeprommer3
->>>>>>> 0f0b06cc194ef1df833e7b7dd489b7dc7f90d5af
 ```
 Or if you just downloaded the executable by itself:
 ```shell
