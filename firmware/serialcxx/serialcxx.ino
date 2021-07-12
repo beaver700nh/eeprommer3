@@ -38,12 +38,15 @@ Packet bufs[8];
 
 bool read_incoming(Packet *buf);
 void scroll_bufs(Packet (*bufs)[8]);
+void clear_bufs(Packet (*bufs)[8]);
 void update_tft(Packet (*bufs)[8]);
 
 void flush_serial_input();
 void flush_serial_input_until_end();
 
 void pckt_copy(Packet *to, Packet *from);
+
+void execute_cmd(Packet *pckt);
 
 void setup() {
   for (uint8_t i = 0; i < 8; ++i) {
@@ -61,10 +64,7 @@ void setup() {
   tft.setTextColor(WHITE);
   tft.setTextSize(3);
 
-  for (uint8_t i = 0; i < 8; ++i) {
-    sprintf(bufs[i].contents, "Buffer #%d.......", i);
-  }
-
+  clear_bufs(&bufs);
   update_tft(&bufs);
 
   Packet this_pckt;
@@ -75,6 +75,10 @@ void setup() {
         scroll_bufs(&bufs);
         pckt_copy(&(bufs[7]), &this_pckt);
         update_tft(&bufs);
+
+        if (this_pckt.type == PacketType::CMD) {
+          execute_cmd(&this_pckt);
+        }
       }
     }
   }
@@ -212,6 +216,16 @@ void scroll_bufs(Packet (*bufs)[8]) {
   }
 }
 
+void clear_bufs(Packet (*bufs)[8]) {
+  tft.fillScreen(BLACK);
+  tft.setCursor(0, 0);
+
+  for (uint8_t i = 0; i < 8; ++i) {
+    sprintf((*bufs)[i].contents, "Buffer #%d.......", i);
+    (*bufs)[i].type = PacketType::NONE;
+  }
+}
+
 void update_tft(Packet (*bufs)[8]) {
   tft.fillScreen(BLACK);
   tft.setCursor(0, 0);
@@ -262,6 +276,19 @@ void flush_serial_input_until_end() {
 void pckt_copy(Packet *to, Packet *from) {
   strcpy(to->contents, from->contents);
   to->type = from->type;
+}
+
+void execute_cmd(Packet *pckt) {
+  if (pckt->type != PacketType::CMD) return;
+
+  if (strncmp(pckt->contents, "clear", 5) == 0) {
+    clear_bufs(&bufs);
+    update_tft(&bufs);
+  }
+  else if (strncmp(pckt->contents, "parrot", 6) == 0) {
+    // TODO
+    Serial.print("TODO");
+  }
 }
 
 void loop() {}

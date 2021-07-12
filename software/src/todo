@@ -1,2 +1,4 @@
-- test reading
+- test reading - in progress
 - actually implement this thing
+- set_cur_port() only works if the port is different
+- add serialcxx 'parrot' commands

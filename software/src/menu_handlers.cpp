@@ -39,16 +39,30 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
 
 void MainFrame::OnMenuToolsRead(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Read\n");
+
+  char buf1[20], buf2[20];
+
+  port_ctrl.test_write(R"([[parrot]]<<foobar!!>>)");
+  port_ctrl.test_read(3, buf1);
+  port_ctrl.test_read("!", buf2);
+
+  DlgBox::info(
+    wxString::Format(
+      "buf1 [read(3)]:\t%s\nbuf2 [read(\"!\")]:\t%s",
+      buf1, buf2
+    ),
+    "Test result!!!", wxOK
+  );
 }
 
 void MainFrame::OnMenuToolsWrite(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Write\n");
+
+  port_ctrl.test_write(R"(abc<<i am data>>def[[im a cmd]]ghi<<<<\\\>\>>>jkl[[[[\\\]\]]])");
 }
 
 void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Vector\n");
-
-  port_ctrl.test_write(R"(abc<<i am data>>def[[im a cmd]]ghi<<<<\\\>\>>>jkl[[[[\\\]\]]])");
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {

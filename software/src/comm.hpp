@@ -25,6 +25,8 @@ public:
   const char *get_cur_port();
 
   int16_t test_write(const char *data);
+  int16_t test_read(uint16_t count, char *out);
+  int16_t test_read(const char *delim, char *out);
 
 private:
   bool initialized = false;

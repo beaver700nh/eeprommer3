@@ -121,6 +121,18 @@ int16_t PortCtrl::test_write(const char *data) {
   }
 }
 
+int16_t PortCtrl::test_read(uint16_t count, char *out) {
+  out[0] = '\0';
+
+  return 0;
+}
+
+int16_t PortCtrl::test_read(const char *delim, char *out) {
+  out[0] = '\0';
+
+  return 0;
+}
+
 int16_t check_sp(sp_return status) {
   char *error_message;
 
