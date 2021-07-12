@@ -286,8 +286,7 @@ void execute_cmd(Packet *pckt) {
     update_tft(&bufs);
   }
   else if (strncmp(pckt->contents, "parrot", 6) == 0) {
-    // TODO
-    Serial.print("TODO");
+    Serial.print(pckt->contents + 6);
   }
 }
 

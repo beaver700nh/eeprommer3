@@ -58,6 +58,11 @@ int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {
   initialized = false;
 
   if (was_initialized) {
+    // Do nothing if attempting to open already open port
+    if (strcmp(sp_get_port_name(cur_port), name) == 0) {
+      return 0;
+    }
+
     // Close old port only if there was one
     if (check_sp(sp_close(cur_port)) != SP_OK) {
       return 1;
@@ -122,9 +127,32 @@ int16_t PortCtrl::test_write(const char *data) {
 }
 
 int16_t PortCtrl::test_read(uint16_t count, char *out) {
-  out[0] = '\0';
+  if (!initialized) return 0;
 
-  return 0;
+  // Read the data
+  int16_t result = check_sp(sp_blocking_read(cur_port, out, count, 1000));
+
+  if (result < 100) { // >= 100 is an error code
+    if (result == count) {
+      DlgBox::info(
+        wxString::Format("Recieved %d bytes successfully.", count), "Success", wxOK
+      );
+
+      return 0;
+    }
+    else {
+      DlgBox::info(
+        wxString::Format("Timed out, recieved %d/%d bytes.", result, count), "Timed Out", wxOK
+      );
+
+      return 1;
+    }
+  }
+  else {
+    DlgBox::error("Operation failed!", "Error", wxOK);
+
+    return result;
+  }
 }
 
 int16_t PortCtrl::test_read(const char *delim, char *out) {
