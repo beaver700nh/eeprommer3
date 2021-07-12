@@ -9,6 +9,8 @@ enum {
   ID_VECTOR,
   ID_PORT,
   ID_HELP,
+  ID_TEST_READ,
+  ID_TEST_WRITE,
 };
 
 class MenuBar {
@@ -19,7 +21,7 @@ public:
 
 private:
   wxMenuBar *menu_bar;
-  wxMenu *file_menu, *tools_menu, *actions_menu;
+  wxMenu *file_menu, *tools_menu, *actions_menu, *debug_menu;
 };
 
 #endif

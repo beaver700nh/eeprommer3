@@ -96,6 +96,15 @@ const char *PortCtrl::get_cur_port() {
   }
 }
 
+int16_t PortCtrl::close_cur_port() {
+  if (initialized) {
+    return check_sp(sp_close(cur_port));
+  }
+  else {
+    return 0;
+  }
+}
+
 int16_t PortCtrl::test_write(const char *data) {
   if (!initialized) {
     DlgBox::error("Port is not open, can't communicate.", "Port Not Open", wxOK);

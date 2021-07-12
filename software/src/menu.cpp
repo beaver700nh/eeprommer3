@@ -26,10 +26,16 @@ MenuBar::MenuBar() {
   actions_menu->Append(wxID_CLEAR, "Clear\tAlt-C", "Clear the hex display.");
   actions_menu->Append(wxID_EXIT,  "Quit\tCtrl-Q", "Quit eeprommer3.");
 
+  // [Debug] menu
+  debug_menu = new wxMenu();
+  debug_menu->Append(ID_TEST_READ,  "Test Read\tAlt-Shift-R",  "Test reading using serialcxx.");
+  debug_menu->Append(ID_TEST_WRITE, "Test Write\tAlt-Shift-W", "Test writing using serialcxx.");
+
   // Put the menus into the menu bar
   menu_bar->Append(file_menu,    "File");
   menu_bar->Append(tools_menu,   "Tools");
   menu_bar->Append(actions_menu, "Actions");
+  menu_bar->Append(debug_menu,   "Debug");
 }
 
 wxMenuBar *MenuBar::get_menu_bar() {

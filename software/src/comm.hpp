@@ -9,7 +9,7 @@ typedef enum sp_return sp_return;
 int16_t check_sp(sp_return status);
 void set_default_port_config();
 
-// Defined and configures in comm.cpp
+// Defined and configured in comm.cpp
 extern sp_port_config *default_config;
 
 class PortCtrl {
@@ -23,6 +23,8 @@ public:
 
   int8_t set_cur_port(const char *name, sp_port_config *config = default_config);
   const char *get_cur_port();
+
+  int16_t close_cur_port();
 
   int16_t test_write(const char *data);
   int16_t test_read(uint16_t count, char *out);

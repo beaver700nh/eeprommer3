@@ -39,6 +39,10 @@ public:
   void OnMenuActionsClear(wxCommandEvent &event);
   void OnMenuActionsQuit (wxCommandEvent &event);
 
+  // [Debug] menu
+  void OnMenuDebugTestRead (wxCommandEvent &event);
+  void OnMenuDebugTestWrite(wxCommandEvent &event);
+
   void crash(wxString message, wxString title, int type);
 
   DECLARE_EVENT_TABLE()

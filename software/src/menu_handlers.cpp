@@ -38,34 +38,15 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void MainFrame::OnMenuToolsRead(wxCommandEvent &WXUNUSED(event)) {
-  printf("Tools > Read\n");
-
-  char buf1[20], buf2[20], buf3[20];
-
-  port_ctrl.test_write(R"([[parrotFOOBAR#!abcdef]])");
-  port_ctrl.test_read(3, buf1);
-  port_ctrl.test_read("#!", buf2);
-  port_ctrl.test_read(6, buf3); // intentionally overflows buffer
-
-  DlgBox::info(
-    wxString::Format(
-      "buf1:\t" "%s\n"
-      "buf2:\t" "%s\n"
-      "buf3:\t" "%s",
-      buf1, buf2, buf3
-    ),
-    "Test result!", wxOK
-  );
+  printf("You pressed: [Tools] > [Read]\n");
 }
 
 void MainFrame::OnMenuToolsWrite(wxCommandEvent &WXUNUSED(event)) {
-  printf("Tools > Write\n");
-
-  port_ctrl.test_write(R"(abc<<i am data>>def[[im a cmd]]ghi<<<<\\\>\>>>jkl[[[[\\\]\]]])");
+  printf("You pressed: [Tools] > [Write]\n");
 }
 
 void MainFrame::OnMenuToolsVector(wxCommandEvent &WXUNUSED(event)) {
-  printf("Tools > Vector\n");
+  printf("You pressed: [Tools] > [Vector]\n");
 }
 
 void MainFrame::OnMenuToolsPort(wxCommandEvent &WXUNUSED(event)) {
@@ -142,4 +123,31 @@ void MainFrame::OnMenuActionsQuit(wxCommandEvent &WXUNUSED(event)) {
   SetStatusText("Goodbye, world!");
 
   Close(true);
+}
+
+void MainFrame::OnMenuDebugTestRead(wxCommandEvent &WXUNUSED(event)) {
+  printf("Tools > Read\n");
+
+  char buf1[20], buf2[20], buf3[20];
+
+  port_ctrl.test_write(R"([[parrotFOOBAR#!abcdef]])");
+  port_ctrl.test_read(3, buf1);
+  port_ctrl.test_read("#!", buf2);
+  port_ctrl.test_read(6, buf3); // intentionally overflows buffer
+
+  DlgBox::info(
+    wxString::Format(
+      "buf1:\t" "%s\n"
+      "buf2:\t" "%s\n"
+      "buf3:\t" "%s",
+      buf1, buf2, buf3
+    ),
+    "Test result!", wxOK
+  );
+}
+
+void MainFrame::OnMenuDebugTestWrite(wxCommandEvent &WXUNUSED(event)) {
+  printf("Tools > Write\n");
+
+  port_ctrl.test_write(R"(abc<<i am data>>def[[im a cmd]]ghi<<<<\\\>\>>>jkl[[[[\\\]\]]])");
 }

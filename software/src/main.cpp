@@ -3,6 +3,7 @@
 #include "comm.hpp"
 #include "dlgbox.hpp"
 #include "main.hpp"
+#include "menu.hpp"
 #include "wx_dep.hpp"
 
 IMPLEMENT_APP(MainApp)
@@ -49,14 +50,16 @@ void MainFrame::crash(wxString message, wxString title, int type) {
 }
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
-EVT_MENU(wxID_OPEN,  MainFrame::OnMenuFileOpen)
-EVT_MENU(wxID_SAVE,  MainFrame::OnMenuFileSave)
-EVT_MENU(ID_READ,    MainFrame::OnMenuToolsRead)
-EVT_MENU(ID_WRITE,   MainFrame::OnMenuToolsWrite)
-EVT_MENU(ID_VECTOR,  MainFrame::OnMenuToolsVector)
-EVT_MENU(ID_PORT,    MainFrame::OnMenuToolsPort)
-EVT_MENU(ID_HELP,    MainFrame::OnMenuActionsHelp)
-EVT_MENU(wxID_ABOUT, MainFrame::OnMenuActionsAbout)
-EVT_MENU(wxID_CLEAR, MainFrame::OnMenuActionsClear)
-EVT_MENU(wxID_EXIT,  MainFrame::OnMenuActionsQuit)
+EVT_MENU(wxID_OPEN,     MainFrame::OnMenuFileOpen)
+EVT_MENU(wxID_SAVE,     MainFrame::OnMenuFileSave)
+EVT_MENU(ID_READ,       MainFrame::OnMenuToolsRead)
+EVT_MENU(ID_WRITE,      MainFrame::OnMenuToolsWrite)
+EVT_MENU(ID_VECTOR,     MainFrame::OnMenuToolsVector)
+EVT_MENU(ID_PORT,       MainFrame::OnMenuToolsPort)
+EVT_MENU(ID_HELP,       MainFrame::OnMenuActionsHelp)
+EVT_MENU(wxID_ABOUT,    MainFrame::OnMenuActionsAbout)
+EVT_MENU(wxID_CLEAR,    MainFrame::OnMenuActionsClear)
+EVT_MENU(wxID_EXIT,     MainFrame::OnMenuActionsQuit)
+EVT_MENU(ID_TEST_READ,  MainFrame::OnMenuDebugTestRead)
+EVT_MENU(ID_TEST_WRITE, MainFrame::OnMenuDebugTestWrite)
 END_EVENT_TABLE()
