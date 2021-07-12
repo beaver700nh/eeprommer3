@@ -40,18 +40,21 @@ void MainFrame::OnMenuFileSave(wxCommandEvent &WXUNUSED(event)) {
 void MainFrame::OnMenuToolsRead(wxCommandEvent &WXUNUSED(event)) {
   printf("Tools > Read\n");
 
-  char buf1[20], buf2[20];
+  char buf1[20], buf2[20], buf3[20];
 
-  port_ctrl.test_write(R"([[parrotFOOBAR#!]])");
+  port_ctrl.test_write(R"([[parrotFOOBAR#!abcdef]])");
   port_ctrl.test_read(3, buf1);
   port_ctrl.test_read("#!", buf2);
+  port_ctrl.test_read(6, buf3); // intentionally overflows buffer
 
   DlgBox::info(
     wxString::Format(
-      "buf1 [read(3)]:\t%s\nbuf2 [read(\"#!\")]:\t%s",
-      buf1, buf2
+      "buf1:\t" "%s\n"
+      "buf2:\t" "%s\n"
+      "buf3:\t" "%s",
+      buf1, buf2, buf3
     ),
-    "Test result!!!", wxOK
+    "Test result!", wxOK
   );
 }
 

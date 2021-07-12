@@ -11,7 +11,7 @@ sp_port_config *default_config;
 
 void set_default_port_config() {
   check_sp(sp_new_config(&default_config));
-  check_sp(sp_set_config_baudrate   (default_config, 19200)); // 19200 baud
+  check_sp(sp_set_config_baudrate   (default_config, 115200)); // 115200 baud
   check_sp(sp_set_config_bits       (default_config, 8));     // 8N1
   check_sp(sp_set_config_parity     (default_config, SP_PARITY_NONE));
   check_sp(sp_set_config_stopbits   (default_config, 1));     // No flow control
@@ -97,7 +97,10 @@ const char *PortCtrl::get_cur_port() {
 }
 
 int16_t PortCtrl::test_write(const char *data) {
-  if (!initialized) return 0;
+  if (!initialized) {
+    DlgBox::error("Port is not open, can't communicate.", "Port Not Open", wxOK);
+    return 0;
+  }
 
   // Write the data
   uint32_t size = strlen(data);
@@ -127,7 +130,10 @@ int16_t PortCtrl::test_write(const char *data) {
 }
 
 int16_t PortCtrl::test_read(uint16_t count, char *out) {
-  if (!initialized) return 0;
+  if (!initialized) {
+    DlgBox::error("Port is not open, can't communicate.", "Port Not Open", wxOK);
+    return 0;
+  }
 
   // Read the data
   int16_t result = check_sp(sp_blocking_read(cur_port, out, count, 1000));
@@ -145,6 +151,8 @@ int16_t PortCtrl::test_read(uint16_t count, char *out) {
         wxString::Format("Timed out, recieved %d/%d bytes.", result, count), "Timed Out", wxOK
       );
 
+      out[result] = '\0'; // Terminate string just in case
+
       return 1;
     }
   }
@@ -156,7 +164,49 @@ int16_t PortCtrl::test_read(uint16_t count, char *out) {
 }
 
 int16_t PortCtrl::test_read(const char *delim, char *out) {
-  out[0] = '\0';
+  if (!initialized) {
+    DlgBox::error("Port is not open, can't communicate.", "Port Not Open", wxOK);
+    return 0;
+  }
+
+  char ch;        // Byte to recieve into
+  uint16_t i = 0; // Index in input
+  uint8_t j = 0;  // Index in delim
+
+  while (true) {
+    int16_t result = check_sp(sp_blocking_read(cur_port, &ch, 1, 1000));
+
+    if (result < 100) { // >= 100 is an error code
+      if (result == 1) {
+        out[i++] = ch;
+
+        // Check if we found delim
+        if (ch == delim[j]) {
+          if (delim[++j] == '\0') {
+            // Success - reached end of delim
+            out[i] = '\0';
+            return 0;
+          }
+        }
+        else {
+          // Didn't find entire delim - reset delim index
+          j = 0;
+        }
+      }
+      else {
+        DlgBox::info("Timed out, failed to recieve a byte.", "Timed Out", wxOK);
+        out[i] = '\0';
+
+        return 1;
+      }
+    }
+    else {
+      DlgBox::error("Operation failed!", "Error", wxOK);
+      out[i] = '\0';
+
+      return result;
+    }
+  }
 
   return 0;
 }

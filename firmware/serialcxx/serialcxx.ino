@@ -42,7 +42,7 @@ void clear_bufs(Packet (*bufs)[8]);
 void update_tft(Packet (*bufs)[8]);
 
 void flush_serial_input();
-void flush_serial_input_until_end();
+void flush_serial_input_until_end(PacketState state);
 
 void pckt_copy(Packet *to, Packet *from);
 
@@ -55,7 +55,7 @@ void setup() {
 
   delay(1000);
 
-  Serial.begin(19200);
+  Serial.begin(115200);
 
   tft.reset();
   delay(1000);
@@ -89,15 +89,21 @@ bool read_incoming(Packet *buf) {
   static PacketType type = PacketType::WAITING;
 
   if (idx >= 16) {
+//    Serial.println("Length exceeded!");
+//    Serial.print("state:\t"); Serial.println((int) state, DEC);
+//    Serial.print("type:\t");  Serial.println((int) type,  DEC);
+
+    PacketState temp_state = state;
     state = PacketState::NONE;
-    PacketType temp = type;
+
+    PacketType temp_type = type;
     type = PacketType::NONE;
 
     buf->contents[16] = '\0';
     idx = 0;
-    buf->type = temp;
+    buf->type = temp_type;
 
-    flush_serial_input_until_end();
+    flush_serial_input_until_end(temp_state);
 
     return true;
   }
@@ -249,8 +255,8 @@ void flush_serial_input() {
   while (Serial.available() > 0) Serial.read();
 }
 
-void flush_serial_input_until_end() {
-  PacketState ps = PacketState::DATA;
+void flush_serial_input_until_end(PacketState state) {
+  PacketState ps = state;
 
   while (ps != PacketState::NONE) {
     while (Serial.available() <= 0); /* wait for character */
@@ -268,6 +274,19 @@ void flush_serial_input_until_end() {
       }
       else {
         ps = PacketState::DATA;
+      }
+    }
+    else if (ps == PacketState::CMD) {
+      if (c == (char) PacketMarker::CEA) {
+        ps = PacketState::CMD_END;
+      }
+    }
+    else if (ps == PacketState::CMD_END) {
+      if (c == (char) PacketMarker::CEB) {
+        ps = PacketState::NONE;
+      }
+      else {
+        ps = PacketState::CMD;
       }
     }
   }
