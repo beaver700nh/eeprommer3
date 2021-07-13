@@ -1,50 +1,35 @@
-#include <Elegoo_TFTLCD.h>
-
+#include <Arduino.h>
 #include "macros.hpp"
 
 #include "comm.hpp"
+#include "eeprom.hpp"
+#include "tft.hpp"
 
-#define WHITE   0xFFFF
-#define RED     0xF800
-#define YELLOW  0xFFE0
-#define GREEN   0x07E0
-#define CYAN    0x07FF
-#define BLUE    0x001F
-#define MAGENTA 0xF81F
-#define BLACK   0x0000
-
-Elegoo_TFTLCD tft(A3, A2, A1, A0, A4);
+TftCtrl tft(A3, A2, A1, A0, A4);
 
 void setup() {
   delay(1000);
 
   Serial.begin(115200);
 
-  tft.reset();
-  delay(1000);
-  tft.begin(0x9341);
-  tft.setRotation(3);
-  tft.setTextColor(WHITE);
-  tft.setTextSize(3);
+  tft.init(0x9341, 3, TftColor::WHITE, 3);
 
   Packet this_packet;
 
   while (true) {
     if (Serial.available() > 0) {
       if (read_packet(&this_packet)) {
-        uint16_t color = RED;
+        uint16_t color = TftColor::RED;
 
         switch (this_packet.type) {
-        case PacketType::NONE:    color = MAGENTA; break;
-        case PacketType::WAITING: color = YELLOW;  break;
-        case PacketType::DATA:    color = CYAN;    break;
-        case PacketType::CMD:     color = GREEN;   break;
+        case PacketType::NONE:    color = TftColor::MAGENTA; break;
+        case PacketType::WAITING: color = TftColor::YELLOW;  break;
+        case PacketType::DATA:    color = TftColor::CYAN;    break;
+        case PacketType::CMD:     color = TftColor::GREEN;   break;
         }
 
-        tft.fillScreen(BLACK);
-        tft.setCursor(0, 0);
-        tft.setTextColor(color);
-        tft.println(this_packet.contents);
+        tft.fillScreen(TftColor::BLACK);
+        tft.drawText(0, 0, this_packet.contents, color);
       }
     }
   }

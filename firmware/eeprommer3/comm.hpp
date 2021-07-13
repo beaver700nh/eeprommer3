@@ -2,7 +2,6 @@
 #define COMM_HPP
 
 #include <Arduino.h>
-
 #include "macros.hpp"
 
 enum class PacketState {

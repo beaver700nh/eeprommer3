@@ -1,5 +1,4 @@
 #include <Arduino.h>
-
 #include "macros.hpp"
 
 #include "comm.hpp"
