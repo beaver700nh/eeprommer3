@@ -2,7 +2,7 @@
 #define COMM_HPP
 
 #include <Arduino.h>
-#include "macros.hpp"
+#include "constants.hpp"
 
 enum class PacketState {
   NONE, ESCAPED,

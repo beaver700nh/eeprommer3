@@ -2,7 +2,7 @@
 #define TFT_HPP
 
 #include <Arduino.h>
-#include "macros.hpp"
+#include "constants.hpp"
 
 #include <Elegoo_TFTLCD.h>
 
@@ -27,9 +27,9 @@ public:
   TftCtrl() {};
   TftCtrl(uint8_t cs, uint8_t rs, uint8_t wr, uint8_t rd, uint8_t rst);
 
-  void init(uint16_t driver_id, uint8_t orientation, uint16_t text_color, uint8_t text_size);
+  void init(uint16_t driver_id, uint8_t orientation);
 
-  void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE);
+  void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size = 2);
 };
 
 #endif

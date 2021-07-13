@@ -2,7 +2,7 @@
 #define EEPROM_HPP
 
 #include <Arduino.h>
-#include "macros.hpp"
+#include "constants.hpp"
 
 class EepromAddrCtrl {
   

@@ -1,18 +1,31 @@
 #include <Arduino.h>
-#include "macros.hpp"
+#include "constants.hpp"
+
+#define MEGA_SOFT_SPI 1
+#include <SD.h>
 
 #include "comm.hpp"
 #include "eeprom.hpp"
+#include "sd.hpp"
 #include "tft.hpp"
 
 TftCtrl tft(A3, A2, A1, A0, A4);
+SdCtrl sd(10, A15);
 
 void setup() {
   delay(1000);
 
-  Serial.begin(115200);
+  tft.init(0x9341, 3);
+  tft.fillScreen(TftColor::BLACK);
 
-  tft.init(0x9341, 3, TftColor::WHITE, 3);
+  if (!sd.init()) {
+    tft.drawText(5, 216, "SD failed/disabled!", TftColor::ORANGE, 2);
+  }
+  else {
+    tft.drawText(5, 216, "SD successful!", TftColor::GREEN, 2);
+  }
+
+  Serial.begin(115200);
 
   Packet this_packet;
 
