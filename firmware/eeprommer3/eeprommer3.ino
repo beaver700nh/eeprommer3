@@ -1,9 +1,6 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#define MEGA_SOFT_SPI 1
-#include <SD.h>
-
 #include "comm.hpp"
 #include "eeprom.hpp"
 #include "sd.hpp"
@@ -18,11 +15,16 @@ void setup() {
   tft.init(0x9341, 3);
   tft.fillScreen(TftColor::BLACK);
 
-  if (!sd.init()) {
-    tft.drawText(5, 216, "SD failed/disabled!", TftColor::ORANGE, 2);
+  uint8_t res = sd.init();
+
+  if (res == 0) {
+    tft.drawText(5, 216, "SD has been initialized!", TftColor::GREEN, 2);
   }
-  else {
-    tft.drawText(5, 216, "SD successful!", TftColor::GREEN, 2);
+  else if (res == 1) {
+    tft.drawText(5, 216, "SD support was disabled!", TftColor::ORANGE, 2);
+  }
+  else if (res == 2) {
+    tft.drawText(5, 216, "SD failed to initialize!", TftColor::RED, 2);
   }
 
   Serial.begin(115200);
