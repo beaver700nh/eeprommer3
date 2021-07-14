@@ -5,6 +5,9 @@
 
 #include "tft.hpp"
 
+#include <stdlib.h>
+#include <string.h>
+
 TftCtrl::TftCtrl(uint8_t cs, uint8_t rs, uint8_t wr, uint8_t rd, uint8_t rst)
   : Elegoo_TFTLCD(cs, rs, wr, rd, rst) {
   // Empty

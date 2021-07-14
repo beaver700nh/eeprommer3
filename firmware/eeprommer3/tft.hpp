@@ -30,6 +30,7 @@ public:
   void init(uint16_t driver_id, uint8_t orientation);
 
   void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size = 2);
+  void drawText(const char *text);
 };
 
 #endif

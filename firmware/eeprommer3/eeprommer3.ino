@@ -12,6 +12,8 @@ SdCtrl sd(10, A15);
 void setup() {
   delay(1000);
 
+  Serial.begin(115200);
+
   tft.init(0x9341, 3);
   tft.fillScreen(TftColor::BLACK);
 
@@ -27,7 +29,18 @@ void setup() {
     tft.drawText(5, 216, "SD failed to initialize!", TftColor::RED, 2);
   }
 
-  Serial.begin(115200);
+  tft.setCursor(0, 0);
+  tft.setTextColor(TftColor::WHITE);
+  tft.setTextSize(1);
+
+  sd.print_files(
+    [&]PRINTER_LAMBDA {
+      for (uint8_t i = 0; i < n; ++i) {
+        tft.print(text);
+      }
+    },
+    "/", 3
+  );
 
   Packet this_packet;
 
