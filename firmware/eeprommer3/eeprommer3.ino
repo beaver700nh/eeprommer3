@@ -6,6 +6,8 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
+void mainloop();
+
 TftCtrl tft(A3, A2, A1, A0, A4);
 SdCtrl sd(10, A15);
 
@@ -20,28 +22,20 @@ void setup() {
   uint8_t res = sd.init();
 
   if (res == 0) {
-    tft.drawText(5, 216, "SD has been initialized!", TftColor::GREEN, 2);
+    tft.drawText(5, 216, "SD has been initialized!", TftColor::GREEN,  2);
   }
-  else if (res == 1) {
-    tft.drawText(5, 216, "SD support was disabled!", TftColor::ORANGE, 2);
-  }
-  else if (res == 2) {
-    tft.drawText(5, 216, "SD failed to initialize!", TftColor::RED, 2);
+  else {
+    if      (res == 1) tft.drawText(5, 216, "SD support was disabled!", TftColor::ORANGE,  2);
+    else if (res == 2) tft.drawText(5, 216, "SD failed to initialize!", TftColor::RED,     2);
+    else               tft.drawText(5, 216, "SD init -> bad err code!", TftColor::MAGENTA, 2);
+
+    while (true) { /* freeze */ }
   }
 
-  tft.setCursor(0, 0);
-  tft.setTextColor(TftColor::WHITE);
-  tft.setTextSize(1);
+  mainloop();
+}
 
-  sd.print_files(
-    [&]PRINTER_LAMBDA {
-      for (uint8_t i = 0; i < n; ++i) {
-        tft.print(text);
-      }
-    },
-    "/", 255
-  );
-
+void mainloop() {
   Packet this_packet;
 
   while (true) {
