@@ -39,7 +39,7 @@ void setup() {
         tft.print(text);
       }
     },
-    "/", 3
+    "/", 255
   );
 
   Packet this_packet;

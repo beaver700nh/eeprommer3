@@ -23,22 +23,11 @@ public:
 
     while ((file = root.openNextFile())) {
       printer("  ", ind);
-      Serial.println("Indenting...");
 
       if (file.isDirectory()) {
-        Serial.println("Found directory!");
-
         char buf[50];
         sprintf(buf, "%s {\n", file.name());
         printer(buf);
-
-        char debug_msg[100];
-        sprintf(
-          debug_msg,
-          "ind = %d, max_ind = %d; ind < max_ind: %s",
-          ind, max_ind, (ind < max_ind ? "TRUE" : "FALSE")
-        );
-        Serial.println(debug_msg);
 
         char full_path[100];
         sprintf(full_path, "%s%s/", dir, file.name());
@@ -49,13 +38,11 @@ public:
         printer("}\n");
       }
       else {
-        Serial.println("Found file!");
         char buf[50];
-        sprintf(buf, "%s%10lu\n", file.name(), file.size());
+        sprintf(buf, "%-12s%12lu\n", file.name(), file.size());
         printer(buf);
       }
 
-      Serial.println("Closing!");
       file.close();
     }
   }
