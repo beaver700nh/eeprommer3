@@ -32,13 +32,18 @@ public:
         sprintf(buf, "%s {\n", file.name());
         printer(buf);
 
-        Serial.print("Indentation ");
-        Serial.print(ind, DEC);
-        Serial.print(" vs ");
-        Serial.print(max_ind, DEC);
-        Serial.println(".");
+        char debug_msg[100];
+        sprintf(
+          debug_msg,
+          "ind = %d, max_ind = %d; ind < max_ind: %s",
+          ind, max_ind, (ind < max_ind ? "TRUE" : "FALSE")
+        );
+        Serial.println(debug_msg);
 
-        if (ind < max_ind) print_files(printer, file.name(), max_ind, ind + 1);
+        char full_path[100];
+        sprintf(full_path, "%s%s/", dir, file.name());
+
+        if (ind < max_ind) print_files(printer, full_path, max_ind, ind + 1);
 
         printer("  ", ind);
         printer("}\n");
