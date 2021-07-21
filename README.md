@@ -16,7 +16,7 @@ hardware/firmware side, though).
 
 **NOTE: Because I am developing on Linux ARM, the
 executable for your system might either not exist
-or be outdated. Thus you will have to compile the
+or be outdated. Thus you may have to compile the
 code by yourself. Apologies for the inconvenience.**
 
 ## Introduction
