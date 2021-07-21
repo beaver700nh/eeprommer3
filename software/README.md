@@ -9,8 +9,8 @@ The `src/` directory contains the source code of eeprommer3.
 Execution starts in `main.cpp`, which depends on the other files.
 
 ## Naming Scheme
-| File Extension | Description                                                   |
-| -------------- | ------------------------------------------------------------- |
-| `*.hpp`        | Contains declarations and prototypes                          |
-| `*.cpp`        | Contains source code and definitions                          |
-| `*.tpp`        | Contains template definitions, `#include`d from `*.hpp` files |
+| File Extension | Description                                                      |
+| -------------- | ---------------------------------------------------------------- |
+| `*.hpp`        | Contains declarations and prototypes                             |
+| `*.cpp`        | Contains source code and definitions                             |
+| `*.tpp`        | Contains template definitions; is `#include`d from `*.hpp` files |
