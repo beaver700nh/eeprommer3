@@ -20,5 +20,5 @@ other EEPROMs as well, such as the AT27Cxxx series or other EEPROMs in the
 AT28Cxxx series (e.g. AT28C16, AT28C64).
 
 The reason for fitting onto the right side of an Arduino Mega is that
-the rest of the space is intended for a 2.8x3.2" TFT LCD display. One can
+the rest of the space is intended for a 2.8" TFT LCD display. One can
 choose to use either this or the aforementioned 16x2 character LCD.
