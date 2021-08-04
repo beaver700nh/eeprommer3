@@ -1,6 +1,6 @@
-#ifndef MACROS_HPP
-#define MACROS_HPP
+#ifndef CONSTANTS_HPP
+#define CONSTANTS_HPP
 
-//#define DEBUG_MODE // Comment out to disable debug printing
+#define DEBUG_MODE // Comment out to disable debug printing
 
 #endif

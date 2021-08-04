@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include <SD.h>
+
 #include "sd.hpp"
 
 SdCtrl::SdCtrl(uint8_t cs, int8_t en) {

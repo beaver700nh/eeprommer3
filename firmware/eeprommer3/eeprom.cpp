@@ -3,8 +3,6 @@
 
 #include "eeprom.hpp"
 
-#include <stdlib.h>
-
 EepromAddrCtrl::EepromAddrCtrl(uint8_t data, uint8_t clk, uint8_t latch)
   : m_data(data), m_clk(clk), m_latch(latch) {
   // Empty

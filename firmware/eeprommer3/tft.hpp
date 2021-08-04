@@ -5,6 +5,7 @@
 #include "constants.hpp"
 
 #include <Elegoo_TFTLCD.h>
+#include <TouchScreen.h>
 
 namespace TftColor {
   enum : uint16_t {
@@ -32,5 +33,32 @@ public:
   void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size = 2);
   void drawText(const char *text);
 };
+
+class TftBtn {
+public:
+  TftBtn() {};
+  TftBtn(
+    uint8_t x, uint8_t y, uint8_t w, uint8_t h,
+    const char *text, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
+  );
+
+  void draw(TftCtrl &tft);
+  bool is_pressed(TouchScreen &ts);
+
+  TSPoint most_recent_press;
+
+private:
+  uint8_t m_x, m_y, m_w, m_h;
+  uint16_t m_fg, m_bg;
+
+  char m_text[21];
+};
+
+TSPoint map_point(TSPoint p);
+
+#ifdef DEBUG_MODE
+void tft_print_point(TSPoint p, TftCtrl &tft);
+void serial_print_point(TSPoint p);
+#endif
 
 #endif
