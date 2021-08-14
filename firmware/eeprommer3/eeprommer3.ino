@@ -13,9 +13,9 @@ void mainprog();
 
 void check_packet();
 
-TftCtrl tft(A3, A2, A1, A0, A4);
-SdCtrl sd(10, A15);
-TouchScreen ts(8, A3, A2, 9, 300);
+TftCtrl         tft(TFT_CS, TFT_RS, TFT_WR, TFT_RD, TFT_RESET);
+SdCtrl          sd(SD_CS, SD_EN);
+TouchscreenCtrl ts(TS_XP, TS_YP, TS_XM, TS_YM, TS_RESIST);
 
 bool using_sd = false;
 
@@ -24,7 +24,7 @@ void setup() {
 
   Serial.begin(115200);
 
-  tft.init(0x9341, 3);
+  tft.init(TFT_DRIVER, 3);
   tft.fillScreen(TftColor::BLACK);
 
   uint8_t res = sd.init();
@@ -42,34 +42,29 @@ void mainprog() {
   EepromCtrl ee;
 
   if (using_sd) {
-    constexpr uint8_t num_btns = 5;
+    TftMenu menu;
 
-    TftBtn btns[num_btns] = {
-      TftBtn(120, 0,   80, 20, "Hello1!"),
-      TftBtn(120, 25,  80, 20, "Hello2!"),
-      TftBtn(120, 50,  80, 20, "Hello3!"),
-      TftBtn(120, 75,  80, 20, "Hello4!"),
-      TftBtn(120, 100, 80, 20, "Hello5!"),
-    };
+    menu.add_btn(new TftBtn(10, 10, 100, 20, "Hello :)"));
+    menu.add_btn(new TftBtn(10, 30, 100, 20, "World :)"));
+
+//    TftBtn b(10, 10, 100, 20, "A BUTTON");
 
     while (true) {
-      bool got_press = false;
+//      b.draw(tft);
+//
+//      if (b.is_pressed(ts)) {
+//        tft.drawText(10, 50, "Press!", TftColor::PINKK, 3);
+//      }
 
-      for (uint8_t i = 0; i < num_btns; ++i) {
-        btns[i].draw(tft);
-      }
+      menu.draw(tft);
 
-      while (!got_press) {
-        for (uint8_t i = 0; i < num_btns; ++i) {
-          if (btns[i].is_pressed(ts)) {
-            serial_print_point(btns[i].most_recent_press);
-            got_press = true;
-            break;
-          }
-        }
-      }
+      uint8_t btn_pressed = menu.wait_any_btn_down(ts);
+      menu.wait_all_btn_up(ts);
 
-      tft.fillScreen(TftColor::MAGENTA);
+      char buf[50];
+      sprintf(buf, "Press: btn #%d", btn_pressed);
+
+      tft.drawText(10, 100, buf, TftColor::CYAN, 3);
 
       // draw btns to select settings
 

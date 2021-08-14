@@ -16,6 +16,7 @@ public:
 
   uint8_t init();
 
+#ifdef DEBUG_MODE
   // dir MUST end with a slash: e.g. "/foo/bar/" or "foo/bar/"
   template<typename Printer>
   void print_files(Printer printer, const char *dir, uint8_t max_ind, uint8_t ind = 0) {
@@ -47,6 +48,7 @@ public:
       file.close();
     }
   }
+#endif
 
 private:
   uint8_t m_cs;

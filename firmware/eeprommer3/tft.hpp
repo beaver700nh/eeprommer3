@@ -23,6 +23,13 @@ namespace TftColor {
   };
 };
 
+class TouchscreenCtrl : public TouchScreen {
+public:
+  TouchscreenCtrl(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym, uint16_t resist);
+
+  TSPoint getPoint();
+};
+
 class TftCtrl : public Elegoo_TFTLCD {
 public:
   TftCtrl() {};
@@ -43,15 +50,30 @@ public:
   );
 
   void draw(TftCtrl &tft);
-  bool is_pressed(TouchScreen &ts);
-
-  TSPoint most_recent_press;
+  bool is_pressed(TouchscreenCtrl &ts);
 
 private:
   uint8_t m_x, m_y, m_w, m_h;
   uint16_t m_fg, m_bg;
 
   char m_text[21];
+};
+
+class TftMenu {
+public:
+  TftMenu() {};
+
+  bool add_btn(TftBtn *btn);
+
+  void draw(TftCtrl &tft);
+  uint8_t is_pressed(TouchscreenCtrl &ts);
+
+  uint8_t wait_any_btn_down(TouchscreenCtrl &ts);
+  void wait_all_btn_up(TouchscreenCtrl &ts);
+
+private:
+  TftBtn **m_btns = nullptr;
+  uint8_t m_num_btns = 0;
 };
 
 TSPoint map_point(TSPoint p);

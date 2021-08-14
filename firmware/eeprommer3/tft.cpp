@@ -6,6 +6,19 @@
 
 #include "tft.hpp"
 
+TouchscreenCtrl::TouchscreenCtrl(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym, uint16_t resist)
+  : TouchScreen(xp, yp, xm, ym, resist) {
+  // Empty
+}
+
+TSPoint TouchscreenCtrl::getPoint() {
+  TSPoint p = TouchScreen::getPoint();
+  pinMode(TS_XM, OUTPUT);
+  pinMode(TS_YP, OUTPUT);
+
+  return p;
+}
+
 TftCtrl::TftCtrl(uint8_t cs, uint8_t rs, uint8_t wr, uint8_t rd, uint8_t rst)
   : Elegoo_TFTLCD(cs, rs, wr, rd, rst) {
   // Empty
@@ -37,9 +50,13 @@ void TftBtn::draw(TftCtrl &tft) {
   tft.drawText(m_x + 3, m_y + 3, m_text, m_fg);
 }
 
-bool TftBtn::is_pressed(TouchScreen &ts) {
+bool TftBtn::is_pressed(TouchscreenCtrl &ts) {
   TSPoint p = map_point(ts.getPoint());
 
+  // Pressure (z) is negligible or too high
+  // (something hit the screen hard or it's
+  // damaged and sends the wrong value),
+  // consider as not pressed
   if (10 > p.z || p.z > 1000) return false;
 
 #ifdef DEBUG_MODE
@@ -51,11 +68,55 @@ bool TftBtn::is_pressed(TouchScreen &ts) {
     m_x < p.x && p.x < (m_x + m_w) && \
     m_y < p.y && p.y < (m_y + m_h)
   ) {
-    most_recent_press = p;
     return true;
   }
 
   return false;
+}
+
+bool TftMenu::add_btn(TftBtn *btn) {
+  ++m_num_btns;
+
+  auto new_arr = (TftBtn **) malloc(m_num_btns * sizeof(TftBtn *));
+
+  if (new_arr == nullptr) {
+    return false;
+  }
+
+  memcpy(new_arr, m_btns, m_num_btns * sizeof(TftBtn *));
+  new_arr[m_num_btns - 1] = btn;
+
+  free(m_btns);
+
+  m_btns = new_arr;
+
+  return true;
+}
+
+void TftMenu::draw(TftCtrl &tft) {
+  for (uint8_t i = 0; i < m_num_btns; ++i) {
+    m_btns[i]->draw(tft);
+  }
+}
+
+uint8_t TftMenu::is_pressed(TouchscreenCtrl &ts) {
+  for (uint8_t i = 0; i < m_num_btns; ++i) {
+    if (m_btns[i]->is_pressed(ts)) return i + 1;
+  }
+
+  return 0;
+}
+
+uint8_t TftMenu::wait_any_btn_down(TouchscreenCtrl &ts) {
+  uint8_t btn = 0;
+
+  while ((btn = is_pressed(ts)) == 0) { /* wait for press */; }
+
+  return btn;
+}
+
+void TftMenu::wait_all_btn_up(TouchscreenCtrl &ts) {
+  while (is_pressed(ts) != 0) { /* wait for no press */; }
 }
 
 TSPoint map_point(TSPoint p) {
