@@ -27,7 +27,12 @@ class TouchscreenCtrl : public TouchScreen {
 public:
   TouchscreenCtrl(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym, uint16_t resist);
 
-  TSPoint getPoint();
+  TSPoint getPoint(bool raw);
+
+  static TSPoint mapPoint(TSPoint p, uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy);
+
+  static bool isValidPoint(TSPoint p, int16_t maxz = -1);
+  static bool isValidPressure(int16_t z, int16_t maxz = -1);
 };
 
 class TftCtrl : public Elegoo_TFTLCD {
@@ -75,8 +80,6 @@ private:
   TftBtn **m_btns = nullptr;
   uint8_t m_num_btns = 0;
 };
-
-TSPoint map_point(TSPoint p);
 
 #ifdef DEBUG_MODE
 void tft_print_point(TSPoint p, TftCtrl &tft);

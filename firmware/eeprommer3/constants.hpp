@@ -19,4 +19,11 @@
 #define TS_YM     9
 #define TS_RESIST 300
 
+#define TS_MIN_PRESSURE 10
+
+#define TS_CALIB_MINX 78
+#define TS_CALIB_MAXX 925
+#define TS_CALIB_MINY 72
+#define TS_CALIB_MAXY 905
+
 #endif

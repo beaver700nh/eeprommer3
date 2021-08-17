@@ -11,12 +11,54 @@ TouchscreenCtrl::TouchscreenCtrl(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym,
   // Empty
 }
 
-TSPoint TouchscreenCtrl::getPoint() {
+TSPoint TouchscreenCtrl::getPoint(bool raw) {
   TSPoint p = TouchScreen::getPoint();
   pinMode(TS_XM, OUTPUT);
   pinMode(TS_YP, OUTPUT);
 
-  return p;
+  return (raw ? p : mapPoint(p, TS_CALIB_MINX, TS_CALIB_MAXX, TS_CALIB_MINY, TS_CALIB_MAXY));
+}
+
+bool TouchscreenCtrl::isValidPoint(TSPoint p, int16_t maxz) {
+  return isValidPressure(p.z, maxz);
+}
+
+bool TouchscreenCtrl::isValidPressure(int16_t z, int16_t maxz) {
+  return TS_MIN_PRESSURE < z && (maxz < 0 ? true : z < maxz);
+}
+
+/* minx = 98; maxx = 905; miny = 84; maxy = 904 */
+/* this function was written specifically for my own TFT, */
+/* and it may not work for your TFT screen */
+/* feel free to fork and modify for your own needs */
+TSPoint TouchscreenCtrl::mapPoint(TSPoint p, uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy) {
+  int16_t x = map(p.y, miny, maxy, 0, 320);
+  int16_t y = map(p.x, minx, maxx, 0, 240);
+  int16_t z = p.z;
+
+#ifdef DEBUG_MODE
+  if (isValidPressure(p.z)) {
+    char buf[200];
+    Serial.println("=== POINT ===");
+    sprintf(buf, "RAW:    x = %d, y = %d, z = %d", p.x, p.y, p.z);
+    Serial.println(buf);
+    sprintf(buf, "MAPPED: x = %d, y = %d, z = %d", x, y, z);
+    Serial.println(buf);
+    Serial.println("=== END ===");
+  }
+#endif
+
+//  if (x <= 120) {
+//    y = map(y, 0, 240 - (-pow(x / 26.0, 2.8) + 130), 0, 240);
+//  }
+//  else if (x <= 140) {
+//    y = map(y, 0, 240 - (-2.4 * x + 349), 0, 240);
+//  }
+//  else if (x <= 188) {
+//    y = map(y, 0, 240 - (-0.25 * x + 47), 0, 240);
+//  }
+
+  return TSPoint(x, y, z);
 }
 
 TftCtrl::TftCtrl(uint8_t cs, uint8_t rs, uint8_t wr, uint8_t rd, uint8_t rst)
@@ -51,13 +93,9 @@ void TftBtn::draw(TftCtrl &tft) {
 }
 
 bool TftBtn::is_pressed(TouchscreenCtrl &ts) {
-  TSPoint p = map_point(ts.getPoint());
+  TSPoint p = ts.getPoint(false);
 
-  // Pressure (z) is negligible or too high
-  // (something hit the screen hard or it's
-  // damaged and sends the wrong value),
-  // consider as not pressed
-  if (10 > p.z || p.z > 1000) return false;
+  if (!ts.isValidPoint(p)) return false;
 
 #ifdef DEBUG_MODE
   Serial.println("is_pressed():");
@@ -119,27 +157,18 @@ void TftMenu::wait_all_btn_up(TouchscreenCtrl &ts) {
   while (is_pressed(ts) != 0) { /* wait for no press */; }
 }
 
-TSPoint map_point(TSPoint p) {
-  int16_t x, y, z;
-  x = map(p.y, 84, 904, 0, 320);
-  y = map(p.x, 98, 905, 0, 240);
-  z = p.z;
-
-  return TSPoint(x, y, z);
-}
-
 #ifdef DEBUG_MODE
 void tft_print_point(TSPoint p, TftCtrl &tft) {
   char buf[50];
   sprintf(buf, "x = %d, y = %d, z = %d", p.x, p.y, p.z);
-  
+
   tft.drawText(20, 120, buf, TftColor::PINKK, 2);
 }
 
 void serial_print_point(TSPoint p) {
   char buf[50];
   sprintf(buf, "x = %d, y = %d, z = %d", p.x, p.y, p.z);
-  
+
   Serial.println(buf);
 }
 #endif
