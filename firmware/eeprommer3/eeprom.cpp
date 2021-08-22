@@ -3,98 +3,63 @@
 
 #include "eeprom.hpp"
 
-EepromAddrCtrl::EepromAddrCtrl(uint8_t data, uint8_t clk, uint8_t latch)
-  : m_data(data), m_clk(clk), m_latch(latch) {
-  // Empty
-}
+void EepromCtrl::init(uint8_t addr_exp_0, uint8_t addr_exp_1) {
+  m_exp_0.begin_I2C(addr_exp_0);
+  m_exp_1.begin_I2C(addr_exp_1);
 
-void EepromAddrCtrl::init() {
-  pinMode(m_data,  OUTPUT);
-  pinMode(m_clk,   OUTPUT);
-  pinMode(m_latch, OUTPUT);
+  m_exp_1.pinMode(MCP_EE_WE, OUTPUT);
+  set_we(true);
 
-  digitalWrite(m_data,  LOW);
-  digitalWrite(m_clk,   LOW);
-  digitalWrite(m_latch, LOW);
-}
-
-void EepromAddrCtrl::shift(uint16_t data) {
-  shiftOut(m_data, m_clk, MSBFIRST, data >> 8);
-  shiftOut(m_data, m_clk, MSBFIRST, data & 0xFF);
-}
-
-void EepromAddrCtrl::update() {
-  digitalWrite(m_latch, HIGH);
-  delayMicroseconds(1);
-  digitalWrite(m_latch, LOW);
-}
-
-void EepromAddrCtrl::write(uint16_t data, bool oe) {
-  shift((data & ~0x80) | (oe ? 0x00 : 0x80));
-  update();
-}
-
-EepromDataCtrl::EepromDataCtrl(uint8_t pins[8]) {
-  memcpy(m_pins, pins, 8);
-}
-
-void EepromDataCtrl::init() {
-  set_ddr(OUTPUT);
-}
-
-void EepromDataCtrl::set_ddr(uint8_t dir) {
-  for (uint8_t i = 0; i < 8; ++i) {
-    pinMode(m_pins[i], dir);
+  for (uint8_t i = 0; i < 16; ++i) {
+    m_exp_0.pinMode(i, OUTPUT);
   }
 }
 
-uint8_t EepromDataCtrl::read() {
-  set_ddr(INPUT);
-
-  uint8_t res = 0;
-
-  for (uint8_t i = 0; i < 7; ++i) {
-    res = (res >> 1) | (digitalRead(m_pins[i]) == HIGH ? 0x80 : 0x00);
-  }
-
-  return res;
+void EepromCtrl::set_addr_and_oe(uint16_t addr_and_oe) {
+  m_exp_0.writeGPIO( addr_and_oe       & 0xFF, MCP_EE_ADDRL_PORT);
+  m_exp_0.writeGPIO((addr_and_oe >> 8) & 0xFF, MCP_EE_ADDRH_PORT);
 }
 
-void EepromDataCtrl::write(uint8_t data) {
-  set_ddr(OUTPUT);
+void EepromCtrl::set_data(uint8_t data) {
+  set_ddr(true);
+  m_exp_1.writeGPIO(data, MCP_EE_DATA_PORT);
+}
+
+uint8_t EepromCtrl::get_data() {
+  set_ddr(false);
+  return m_exp_1.readGPIO(MCP_EE_DATA_PORT);
+}
+
+void EepromCtrl::set_ddr(bool dir) {
+  uint8_t _dir = (dir ? OUTPUT : INPUT);
 
   for (uint8_t i = 0; i < 8; ++i) {
-    digitalWrite(m_pins[i], (data >> i) & 1);
+    m_exp_1.pinMode(MCP_EE_DATA(i), _dir);
   }
 }
 
-EepromCtrl::EepromCtrl(uint8_t we, EepromAddrCtrl eac, EepromDataCtrl edc)
-  : m_we(we), m_eac(eac), m_edc(edc) {
-  // Empty
+void EepromCtrl::set_we(bool we) {
+  m_exp_1.digitalWrite(MCP_EE_WE, (we ? HIGH : LOW));
 }
 
-void EepromCtrl::init() {
-  m_eac.init();
-  m_edc.init();
-
-  pinMode(m_we, OUTPUT);
-  digitalWrite(m_we, HIGH);
+void EepromCtrl::set_oe(bool oe) {
+  m_exp_0.digitalWrite(MCP_EE_OE, (oe ? HIGH : LOW));
 }
 
 uint8_t EepromCtrl::read(uint16_t addr) {
-  m_eac.write(addr, true);
+  set_addr_and_oe(addr | 0x80);
   delayMicroseconds(10);
-  uint8_t data = m_edc.read();
+  uint8_t data = get_data();
   delayMicroseconds(1);
   return data;
 }
 
 void EepromCtrl::write(uint16_t addr, uint8_t data) {
-  m_eac.write(addr, false);
-  m_edc.write(data);
+  set_addr_and_oe(addr & ~0x80);
+  set_data(data);
 
-  digitalWrite(m_we, LOW);
+  set_we(false);
   delayMicroseconds(10);
-  digitalWrite(m_we, HIGH);
+  set_we(true);
   delay(10);
 }

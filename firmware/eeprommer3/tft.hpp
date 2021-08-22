@@ -23,16 +23,29 @@ namespace TftColor {
   };
 };
 
+class TouchscreenCalibration {
+public:
+  TouchscreenCalibration(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, int16_t (*table)[9][9][2]);
+
+  TSPoint adc_data_to_tft_coords(TSPoint p, uint16_t tft_width, uint16_t tft_height, uint8_t fineness = 8);
+
+private:
+  uint16_t m_minx, m_maxx, m_miny, m_maxy;
+  int16_t (*m_table)[9][9][2];
+};
+
 class TouchscreenCtrl : public TouchScreen {
 public:
-  TouchscreenCtrl(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym, uint16_t resist);
+  TouchscreenCtrl(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym, uint16_t resist, TouchscreenCalibration &calib);
 
   TSPoint getPoint(bool raw);
-
-  static TSPoint mapPoint(TSPoint p, uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy);
+  TSPoint mapPoint(TSPoint p);
 
   static bool isValidPoint(TSPoint p, int16_t maxz = -1);
   static bool isValidPressure(int16_t z, int16_t maxz = -1);
+
+private:
+  TouchscreenCalibration &m_calib;
 };
 
 class TftCtrl : public Elegoo_TFTLCD {
