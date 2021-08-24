@@ -7,6 +7,17 @@
 #include <Elegoo_TFTLCD.h>
 #include <TouchScreen.h>
 
+#define SERIAL_PRINTF_BUF_SIZE 100
+
+static char serial_printf_buf[SERIAL_PRINTF_BUF_SIZE];
+
+#define serial_printf(fmt, ...) \
+  do { \
+    snprintf(serial_printf_buf, sizeof(serial_printf_buf), fmt, ##__VA_ARGS__); \
+    Serial.print(serial_printf_buf); \
+  } \
+  while (false)
+
 namespace TftColor {
   enum : uint16_t {
     WHITE   = 0xFFFF,
@@ -25,12 +36,11 @@ namespace TftColor {
 
 class TouchscreenCalibration {
 public:
-  TouchscreenCalibration(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, int16_t (*table)[9][9][2]);
+  TouchscreenCalibration(int16_t (*table)[9][9][2]);
 
-  TSPoint adc_data_to_tft_coords(TSPoint p, uint16_t tft_width, uint16_t tft_height, uint8_t fineness = 8);
+  TSPoint adc_data_to_tft_coords(TSPoint p, uint8_t fineness = 8);
 
 private:
-  uint16_t m_minx, m_maxx, m_miny, m_maxy;
   int16_t (*m_table)[9][9][2];
 };
 

@@ -14,6 +14,7 @@
 
 void mainprog();
 
+void launch_paint_test();
 void check_packet();
 
 TftCtrl tft(TFT_CS, TFT_RS, TFT_WR, TFT_RD, TFT_RESET);
@@ -23,7 +24,7 @@ int16_t calib_table[9][9][2] =
 #include "tft_calib_table.hpp"
 ;
 
-TouchscreenCalibration calib(TS_CALIB_MINX, TS_CALIB_MAXX, TS_CALIB_MINY, TS_CALIB_MAXY, &calib_table);
+TouchscreenCalibration calib(&calib_table);
 TouchscreenCtrl ts(TS_XP, TS_YP, TS_XM, TS_YM, TS_RESIST, calib);
 
 bool using_sd = false;
@@ -52,7 +53,9 @@ void setup() {
 void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
-#ifndef DEBUG_MODE
+#ifdef DEBUG_MODE
+  launch_paint_test();
+#endif
 
   EepromCtrl ee;
 
@@ -85,25 +88,6 @@ void mainprog() {
       check_packet();
     }
   }
-
-#else
-
-  pinMode(52, INPUT_PULLUP);
-  pinMode(53, INPUT_PULLUP);
-
-  while (true) {
-    if (digitalRead(52) == LOW) {
-      tft.fillScreen(TftColor::BLACK);
-    }
-
-    TSPoint p = ts.getPoint(false);
-
-    if (digitalRead(53) == HIGH && ts.isValidPoint(p)) {
-      tft.fillCircle(p.x, p.y, 3, TftColor::RED);
-    }
-  }
-
-#endif
 }
 
 void check_packet() {
@@ -121,6 +105,28 @@ void check_packet() {
 
     tft.fillScreen(TftColor::BLACK);
     tft.drawText(0, 0, this_packet.contents, color);
+  }
+}
+
+void launch_paint_test() {
+  pinMode(47, INPUT_PULLUP); // Clear
+  pinMode(48, INPUT_PULLUP); // Enable
+  pinMode(49, INPUT_PULLUP); // Quit
+
+  while (true) {
+    if (digitalRead(47) == LOW) {
+      tft.fillScreen(TftColor::BLACK);
+    }
+
+    TSPoint p = ts.getPoint(false);
+
+    if (digitalRead(48) == HIGH && ts.isValidPoint(p)) {
+      tft.fillCircle(p.x, p.y, 3, TftColor::RED);
+    }
+
+    if (digitalRead(49) == LOW) {
+      break;
+    }
   }
 }
 

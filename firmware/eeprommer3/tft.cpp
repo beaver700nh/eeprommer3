@@ -6,15 +6,15 @@
 
 #include "tft.hpp"
 
-TouchscreenCalibration::TouchscreenCalibration(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, int16_t (*table)[9][9][2])
-  : m_minx(minx), m_maxx(maxx), m_miny(miny), m_maxy(maxy), m_table(table) {
+TouchscreenCalibration::TouchscreenCalibration(int16_t (*table)[9][9][2])
+  : m_table(table) {
   // Empty
 }
 
 /* this function was written specifically for my own TFT, */
 /* and it may not work for your TFT screen */
 /* feel free to fork and modify for your own needs */
-TSPoint TouchscreenCalibration::adc_data_to_tft_coords(TSPoint p, uint16_t tft_width, uint16_t tft_height, uint8_t fineness) {
+TSPoint TouchscreenCalibration::adc_data_to_tft_coords(TSPoint p, uint8_t fineness) {
   // TEMPORARY
   if (!TouchscreenCtrl::isValidPoint(p)) return;
 
@@ -22,64 +22,45 @@ TSPoint TouchscreenCalibration::adc_data_to_tft_coords(TSPoint p, uint16_t tft_w
   const uint16_t CELL_HEIGHT = TFT_HEIGHT / fineness;
   int16_t ts_x = p.x, ts_y = p.y;
 
-  Serial.println("===== BEGIN =====");
-  char buf[100];
-  sprintf(buf, "Mapping point (%d, %d)...\n", ts_x, ts_y);
-  Serial.print(buf);
-  
-  ts_y = constrain(ts_y, (*m_table)[0][0][1], (*m_table)[0][fineness][1] - 1);
+  serial_printf("===== BEGIN =====\n");
+  serial_printf("Printing point to map...\n");
+  serial_print_point(p);
+
+  //ts_y = constrain(ts_y, (*m_table)[0][0][1], (*m_table)[0][fineness][1] - 1);
+  serial_printf("Constrained ts_y to range %d to %d\n", (*m_table)[0][0][1], (*m_table)[0][fineness][1] - 1);
+  serial_print_point(p);
 
   for (uint8_t tft_col = 0; tft_col < fineness; ++tft_col) {
     int16_t tft_x1 = (*m_table)[0][tft_col][1];
     int16_t tft_x2 = (*m_table)[0][tft_col + 1][1];
 
-    Serial.print("Searching column: ");
-    Serial.println(tft_col, DEC);
-    Serial.print("x region: ");
-    Serial.print(tft_x1, DEC);
-    Serial.print(" - ");
-    Serial.println(tft_x2, DEC);
+    serial_printf("Searching column %d: x = %d to %d\n", tft_col, tft_x1, tft_x2);
 
     if (tft_x1 <= ts_y && ts_y < tft_x2) {
-      Serial.print("Found column: ");
-      Serial.println(tft_col, DEC);
+      serial_printf("Found column: %d\n", tft_col);
 
-      ts_x = constrain(ts_x, (*m_table)[0][tft_col][0], (*m_table)[fineness][tft_col][0] - 1);
+      //ts_x = constrain(ts_x, (*m_table)[0][tft_col][0], (*m_table)[fineness][tft_col][0] - 1);
+
+      serial_printf("Constrained ts_x to range %d to %d\n", (*m_table)[0][tft_col][0], (*m_table)[fineness][tft_col][0] - 1);
+      serial_print_point(p);
 
       for (uint8_t tft_row = 0; tft_row < fineness; ++tft_row) {
         int16_t tft_y1 = (*m_table)[tft_row][tft_col][0];
         int16_t tft_y2 = (*m_table)[tft_row + 1][tft_col][0];
 
-        Serial.print("Searching row: ");
-        Serial.println(tft_row, DEC);
-        Serial.print("x region: ");
-        Serial.print(tft_y1, DEC);
-        Serial.print(" - ");
-        Serial.println(tft_y2, DEC);
+        serial_printf("Searching row %d: y = %d to %d\n", tft_row, tft_y1, tft_y2);
 
         if (tft_y1 <= ts_x && ts_x < tft_y2) {
-          Serial.print("Found row: ");
-          Serial.println(tft_row, DEC);
-
-          char buf[100];
-          sprintf(
-            buf,
-            "POINT {\n"
+          serial_printf("Found row: %d\n", tft_row);
+          serial_printf(
+            "POINT: {\n"
             "  raw:  %3d, %3d;\n"
             "  grid: %3d, %3d;\n"
-            "  rect {\n"
-            "    x1: %d;\n"
-            "    y1: %d;\n"
-            "    x2: %d;\n"
-            "    y2: %d;\n"
-            "  }\n"
+            "  rect: {x1: %d; x2: %d; y1: %d; y2: %d}\n"
             "}\n",
-            ts_x, ts_y,
-            tft_col, tft_row,
-            tft_x1, tft_y1, tft_x2, tft_y2
+            ts_x, ts_y, tft_col, tft_row,
+            tft_x1, tft_x2, tft_y1, tft_y2
           );
-
-          Serial.print(buf);
 
           ts_y = map(ts_y, tft_x1, tft_x2, tft_col * CELL_WIDTH,  (tft_col + 1) * CELL_WIDTH );
           ts_x = map(ts_x, tft_y1, tft_y2, tft_row * CELL_HEIGHT, (tft_row + 1) * CELL_HEIGHT);
@@ -87,12 +68,12 @@ TSPoint TouchscreenCalibration::adc_data_to_tft_coords(TSPoint p, uint16_t tft_w
           break;
         }
       }
-  
+
       break;
     }
   }
 
-  Serial.println("===== END =====\n\n");
+  serial_printf("===== END =====\n\n\n");
 
   return TSPoint(ts_y, ts_x, p.z);
 }
@@ -119,7 +100,7 @@ bool TouchscreenCtrl::isValidPressure(int16_t z, int16_t maxz) {
 }
 
 TSPoint TouchscreenCtrl::mapPoint(TSPoint p) {
-  return m_calib.adc_data_to_tft_coords(p, TFT_WIDTH, TFT_HEIGHT);
+  return m_calib.adc_data_to_tft_coords(p);
 }
 
 TftCtrl::TftCtrl(uint8_t cs, uint8_t rs, uint8_t wr, uint8_t rd, uint8_t rst)
@@ -209,13 +190,17 @@ uint8_t TftMenu::is_pressed(TouchscreenCtrl &ts) {
 uint8_t TftMenu::wait_any_btn_down(TouchscreenCtrl &ts) {
   uint8_t btn = 0;
 
-  while ((btn = is_pressed(ts)) == 0) { /* wait for press */; }
+  while ((btn = is_pressed(ts)) == 0) {
+    /* wait for press */;
+  }
 
   return btn;
 }
 
 void TftMenu::wait_all_btn_up(TouchscreenCtrl &ts) {
-  while (is_pressed(ts) != 0) { /* wait for no press */; }
+  while (is_pressed(ts) != 0) {
+    /* wait for no press */;
+  }
 }
 
 #ifdef DEBUG_MODE
