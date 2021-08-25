@@ -5,7 +5,8 @@
 #include "constants.hpp"
 
 #include <Elegoo_TFTLCD.h>
-#include <TouchScreen.h>
+
+#include "input.hpp"
 
 #define SERIAL_PRINTF_BUF_SIZE 100
 
@@ -34,30 +35,6 @@ namespace TftColor {
   };
 };
 
-class TouchscreenCalibration {
-public:
-  TouchscreenCalibration(int16_t (*table)[9][9][2]);
-
-  TSPoint adc_data_to_tft_coords(TSPoint p, uint8_t fineness = 8);
-
-private:
-  int16_t (*m_table)[9][9][2];
-};
-
-class TouchscreenCtrl : public TouchScreen {
-public:
-  TouchscreenCtrl(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym, uint16_t resist, TouchscreenCalibration &calib);
-
-  TSPoint getPoint(bool raw);
-  TSPoint mapPoint(TSPoint p);
-
-  static bool isValidPoint(TSPoint p, int16_t maxz = -1);
-  static bool isValidPressure(int16_t z, int16_t maxz = -1);
-
-private:
-  TouchscreenCalibration &m_calib;
-};
-
 class TftCtrl : public Elegoo_TFTLCD {
 public:
   TftCtrl() {};
@@ -78,11 +55,15 @@ public:
   );
 
   void draw(TftCtrl &tft);
-  bool is_pressed(TouchscreenCtrl &ts);
+
+  void highlight(bool highlight);
+  bool is_highlighted();
 
 private:
   uint8_t m_x, m_y, m_w, m_h;
   uint16_t m_fg, m_bg;
+
+  bool m_is_highlighted = false;
 
   char m_text[21];
 };
@@ -92,21 +73,16 @@ public:
   TftMenu() {};
 
   bool add_btn(TftBtn *btn);
+  uint8_t get_num_btns();
 
   void draw(TftCtrl &tft);
-  uint8_t is_pressed(TouchscreenCtrl &ts);
 
-  uint8_t wait_any_btn_down(TouchscreenCtrl &ts);
-  void wait_all_btn_up(TouchscreenCtrl &ts);
+  uint8_t is_pressed(JoystickCtrl &jst);
+  uint8_t wait_for_press(JoystickCtrl &jst, TftCtrl &tft);
 
 private:
   TftBtn **m_btns = nullptr;
   uint8_t m_num_btns = 0;
 };
-
-#ifdef DEBUG_MODE
-void tft_print_point(TSPoint p, TftCtrl &tft);
-void serial_print_point(TSPoint p);
-#endif
 
 #endif

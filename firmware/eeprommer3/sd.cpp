@@ -38,3 +38,7 @@ uint8_t SdCtrl::init() {
     return 0;
   }
 }
+
+bool SdCtrl::is_enabled() {
+  return m_enabled;
+}

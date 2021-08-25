@@ -14,20 +14,11 @@
 
 void mainprog();
 
-void launch_paint_test();
 void check_packet();
 
 TftCtrl tft(TFT_CS, TFT_RS, TFT_WR, TFT_RD, TFT_RESET);
+JoystickCtrl jst(JST_X_AXIS, JST_Y_AXIS, JST_BUTTON);
 SdCtrl sd(SD_CS, SD_EN);
-
-int16_t calib_table[9][9][2] =
-#include "tft_calib_table.hpp"
-;
-
-TouchscreenCalibration calib(&calib_table);
-TouchscreenCtrl ts(TS_XP, TS_YP, TS_XM, TS_YM, TS_RESIST, calib);
-
-bool using_sd = false;
 
 void setup() {
   delay(1000);
@@ -37,8 +28,9 @@ void setup() {
   tft.init(TFT_DRIVER, 3);
   tft.fillScreen(TftColor::BLACK);
 
+  jst.init();
+
   uint8_t res = sd.init();
-  using_sd = (res == 0);
 
   if      (res == 0) tft.drawText(5, 216, "SD has been initialized!", TftColor::GREEN,   2);
   else if (res == 1) tft.drawText(5, 216, "SD support was disabled!", TftColor::ORANGE,  2);
@@ -53,13 +45,9 @@ void setup() {
 void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
-#ifdef DEBUG_MODE
-  launch_paint_test();
-#endif
-
   EepromCtrl ee;
 
-  if (using_sd) {
+  if (sd.is_enabled()) {
     TftMenu menu;
 
     menu.add_btn(new TftBtn(10, 10, 100, 20, "Hello :)"));
@@ -68,8 +56,7 @@ void mainprog() {
     while (true) {
       menu.draw(tft);
 
-      uint8_t btn_pressed = menu.wait_any_btn_down(ts);
-      menu.wait_all_btn_up(ts);
+      uint8_t btn_pressed = menu.wait_for_press(jst, tft);
 
       tft.fillScreen(TftColor::BLACK);
 
@@ -77,10 +64,6 @@ void mainprog() {
       sprintf(buf, "Press: btn #%d", btn_pressed);
 
       tft.drawText(10, 100, buf, TftColor::CYAN, 3);
-
-      // draw btns to select settings
-
-      // prog.<action>();
     }
   }
   else {
@@ -105,28 +88,6 @@ void check_packet() {
 
     tft.fillScreen(TftColor::BLACK);
     tft.drawText(0, 0, this_packet.contents, color);
-  }
-}
-
-void launch_paint_test() {
-  pinMode(47, INPUT_PULLUP); // Clear
-  pinMode(48, INPUT_PULLUP); // Enable
-  pinMode(49, INPUT_PULLUP); // Quit
-
-  while (true) {
-    if (digitalRead(47) == LOW) {
-      tft.fillScreen(TftColor::BLACK);
-    }
-
-    TSPoint p = ts.getPoint(false);
-
-    if (digitalRead(48) == HIGH && ts.isValidPoint(p)) {
-      tft.fillCircle(p.x, p.y, 3, TftColor::RED);
-    }
-
-    if (digitalRead(49) == LOW) {
-      break;
-    }
   }
 }
 

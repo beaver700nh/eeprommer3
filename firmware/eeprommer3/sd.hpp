@@ -16,6 +16,8 @@ public:
 
   uint8_t init();
 
+  bool is_enabled();
+
 #ifdef DEBUG_MODE
   // dir MUST end with a slash: e.g. "/foo/bar/" or "foo/bar/"
   template<typename Printer>

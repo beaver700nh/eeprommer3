@@ -16,18 +16,10 @@
 #define TFT_WIDTH  320
 #define TFT_HEIGHT 240
 
-#define TS_XP     8
-#define TS_XM     A2
-#define TS_YP     A3
-#define TS_YM     9
-#define TS_RESIST 300
-
-#define TS_MIN_PRESSURE 10
-
-#define TS_CALIB_MINX 78
-#define TS_CALIB_MAXX 925
-#define TS_CALIB_MINY 72
-#define TS_CALIB_MAXY 905
+#define JST_X_AXIS A12
+#define JST_Y_AXIS A13
+#define JST_BUTTON 46
+#define JST_SPEED  5
 
 #define MCP_GPA(n) (n)
 #define MCP_GPB(n) (8 + (n))
