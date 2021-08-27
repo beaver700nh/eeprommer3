@@ -23,8 +23,28 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
-TftBtn::TftBtn(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const char *text, uint16_t fg, uint16_t bg)
+TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
   : m_x(x), m_y(y), m_w(w), m_h(h), m_fg(fg), m_bg(bg) {
+  strncpy(m_text, text, 20);
+}
+
+uint16_t TftBtn::get_x()           { return m_x; }
+void     TftBtn::set_x(uint16_t x) { m_x = x;    }
+uint16_t TftBtn::get_y()           { return m_y; }
+void     TftBtn::set_y(uint16_t y) { m_y = y;    }
+
+uint16_t TftBtn::get_w()           { return m_w; }
+void     TftBtn::set_w(uint16_t w) { m_w = w;    }
+uint16_t TftBtn::get_h()           { return m_h; }
+void     TftBtn::set_h(uint16_t h) { m_h = h;    }
+
+uint16_t TftBtn::get_fg()            { return m_fg; }
+void     TftBtn::set_fg(uint16_t fg) { m_fg = fg;   }
+uint16_t TftBtn::get_bg()            { return m_bg; }
+void     TftBtn::set_bg(uint16_t bg) { m_bg = bg;   }
+
+const char *TftBtn::get_text() { return m_text; }
+void        TftBtn::set_text(const char *text) {
   strncpy(m_text, text, 20);
 }
 
@@ -82,30 +102,42 @@ bool TftMenu::add_btn(TftBtn *btn) {
   return true;
 }
 
+void TftMenu::set_btn(uint8_t btn_idx, TftBtn *btn) {
+  delete m_btns[btn_idx];
+  m_btns[btn_idx] = btn;
+}
+
+TftBtn *TftMenu::get_btn(uint8_t btn_idx) {
+  return m_btns[btn_idx];
+}
+
 uint8_t TftMenu::get_num_btns() {
   return m_num_btns;
 }
 
 void TftMenu::draw(TftCtrl &tft) {
-  if (!m_btns[0]->is_highlighted()) {
-    m_btns[0]->highlight(true);
-  }
-
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     m_btns[i]->draw(tft);
   }
 }
 
-uint8_t TftMenu::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
-  (void) tch;
-  (void) tft;
+uint8_t TftMenu::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
+  uint8_t btn = 0;
 
-  return false;
+  do {
+    btn = is_pressed(tch, tft);
+  }
+  while (!btn);
+
+  return btn;
 }
 
-uint8_t TftMenu::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
-  (void) tch;
-  (void) tft;
+uint8_t TftMenu::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
+  for (uint8_t i = 0; i < m_num_btns; ++i) {
+    if (m_btns[i]->is_pressed(tch, tft)) {
+      return i + 1;
+    }
+  }
 
-  return false;
+  return 0;
 }

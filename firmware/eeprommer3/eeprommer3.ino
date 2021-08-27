@@ -44,25 +44,44 @@ void setup() {
 void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
+  while (true) {
+    TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
+
+    if (TouchCtrl::is_valid_pressure(p.z)) {
+      tft.fillCircle(p.x, p.y, 3, TftColor::RED);
+    }
+  }
+
   EepromCtrl ee;
 
   if (sd.is_enabled()) {
     TftMenu menu;
 
+    TftBtn *btn1 = new TftBtn(10, 70, 100, 20, "BLAH - 1");
+    TftBtn *btn2 = new TftBtn(10, 70, 100, 20, "BLAH - 2");
+
     menu.add_btn(new TftBtn(10, 10, 100, 20, "Hello :)"));
     menu.add_btn(new TftBtn(10, 40, 100, 20, "World :)"));
+    menu.add_btn(btn1);
 
     while (true) {
       menu.draw(tft);
 
-//      uint8_t btn_pressed = menu.wait_for_press(jst, tft);
-//
-//      tft.fillScreen(TftColor::BLACK);
-//
-//      char buf[50];
-//      sprintf(buf, "Press: btn #%d", btn_pressed);
-//
-//      tft.drawText(10, 100, buf, TftColor::CYAN, 3);
+      uint8_t btn_pressed = menu.wait_for_press(tch, tft);
+
+      tft.fillScreen(TftColor::BLACK);
+
+      if (btn_pressed == 1) {
+        menu.set_btn(2, btn1);
+      }
+      else if (btn_pressed == 2) {
+        menu.set_btn(2, btn2);
+      }
+
+      char buf[50];
+      sprintf(buf, "Press: '%s'", menu.get_btn(2)->get_text());
+
+      tft.drawText(10, 140, buf, TftColor::CYAN, 3);
     }
   }
   else {

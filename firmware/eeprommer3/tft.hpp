@@ -51,9 +51,27 @@ class TftBtn {
 public:
   TftBtn() {};
   TftBtn(
-    uint8_t x, uint8_t y, uint8_t w, uint8_t h,
+    uint16_t x, uint16_t y, uint16_t w, uint16_t h,
     const char *text, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
+
+  uint16_t get_x();
+  void     set_x(uint16_t x);
+  uint16_t get_y();
+  void     set_y(uint16_t y);
+
+  uint16_t get_w();
+  void     set_w(uint16_t w);
+  uint16_t get_h();
+  void     set_h(uint16_t h);
+
+  uint16_t get_fg();
+  void     set_fg(uint16_t fg);
+  uint16_t get_bg();
+  void     set_bg(uint16_t bg);
+
+  const char *get_text();
+  void        set_text(const char *text);
 
   void draw(TftCtrl &tft);
 
@@ -64,7 +82,7 @@ public:
   bool is_pressed(TouchCtrl &tch, TftCtrl &tft);
 
 private:
-  uint8_t m_x, m_y, m_w, m_h;
+  uint16_t m_x, m_y, m_w, m_h;
   uint16_t m_fg, m_bg;
 
   bool m_is_highlighted = false;
@@ -77,6 +95,9 @@ public:
   TftMenu() {};
 
   bool add_btn(TftBtn *btn);
+  void set_btn(uint8_t btn_idx, TftBtn *btn);
+  TftBtn *get_btn(uint8_t btn_idx);
+
   uint8_t get_num_btns();
 
   void draw(TftCtrl &tft);
