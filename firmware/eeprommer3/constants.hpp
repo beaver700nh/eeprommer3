@@ -3,23 +3,26 @@
 
 #define DEBUG_MODE // Comment out to disable debug printing
 
+#define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
+
 #define SD_CS 10
 #define SD_EN A15
 
-#define TFT_CS     A3
-#define TFT_RS     A2
-#define TFT_WR     A1
-#define TFT_RD     A0
-#define TFT_RESET  A4
-#define TFT_DRIVER 0x9341
+#define TFT_DRIVER 0x9486
 
-#define TFT_WIDTH  320
-#define TFT_HEIGHT 240
+#define TFT_WIDTH  480
+#define TFT_HEIGHT 320
 
-#define JST_X_AXIS A12
-#define JST_Y_AXIS A13
-#define JST_BUTTON 46
-#define JST_SPEED  5
+#define TS_XP     8
+#define TS_XM     A2
+#define TS_YP     A3
+#define TS_YM     9
+#define TS_RESIST 300
+
+#define TS_MINX 913
+#define TS_MAXX 131
+#define TS_MINY 934
+#define TS_MAXY 90
 
 #define MCP_GPA(n) (n)
 #define MCP_GPB(n) (8 + (n))

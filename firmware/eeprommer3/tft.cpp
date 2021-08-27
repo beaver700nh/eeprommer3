@@ -1,15 +1,11 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <Elegoo_TFTLCD.h>
+#include <MCUFRIEND_kbv.h>
+#include <TouchScreen.h>
 
 #include "tft.hpp"
 #include "input.hpp"
-
-TftCtrl::TftCtrl(uint8_t cs, uint8_t rs, uint8_t wr, uint8_t rd, uint8_t rst)
-  : Elegoo_TFTLCD(cs, rs, wr, rd, rst) {
-  // Empty
-}
 
 void TftCtrl::init(uint16_t driver_id, uint8_t orientation) {
   reset();
@@ -51,6 +47,22 @@ bool TftBtn::is_highlighted() {
   return m_is_highlighted;
 }
 
+void TftBtn::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
+  while (!is_pressed(tch, tft)) {
+    /* wait for press */;
+  }
+}
+
+bool TftBtn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
+  TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
+
+  return (
+    tch.is_valid_pressure(p.z) &&
+    IN_RANGE(p.x, m_x, m_x + m_w) &&
+    IN_RANGE(p.y, m_y, m_y + m_h)
+  );
+}
+
 bool TftMenu::add_btn(TftBtn *btn) {
   ++m_num_btns;
 
@@ -84,31 +96,16 @@ void TftMenu::draw(TftCtrl &tft) {
   }
 }
 
-uint8_t TftMenu::is_pressed(JoystickCtrl &jst) {
-  jst.poll(m_num_btns);
+uint8_t TftMenu::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
+  (void) tch;
+  (void) tft;
 
-  if (jst.is_pressed()) {
-    return jst.get_cur_btn() + 1;
-  }
-  else {
-    return 0;
-  }
+  return false;
 }
 
-uint8_t TftMenu::wait_for_press(JoystickCtrl &jst, TftCtrl &tft) {
-  uint8_t btn;
+uint8_t TftMenu::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
+  (void) tch;
+  (void) tft;
 
-  do {
-    jst.poll(m_num_btns);
-
-    btn = jst.get_cur_btn();
-
-    if (jst.btn_changed()) {
-      m_btns[btn]->highlight(true);
-      draw(tft);
-    }
-  }
-  while (!jst.is_pressed());
-
-  return btn + 1;
+  return false;
 }

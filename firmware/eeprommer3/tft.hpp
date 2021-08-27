@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <Elegoo_TFTLCD.h>
+#include <MCUFRIEND_kbv.h>
 
 #include "input.hpp"
 
@@ -35,10 +35,11 @@ namespace TftColor {
   };
 };
 
-class TftCtrl : public Elegoo_TFTLCD {
+class TouchCtrl;
+
+class TftCtrl : public MCUFRIEND_kbv {
 public:
   TftCtrl() {};
-  TftCtrl(uint8_t cs, uint8_t rs, uint8_t wr, uint8_t rd, uint8_t rst);
 
   void init(uint16_t driver_id, uint8_t orientation);
 
@@ -59,6 +60,9 @@ public:
   void highlight(bool highlight);
   bool is_highlighted();
 
+  void wait_for_press(TouchCtrl &tch, TftCtrl &tft);
+  bool is_pressed(TouchCtrl &tch, TftCtrl &tft);
+
 private:
   uint8_t m_x, m_y, m_w, m_h;
   uint16_t m_fg, m_bg;
@@ -77,8 +81,8 @@ public:
 
   void draw(TftCtrl &tft);
 
-  uint8_t is_pressed(JoystickCtrl &jst);
-  uint8_t wait_for_press(JoystickCtrl &jst, TftCtrl &tft);
+  uint8_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
+  uint8_t is_pressed(TouchCtrl &tch, TftCtrl &tft);
 
 private:
   TftBtn **m_btns = nullptr;

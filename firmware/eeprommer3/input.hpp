@@ -1,25 +1,23 @@
 #ifndef INPUT_HPP
 #define INPUT_HPP
 
-class JoystickCtrl {
+#include <Arduino.h>
+#include "constants.hpp"
+
+#include <TouchScreen.h>
+
+#include "tft.hpp"
+
+class TftCtrl;
+
+class TouchCtrl : public TouchScreen {
 public:
-  JoystickCtrl(uint8_t x_axis, uint8_t y_axis, uint8_t button);
+  TouchCtrl(uint8_t xp, uint8_t xm, uint8_t yp, uint8_t ym, uint8_t resist);
 
-  void init();
+  static bool is_valid_pressure(int16_t pressure, int16_t max_pressure = -1);
 
-  void poll(uint8_t max_btn);
-
-  uint8_t get_cur_btn();
-  bool btn_changed();
-  bool is_pressed();
-
-private:
-  uint8_t m_x_axis, m_y_axis, m_button;
-
-  uint8_t m_prev_btn = 0;
-  uint8_t m_cur_btn = 0;
-
-  uint8_t m_is_pressed = false;
+  TSPoint get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, TftCtrl &tft);
+  TSPoint get_raw_point();
 };
 
 #endif

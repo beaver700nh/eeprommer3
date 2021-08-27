@@ -1,32 +1,39 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include "input.hpp"
+#include <TouchScreen.h>
 
-JoystickCtrl::JoystickCtrl(uint8_t x_axis, uint8_t y_axis, uint8_t button)
-  : m_x_axis(x_axis), m_y_axis(y_axis), m_button(button) {
+#include "input.hpp"
+#include "tft.hpp"
+
+TouchCtrl::TouchCtrl(uint8_t xp, uint8_t xm, uint8_t yp, uint8_t ym, uint8_t resist)
+  : TouchScreen(xp, yp, xm, ym, resist) {
   // Empty
 }
 
-void JoystickCtrl::init() {
-  pinMode(m_button, INPUT_PULLUP);
+bool TouchCtrl::is_valid_pressure(int16_t pressure, int16_t max_pressure) {
+  if (max_pressure > 0) {
+    return IN_RANGE(pressure, 10, max_pressure + 1);
+  }
+  else {
+    return (pressure > 10);
+  }
 }
 
-void JoystickCtrl::poll(uint8_t max_btn) {
-  m_is_pressed = (digitalRead(m_button) == LOW);
+TSPoint TouchCtrl::get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, TftCtrl &tft) {
+  TSPoint p = get_raw_point();
 
-  m_prev_btn = m_cur_btn;
-  m_cur_btn = 0; // TODO
+  uint16_t x = map(p.y, miny, maxy, 0, tft.width());
+  uint16_t y = map(p.x, minx, maxx, 0, tft.height());
+
+  return TSPoint(x, y, p.z);
 }
 
-uint8_t JoystickCtrl::get_cur_btn() {
-  return m_cur_btn;
-}
+TSPoint TouchCtrl::get_raw_point() {
+  TSPoint p = getPoint();
 
-bool JoystickCtrl::btn_changed() {
-  return m_prev_btn != m_cur_btn;
-}
+  pinMode(TS_XM, OUTPUT);
+  pinMode(TS_YP, OUTPUT);
 
-bool JoystickCtrl::is_pressed() {
-  return m_is_pressed;
+  return p;
 }
