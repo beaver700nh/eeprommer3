@@ -1,11 +1,6 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <IoAbstractionWire.h>
-#include <LiquidCrystalIO.h>
-#include <TouchScreen.h>
-#include <Wire.h>
-
 #include "comm.hpp"
 #include "eeprom.hpp"
 #include "prog.hpp"
@@ -43,14 +38,6 @@ void setup() {
 
 void mainprog() {
   tft.fillScreen(TftColor::BLACK);
-
-//  while (true) {
-//    TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
-//
-//    if (TouchCtrl::is_valid_pressure(p.z)) {
-//      tft.fillCircle(p.x, p.y, 3, TftColor::RED);
-//    }
-//  }
 
   EepromCtrl ee;
 

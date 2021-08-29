@@ -12,7 +12,7 @@ class TftCtrl;
 
 class TouchCtrl : public TouchScreen {
 public:
-  TouchCtrl(uint8_t xp, uint8_t xm, uint8_t yp, uint8_t ym, uint8_t resist);
+  TouchCtrl(uint16_t xp, uint16_t xm, uint16_t yp, uint16_t ym, uint16_t resist);
 
   static bool is_valid_pressure(int16_t pressure, int16_t max_pressure = -1);
 

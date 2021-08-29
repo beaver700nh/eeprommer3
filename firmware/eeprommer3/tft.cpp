@@ -78,8 +78,8 @@ bool TftBtn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
 
   return (
     tch.is_valid_pressure(p.z) &&
-    IN_RANGE(p.x, m_x, m_x + m_w) &&
-    IN_RANGE(p.y, m_y, m_y + m_h)
+    IN_RANGE(p.x, (int32_t) m_x, (int32_t) m_x + m_w) &&
+    IN_RANGE(p.y, (int32_t) m_y, (int32_t) m_y + m_h)
   );
 }
 
@@ -127,6 +127,7 @@ bool TftMenu::set_btn(uint8_t btn_idx, TftBtn *btn) {
   if (btn_idx >= m_num_btns) return false;
 
   m_btns[btn_idx] = btn;
+  return true;
 }
 
 TftBtn *TftMenu::get_btn(uint8_t btn_idx) {
@@ -164,4 +165,14 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
   }
 
   return -1;
+}
+
+void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
+  while (true) {
+    TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
+
+    if (TouchCtrl::is_valid_pressure(p.z)) {
+      tft.fillCircle(p.x, p.y, 3, TftColor::RED);
+    }
+  }
 }

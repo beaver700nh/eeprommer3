@@ -8,6 +8,8 @@
 
 #include "input.hpp"
 
+#ifdef DEBUG_MODE
+
 #define SERIAL_PRINTF_BUF_SIZE 100
 
 static char serial_printf_buf[SERIAL_PRINTF_BUF_SIZE];
@@ -18,6 +20,8 @@ static char serial_printf_buf[SERIAL_PRINTF_BUF_SIZE];
     Serial.print(serial_printf_buf); \
   } \
   while (false)
+
+#endif
 
 namespace TftColor {
   enum : uint16_t {
@@ -110,5 +114,7 @@ private:
   TftBtn **m_btns = nullptr;
   uint8_t m_num_btns = 0;
 };
+
+void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
 
 #endif
