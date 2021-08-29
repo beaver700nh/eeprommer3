@@ -19,13 +19,15 @@ void ProgrammerFromSD::run() {
 
   TftMenu menu;
 
-  menu.add_btn(new TftBtn( 10,  10, 225, 24, 61, 5, "Read Byte"));
-  menu.add_btn(new TftBtn(245,  10, 225, 24, 55, 5, "Write Byte"));
-  menu.add_btn(new TftBtn( 10,  44, 225, 24, 50, 5, "Read EEPROM"));
-  menu.add_btn(new TftBtn(245,  44, 225, 24, 55, 5, "Write File"));
-  menu.add_btn(new TftBtn( 10,  78, 225, 24, 50, 5, "Read Vector"));
-  menu.add_btn(new TftBtn(245,  78, 225, 24, 44, 5, "Write Vector"));
-  menu.add_btn(new TftBtn(180, 116, 120, 24, 20, 5, "Confirm"));
+  menu.add_btn(new TftBtn( 10,  10, 225, 24, 61, 5, "Read Byte",    TftColor::BLUE,   TftColor::CYAN));
+  menu.add_btn(new TftBtn(245,  10, 225, 24, 55, 5, "Write Byte",   TftColor::RED,    TftColor::PINKK));
+  menu.add_btn(new TftBtn( 10,  44, 225, 24, 50, 5, "Read EEPROM",  TftColor::CYAN,   TftColor::BLUE));
+  menu.add_btn(new TftBtn(245,  44, 225, 24, 55, 5, "Write File",   TftColor::PINKK,  TftColor::RED));
+  menu.add_btn(new TftBtn( 10,  78, 225, 24, 50, 5, "Read Vector",  TftColor::BLACK,  TftColor::GREEN));
+  menu.add_btn(new TftBtn(245,  78, 225, 24, 44, 5, "Write Vector", TftColor::BLACK,  TftColor::ORANGE));
+  menu.add_btn(new TftBtn(180, 116, 120, 24, 20, 5, "Confirm",      TftColor::WHITE,  TftColor::DGRAY));
+
+  menu.get_btn(0)->highlight(true);
 
   while (true) {
     menu.erase(m_tft);
@@ -33,21 +35,13 @@ void ProgrammerFromSD::run() {
 
     int16_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
 
-#ifdef DEBUG_MODE
-    char buf[50];
-    sprintf(buf, "Press: `%d'", btn_pressed);
-
-    m_tft.fillRect(10, 170, 250, 22, TftColor::BLACK);
-    m_tft.drawText(10, 170, buf, TftColor::CYAN, 3);
-#endif
-
     if (btn_pressed != 6) {
-      menu.get_btn(cur_choice)->highlight(false);
+      menu.get_btn(cur_choice)->highlight(false); // Old "current" choice
       cur_choice = btn_pressed;
       menu.get_btn(cur_choice)->highlight(true);
     }
     else {
-      m_tft.drawText(10, 220, "Done!", TftColor::ORANGE, 3);
+      m_tft.drawText(10, 220, STRFMT_NOBUF("Done! Selected: %d", cur_choice), TftColor::ORANGE, 3);
       while (true);
     }
   }

@@ -29,8 +29,8 @@ static char custom_strfmt_buf[100];
 
 #define STRFMT_NOBUF(fmt, ...) \
   ( \
-    snprintf(custom_strfmt_buf, sizeof(buf), fmt, ##__VA_ARGS__), \
-    custom_strfmt_bufcustom_strfmt_buf \
+    snprintf(custom_strfmt_buf, sizeof(custom_strfmt_buf), fmt, ##__VA_ARGS__), \
+    custom_strfmt_buf \
   )
 
 #define STRFMT(buf, fmt, ...) \

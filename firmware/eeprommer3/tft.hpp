@@ -10,7 +10,6 @@
 
 namespace TftColor {
   enum : uint16_t {
-    WHITE   = 0xFFFF,
     RED     = 0xF800,
     ORANGE  = 0xFEE3,
     YELLOW  = 0xFFE0,
@@ -21,6 +20,10 @@ namespace TftColor {
     MAGENTA = 0xF81F,
     PINKK   = 0xFEF7,
     BLACK   = 0x0000,
+    DGRAY   = 0x39E7,
+    GRAY    = 0x7BEF,
+    LGRAY   = 0xBDF7,
+    WHITE   = 0xFFFF,
   };
 };
 
