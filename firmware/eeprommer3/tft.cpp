@@ -23,8 +23,8 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
-TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
-  : m_x(x), m_y(y), m_w(w), m_h(h), m_fg(fg), m_bg(bg) {
+TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)
+  : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg) {
   strncpy(m_text, text, 20);
 }
 
@@ -38,6 +38,11 @@ void     TftBtn::set_w(uint16_t w) { m_w = w;    }
 uint16_t TftBtn::get_h()           { return m_h; }
 void     TftBtn::set_h(uint16_t h) { m_h = h;    }
 
+uint16_t TftBtn::get_tx()            { return m_tx; }
+void     TftBtn::set_tx(uint16_t tx) { m_tx = tx;   }
+uint16_t TftBtn::get_ty()            { return m_ty; }
+void     TftBtn::set_ty(uint16_t ty) { m_ty = ty;   }
+
 uint16_t TftBtn::get_fg()            { return m_fg; }
 void     TftBtn::set_fg(uint16_t fg) { m_fg = fg;   }
 uint16_t TftBtn::get_bg()            { return m_bg; }
@@ -49,13 +54,24 @@ void        TftBtn::set_text(const char *text) {
 }
 
 void TftBtn::draw(TftCtrl &tft) {
+  m_was_highlighted = m_is_highlighted;
+
   tft.fillRect(m_x, m_y, m_w, m_h, m_bg);
-  tft.drawText(m_x + 3, m_y + 3, m_text, m_fg);
+  tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg);
 
   if (m_is_highlighted) {
     tft.drawRect(m_x - 1, m_y - 1, m_w + 2, m_h + 2, TftColor::YELLOW);
     tft.drawRect(m_x - 2, m_y - 2, m_w + 4, m_h + 4, TftColor::YELLOW);
     tft.drawRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, TftColor::YELLOW);
+  }
+}
+
+void TftBtn::erase(TftCtrl &tft) {
+  if (m_was_highlighted) {
+    tft.fillRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, TftColor::BLACK);
+  }
+  else {
+    tft.fillRect(m_x, m_y, m_w, m_h, TftColor::BLACK);
   }
 }
 
@@ -143,6 +159,12 @@ uint8_t TftMenu::get_num_btns() {
 void TftMenu::draw(TftCtrl &tft) {
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     m_btns[i]->draw(tft);
+  }
+}
+
+void TftMenu::erase(TftCtrl &tft) {
+  for (uint8_t i = 0; i < m_num_btns; ++i) {
+    m_btns[i]->erase(tft);
   }
 }
 

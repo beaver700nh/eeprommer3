@@ -16,6 +16,8 @@ TouchCtrl tch(TS_XP, TS_XM, TS_YP, TS_YM, TS_RESIST);
 
 SdCtrl sd(SD_CS, SD_EN);
 
+EepromCtrl ee;
+
 void setup() {
   delay(1000);
 
@@ -39,36 +41,9 @@ void setup() {
 void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
-  EepromCtrl ee;
-
   if (sd.is_enabled()) {
-    TftMenu menu;
-
-    menu.add_btn(new TftBtn(10, 10, 100, 20, "Hello :)"));
-    menu.add_btn(new TftBtn(10, 40, 100, 20, "World :)"));
-    menu.add_btn(new TftBtn(10, 70, 100, 20, "BLAH - x"));
-
-    while (true) {
-      menu.draw(tft);
-
-      int16_t btn_pressed = menu.wait_for_press(tch, tft);
-
-      tft.fillScreen(TftColor::BLACK);
-
-      if (btn_pressed == 0) {
-        menu.get_btn(2)->set_text("BLAH - 1");
-        menu.get_btn(2)->set_bg(TftColor::RED);
-      }
-      else if (btn_pressed == 1) {
-        menu.get_btn(2)->set_text("BLAH - 2");
-        menu.get_btn(2)->set_bg(TftColor::BLUE);
-      }
-
-      char buf[50];
-      sprintf(buf, "Press: `%s'", menu.get_btn(2)->get_text());
-
-      tft.drawText(10, 140, buf, TftColor::CYAN, 3);
-    }
+    ProgrammerFromSD prog(ee, sd, tch, tft);
+    prog.run();
   }
   else {
     while (true) {

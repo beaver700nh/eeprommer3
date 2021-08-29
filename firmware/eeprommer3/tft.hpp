@@ -8,21 +8,6 @@
 
 #include "input.hpp"
 
-#ifdef DEBUG_MODE
-
-#define SERIAL_PRINTF_BUF_SIZE 100
-
-static char serial_printf_buf[SERIAL_PRINTF_BUF_SIZE];
-
-#define serial_printf(fmt, ...) \
-  do { \
-    snprintf(serial_printf_buf, sizeof(serial_printf_buf), fmt, ##__VA_ARGS__); \
-    Serial.print(serial_printf_buf); \
-  } \
-  while (false)
-
-#endif
-
 namespace TftColor {
   enum : uint16_t {
     WHITE   = 0xFFFF,
@@ -55,7 +40,7 @@ class TftBtn {
 public:
   TftBtn() {};
   TftBtn(
-    uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+    uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty,
     const char *text, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
@@ -69,6 +54,11 @@ public:
   uint16_t get_h();
   void     set_h(uint16_t h);
 
+  uint16_t get_tx();
+  void     set_tx(uint16_t tx);
+  uint16_t get_ty();
+  void     set_ty(uint16_t ty);
+
   uint16_t get_fg();
   void     set_fg(uint16_t fg);
   uint16_t get_bg();
@@ -78,6 +68,7 @@ public:
   void        set_text(const char *text);
 
   void draw(TftCtrl &tft);
+  void erase(TftCtrl &tft);
 
   void highlight(bool highlight);
   bool is_highlighted();
@@ -86,10 +77,13 @@ public:
   bool is_pressed(TouchCtrl &tch, TftCtrl &tft);
 
 private:
-  uint16_t m_x, m_y, m_w, m_h;
+  uint16_t m_x, m_y;
+  uint16_t m_w, m_h;
+  uint16_t m_tx, m_ty;
   uint16_t m_fg, m_bg;
 
   bool m_is_highlighted = false;
+  bool m_was_highlighted = false;
 
   char m_text[21];
 };
@@ -106,6 +100,7 @@ public:
   uint8_t get_num_btns();
 
   void draw(TftCtrl &tft);
+  void erase(TftCtrl &tft);
 
   int16_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
   int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);

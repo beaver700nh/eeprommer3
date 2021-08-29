@@ -1,9 +1,49 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
+/*****************************************/
+/** Flags ********************************/
+/*****************************************/
+
 #define DEBUG_MODE // Comment out to disable debug printing
 
+/*****************************************/
+/** Macros *******************************/
+/*****************************************/
+
+static char custom_printf_buf[100];
+
+#define PRINTF_NOBUF(obj, fmt, ...) \
+  ( \
+    snprintf(custom_printf_buf, sizeof(custom_printf_buf), fmt, ##__VA_ARGS__), \
+    obj.print(custom_printf_buf) \
+  )
+
+#define PRINTF(buf, obj, fmt, ...) \
+  ( \
+    snprintf(buf, sizeof(buf), fmt, ##__VA_ARGS__), \
+    obj.print(buf) \
+  )
+
+static char custom_strfmt_buf[100];
+
+#define STRFMT_NOBUF(fmt, ...) \
+  ( \
+    snprintf(custom_strfmt_buf, sizeof(buf), fmt, ##__VA_ARGS__), \
+    custom_strfmt_bufcustom_strfmt_buf \
+  )
+
+#define STRFMT(buf, fmt, ...) \
+  ( \
+    snprintf(buf, sizeof(buf), fmt, ##__VA_ARGS__), \
+    buf \
+  )
+
 #define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
+
+/*****************************************/
+/** Constants ****************************/
+/*****************************************/
 
 #define SD_CS 10
 #define SD_EN A15
