@@ -95,15 +95,16 @@ public:
   TftMenu() {};
 
   bool add_btn(TftBtn *btn);
-  void set_btn(uint8_t btn_idx, TftBtn *btn);
+  bool rm_btn(uint8_t btn_idx);
+  bool set_btn(uint8_t btn_idx, TftBtn *btn);
   TftBtn *get_btn(uint8_t btn_idx);
 
   uint8_t get_num_btns();
 
   void draw(TftCtrl &tft);
 
-  uint8_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
-  uint8_t is_pressed(TouchCtrl &tch, TftCtrl &tft);
+  int16_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
+  int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
 
 private:
   TftBtn **m_btns = nullptr;

@@ -102,12 +102,36 @@ bool TftMenu::add_btn(TftBtn *btn) {
   return true;
 }
 
-void TftMenu::set_btn(uint8_t btn_idx, TftBtn *btn) {
-  delete m_btns[btn_idx];
+bool TftMenu::rm_btn(uint8_t btn_idx) {
+  if (btn_idx >= m_num_btns) return false;
+
+  --m_num_btns;
+
+  auto new_arr = (TftBtn **) malloc(m_num_btns * sizeof(TftBtn *));
+
+  if (new_arr == nullptr) {
+    return false;
+  }
+
+  memcpy(new_arr, m_btns, btn_idx * sizeof(TftBtn *));
+  memcpy(new_arr + btn_idx, m_btns + btn_idx + 1, (m_num_btns - btn_idx - 1) * sizeof(TftBtn *));
+
+  free(m_btns);
+
+  m_btns = new_arr;
+
+  return true;
+}
+
+bool TftMenu::set_btn(uint8_t btn_idx, TftBtn *btn) {
+  if (btn_idx >= m_num_btns) return false;
+
   m_btns[btn_idx] = btn;
 }
 
 TftBtn *TftMenu::get_btn(uint8_t btn_idx) {
+  if (btn_idx >= m_num_btns) return nullptr;
+
   return m_btns[btn_idx];
 }
 
@@ -121,23 +145,23 @@ void TftMenu::draw(TftCtrl &tft) {
   }
 }
 
-uint8_t TftMenu::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
-  uint8_t btn = 0;
+int16_t TftMenu::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
+  int16_t btn = 0;
 
   do {
-    btn = is_pressed(tch, tft);
+    btn = get_pressed(tch, tft);
   }
-  while (!btn);
+  while (btn < 0);
 
   return btn;
 }
 
-uint8_t TftMenu::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
+int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     if (m_btns[i]->is_pressed(tch, tft)) {
-      return i + 1;
+      return i;
     }
   }
 
-  return 0;
+  return -1;
 }
