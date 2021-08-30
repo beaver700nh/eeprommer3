@@ -168,7 +168,7 @@ void TftMenu::erase(TftCtrl &tft) {
   }
 }
 
-int16_t TftMenu::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
+uint8_t TftMenu::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
   int16_t btn = 0;
 
   do {

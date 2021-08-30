@@ -105,7 +105,7 @@ public:
   void draw(TftCtrl &tft);
   void erase(TftCtrl &tft);
 
-  int16_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
+  uint8_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
   int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
 
 private:
