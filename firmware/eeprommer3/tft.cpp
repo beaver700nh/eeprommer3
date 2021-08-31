@@ -99,6 +99,10 @@ bool TftBtn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
   );
 }
 
+TftMenu::~TftMenu() {
+  purge_btns();
+}
+
 bool TftMenu::add_btn(TftBtn *btn) {
   ++m_num_btns;
 

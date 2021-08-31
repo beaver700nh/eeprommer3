@@ -32,7 +32,7 @@ void ProgrammerFromSD::run() {
     while (true) { // Loop to get action
       menu.erase(m_tft);
       menu.draw(m_tft);
-  
+
       uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
   
       if (btn_pressed == 6) break;
@@ -128,8 +128,6 @@ uint8_t ProgrammerFromSD::read_byte() {
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);
   continue_btn.wait_for_press(m_tch, m_tft);
-
-  menu.purge_btns();
 
   m_tft.fillScreen(TftColor::BLACK);
 

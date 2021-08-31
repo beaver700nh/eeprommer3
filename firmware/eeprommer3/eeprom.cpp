@@ -47,7 +47,7 @@ void EepromCtrl::set_oe(bool oe) {
 }
 
 uint8_t EepromCtrl::read(uint16_t addr) {
-  set_addr_and_oe(addr | 0x80);
+  set_addr_and_oe(addr | 0x8000);
   delayMicroseconds(10);
   uint8_t data = get_data();
   delayMicroseconds(1);
@@ -55,7 +55,7 @@ uint8_t EepromCtrl::read(uint16_t addr) {
 }
 
 void EepromCtrl::write(uint16_t addr, uint8_t data) {
-  set_addr_and_oe(addr & ~0x80);
+  set_addr_and_oe(addr & ~0x8000);
   set_data(data);
 
   set_we(false);

@@ -94,6 +94,7 @@ private:
 class TftMenu {
 public:
   TftMenu() {};
+  ~TftMenu();
 
   bool add_btn(TftBtn *btn);
   bool rm_btn(uint8_t btn_idx);
