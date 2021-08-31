@@ -52,6 +52,9 @@ static char custom_strfmt_buf[100];
 
 #define BIT_WIDTH(t) sizeof(t) * 8
 
+#define STRINGIFY(s) XSTRINGIFY(s)
+#define XSTRINGIFY(s) #s
+
 #define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
 
 /*****************************************/

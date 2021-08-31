@@ -128,13 +128,17 @@ public:
     }
   }
 
-  void got_pressed(uint8_t k) {
+  void update_val(uint8_t k) {
     m_val = (m_val << 4) + k;
   }
 
   void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t font_size, uint16_t fg, uint16_t bg) {
     tft.fillRect(x, y, tft.width() - x, 7 * font_size, bg);
-    tft.drawText(x, y, STRFMT_NOBUF("Addr: [%0*X]", BIT_WIDTH(T) / 4, m_val), fg, font_size);
+
+    char strfmt_buf[50];
+    sprintf(strfmt_buf, "Addr: [%%0%dX]", BIT_WIDTH(T) / 4);
+
+    tft.drawText(x, y, STRFMT_NOBUF(strfmt_buf, m_val), fg, font_size);
   }
 
   T    get_val()      { return m_val; }

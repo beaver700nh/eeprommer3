@@ -89,41 +89,42 @@ void ProgrammerFromSD::show_status(uint8_t code) {
 uint8_t ProgrammerFromSD::read_byte() {
   m_tft.drawText(10, 10, "What address?", TftColor::CYAN, 4);
 
-  TftMenu menu;
+//  TftMenu menu;
+//
+//  for (uint8_t i = 0x00; i < 0x10; ++i) {
+//    uint16_t x = 17 + 57 * (i % 8);
+//    uint16_t y = (i < 8 ? 50 : 107);
+//
+//    menu.add_btn(new TftBtn(x, y, 47, 47, 18, 18, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
+//  }
 
-  for (uint8_t i = 0x00; i < 0x10; ++i) {
-    uint16_t x = 17 + 57 * (i % 8);
-    uint16_t y = (i < 8 ? 50 : 107);
-
-    menu.add_btn(new TftBtn(x, y, 47, 47, 18, 18, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
-  }
+  TftHexSelMenu<uint16_t> menu;
 
   menu.add_btn(new TftBtn(10, 286, 460, 24, 184, 5, "Continue"));
 
-  uint16_t addr = 0x0000;
+//  uint16_t addr = 0x0000;
 
   while (true) { // Loop to get an addr
     menu.erase(m_tft);
     menu.draw(m_tft);
 
-    m_tft.fillRect(90, 170, 332, 28, TftColor::BLACK);
-    m_tft.drawText(90, 170, STRFMT_NOBUF("Addr: [%04X]", addr), TftColor::ORANGE, 4);
+    menu.show_val(m_tft, 90, 170, 4, TftColor::ORANGE, TftColor::BLACK);
 
     uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
 
     if (btn_pressed == 16) break;
 
-    addr = (addr << 4) + btn_pressed;
+    menu.update_val(btn_pressed);
   }
 
-  uint8_t val = m_ee.read(addr);
+  uint8_t val = m_ee.read(/*addr*/menu.get_val());
 
   m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10,  10, STRFMT_NOBUF("Value at address %04X:", addr),      TftColor::CYAN,   3);
-  m_tft.drawText(20,  50, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::YELLOW, 2);
-  m_tft.drawText(20,  80, STRFMT_NOBUF("OCT: %03o",      val),               TftColor::YELLOW, 2);
-  m_tft.drawText(20, 110, STRFMT_NOBUF("HEX: %02X",      val),               TftColor::YELLOW, 2);
-  m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      val),               TftColor::YELLOW, 2);
+  m_tft.drawText(10,  10, STRFMT_NOBUF("Value at address %04X:", menu.get_val()), TftColor::CYAN,   3);
+  m_tft.drawText(20,  50, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(val)),      TftColor::YELLOW, 2);
+  m_tft.drawText(20,  80, STRFMT_NOBUF("OCT: %03o",      val),                    TftColor::YELLOW, 2);
+  m_tft.drawText(20, 110, STRFMT_NOBUF("HEX: %02X",      val),                    TftColor::YELLOW, 2);
+  m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      val),                    TftColor::YELLOW, 2);
 
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);
