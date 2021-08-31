@@ -111,9 +111,37 @@ public:
   uint8_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
   int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
 
-private:
+protected:
   TftBtn **m_btns = nullptr;
   uint8_t m_num_btns = 0;
+};
+
+template<typename T>
+class TftHexSelMenu : public TftMenu {
+public:
+  TftHexSelMenu() {
+    for (uint8_t i = 0x00; i < 0x10; ++i) {
+      uint16_t x = 17 + 57 * (i % 8);
+      uint16_t y = (i < 8 ? 50 : 107);
+  
+      add_btn(new TftBtn(x, y, 47, 47, 18, 18, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
+    }
+  }
+
+  void got_pressed(uint8_t k) {
+    m_val = (m_val << 4) + k;
+  }
+
+  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t font_size, uint16_t fg, uint16_t bg) {
+    tft.fillRect(x, y, tft.width() - x, 7 * font_size, bg);
+    tft.drawText(x, y, STRFMT_NOBUF("Addr: [%0*X]", BIT_WIDTH(T) / 4, m_val), fg, font_size);
+  }
+
+  T    get_val()      { return m_val; }
+  void set_val(T val) { m_val = val;  }
+
+private:
+  T m_val = 0;
 };
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);

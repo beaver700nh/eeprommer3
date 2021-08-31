@@ -40,7 +40,7 @@ static char custom_strfmt_buf[100];
   )
 
 #define BYTE_FMT "%c%c%c%c%c%c%c%c"
-#define BYTE_FMT_VAL(n)  \
+#define BYTE_FMT_VAL(n)   \
   (n & 0x80 ? '1' : '0'), \
   (n & 0x40 ? '1' : '0'), \
   (n & 0x20 ? '1' : '0'), \
@@ -48,7 +48,9 @@ static char custom_strfmt_buf[100];
   (n & 0x08 ? '1' : '0'), \
   (n & 0x04 ? '1' : '0'), \
   (n & 0x02 ? '1' : '0'), \
-  (n & 0x01 ? '1' : '0') 
+  (n & 0x01 ? '1' : '0')
+
+#define BIT_WIDTH(t) sizeof(t) * 8
 
 #define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
 
