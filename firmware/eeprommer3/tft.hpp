@@ -99,6 +99,8 @@ public:
   bool rm_btn(uint8_t btn_idx);
   bool set_btn(uint8_t btn_idx, TftBtn *btn);
   TftBtn *get_btn(uint8_t btn_idx);
+  bool purge_btn(uint8_t btn_idx);
+  void purge_btns();
 
   uint8_t get_num_btns();
 

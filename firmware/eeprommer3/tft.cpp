@@ -121,9 +121,7 @@ bool TftMenu::add_btn(TftBtn *btn) {
 bool TftMenu::rm_btn(uint8_t btn_idx) {
   if (btn_idx >= m_num_btns) return false;
 
-  --m_num_btns;
-
-  auto new_arr = (TftBtn **) malloc(m_num_btns * sizeof(TftBtn *));
+  auto new_arr = (TftBtn **) malloc((m_num_btns - 1) * sizeof(TftBtn *));
 
   if (new_arr == nullptr) {
     return false;
@@ -136,20 +134,37 @@ bool TftMenu::rm_btn(uint8_t btn_idx) {
 
   m_btns = new_arr;
 
+  --m_num_btns;
+
   return true;
 }
 
 bool TftMenu::set_btn(uint8_t btn_idx, TftBtn *btn) {
-  if (btn_idx >= m_num_btns) return false;
+  if (m_num_btns == 0 || btn_idx >= m_num_btns) return false;
 
   m_btns[btn_idx] = btn;
   return true;
 }
 
 TftBtn *TftMenu::get_btn(uint8_t btn_idx) {
-  if (btn_idx >= m_num_btns) return nullptr;
+  if (m_num_btns == 0 || btn_idx >= m_num_btns) return nullptr;
 
   return m_btns[btn_idx];
+}
+
+bool TftMenu::purge_btn(uint8_t btn_idx) {
+  if (m_num_btns == 0 || btn_idx >= m_num_btns) return false;
+
+  TftBtn *to_del = m_btns[btn_idx];
+  if (!rm_btn(btn_idx)) return false;
+  delete to_del;
+  return true;
+}
+
+void TftMenu::purge_btns() {
+  while (m_num_btns > 0) {
+    purge_btn(m_num_btns - 1); // Purge last button in array
+  }
 }
 
 uint8_t TftMenu::get_num_btns() {
