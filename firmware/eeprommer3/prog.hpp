@@ -18,6 +18,7 @@ public:
   void show_status(uint8_t code);
 
   uint8_t read_byte();
+  uint8_t write_byte();
 
   uint32_t write_file(const char *file, uint16_t start, uint16_t n);
   uint32_t read_file(const char *file, uint16_t start, uint16_t n);

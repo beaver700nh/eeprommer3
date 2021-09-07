@@ -119,12 +119,17 @@ protected:
 template<typename T>
 class TftHexSelMenu : public TftMenu {
 public:
-  TftHexSelMenu() {
+  TftHexSelMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin) {
+    const uint16_t cell_margin = 10;
+    const uint16_t cell_size = (tft.width() - 7*cell_margin - 2*side_margin) / 8;
+    const uint16_t cell_dist = cell_size + cell_margin;
+    const uint16_t text_margin = (cell_size - 10) / 2;
+
     for (uint8_t i = 0x00; i < 0x10; ++i) {
-      uint16_t x = 17 + 57 * (i % 8);
-      uint16_t y = (i < 8 ? 50 : 107);
+      uint16_t x = side_margin + cell_dist * (i % 8);
+      uint16_t y = (i < 8 ? top_margin : top_margin + cell_size + cell_margin);
   
-      add_btn(new TftBtn(x, y, 47, 47, 18, 18, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
+      add_btn(new TftBtn(x, y, cell_size, cell_size, text_margin, text_margin, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
     }
   }
 
@@ -146,6 +151,11 @@ public:
 
 private:
   T m_val = 0;
+};
+
+class TftYesNoMenu : public TftMenu {
+public:
+  TftYesNoMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin);
 };
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);

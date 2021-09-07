@@ -89,25 +89,12 @@ void ProgrammerFromSD::show_status(uint8_t code) {
 uint8_t ProgrammerFromSD::read_byte() {
   m_tft.drawText(10, 10, "What address?", TftColor::CYAN, 4);
 
-//  TftMenu menu;
-//
-//  for (uint8_t i = 0x00; i < 0x10; ++i) {
-//    uint16_t x = 17 + 57 * (i % 8);
-//    uint16_t y = (i < 8 ? 50 : 107);
-//
-//    menu.add_btn(new TftBtn(x, y, 47, 47, 18, 18, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
-//  }
-
-  TftHexSelMenu<uint16_t> menu;
-
+  TftHexSelMenu<uint16_t> menu(m_tft, 50, 17);
   menu.add_btn(new TftBtn(10, 286, 460, 24, 184, 5, "Continue"));
-
-//  uint16_t addr = 0x0000;
 
   while (true) { // Loop to get an addr
     menu.erase(m_tft);
     menu.draw(m_tft);
-
     menu.show_val(m_tft, 90, 170, 4, TftColor::ORANGE, TftColor::BLACK);
 
     uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
@@ -117,7 +104,7 @@ uint8_t ProgrammerFromSD::read_byte() {
     menu.update_val(btn_pressed);
   }
 
-  uint8_t val = m_ee.read(/*addr*/menu.get_val());
+  uint8_t val = m_ee.read(menu.get_val());
 
   m_tft.fillScreen(TftColor::BLACK);
   m_tft.drawText(10,  10, STRFMT_NOBUF("Value at address %04X:", menu.get_val()), TftColor::CYAN,   3);
@@ -133,7 +120,8 @@ uint8_t ProgrammerFromSD::read_byte() {
   m_tft.fillScreen(TftColor::BLACK);
 
   return 0;
-}
+}                                  //////////////////////////////////// TODO: write helper function to get address and data
+/////////////////////////////////////////////////////////////////////// OR make them members of TftHexSelMenu class
 
 uint32_t ProgrammerFromSD::write_file(const char *file, uint16_t start, uint16_t n) {
 //  File f = SD.open(file);

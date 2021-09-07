@@ -208,6 +208,25 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
   return -1;
 }
 
+TftYesNoMenu::TftYesNoMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin) {
+  const uint16_t cell_margin = 10;
+  const uint16_t cell_width = (tft.width() - 2 * side_margin - cell_margin) / 2;
+  const uint16_t cell_height = (float) cell_width / 1.618;
+
+  const uint16_t yesx = side_margin;
+  const uint16_t yesy = top_margin;
+  const uint16_t yestx = (cell_width - 34) / 2;
+  const uint16_t yesty = (cell_height - 16) / 2;
+
+  const uint16_t nox = side_margin + cell_width + cell_margin;
+  const uint16_t noy = top_margin;
+  const uint16_t notx = (cell_width - 22) / 2;
+  const uint16_t noty = (cell_height - 16) / 2;
+
+  add_btn(new TftBtn(yesx, yesy, cell_width, cell_height, yestx, yesty, "Yes", TftColor::BLACK, TftColor::GREEN));
+  add_btn(new TftBtn(nox,  noy,  cell_width, cell_height, notx,  noty,  "No",  TftColor::WHITE, TftColor::RED));
+}
+
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
   while (true) {
     TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
