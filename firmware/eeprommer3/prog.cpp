@@ -42,13 +42,20 @@ void ProgrammerFromSd::run() {
       menu.get_btn(cur_choice)->highlight(true);
     }
   
-    do_action(cur_choice);
+    m_tft.fillScreen(TftColor::BLACK);
+
+    uint8_t status_code = do_action(cur_choice);
+    show_status(status_code);
+
+    TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+    continue_btn.draw(m_tft);
+    continue_btn.wait_for_press(m_tch, m_tft);
+
+    m_tft.fillScreen(TftColor::BLACK);
   }
 }
 
 uint8_t ProgrammerFromSd::do_action(uint8_t action) {
-  m_tft.fillScreen(TftColor::BLACK);
-
   uint8_t status_code = 1;
 
   switch (action) {
@@ -60,18 +67,10 @@ uint8_t ProgrammerFromSd::do_action(uint8_t action) {
   case 5: status_code = 1; break;
   }
 
-  show_status(status_code);
-
-  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-  continue_btn.draw(m_tft);
-  continue_btn.wait_for_press(m_tch, m_tft);
-
-  m_tft.fillScreen(TftColor::BLACK);
-
   return status_code;
 }
 
-void ProgrammerFromSd::show_status(uint8_t code) {
+void ProgrammerFromSd::show_status(uint8_t status_code) {
   m_tft.fillScreen(TftColor::BLACK);
   m_tft.drawText(10, 10, "Result:", TftColor::CYAN, 4);
 
@@ -79,10 +78,11 @@ void ProgrammerFromSd::show_status(uint8_t code) {
     "No errors.",
     "Invalid action.",
     "Failed to open file.",
+    "Verification failed.",
   };
 
-  m_tft.drawText(15, 50, (code ? "Failed!" : "Success!"), (code ? TftColor::RED : TftColor::GREEN), 3);
-  m_tft.drawText(15, 80, (code < 3 ? details_buf[code] : "Unknown reason."), TftColor::PURPLE, 2);
+  m_tft.drawText(15, 50, (status_code ? "Failed!" : "Success!"), (status_code ? TftColor::RED : TftColor::GREEN), 3);
+  m_tft.drawText(15, 80, (status_code < 4 ? details_buf[status_code] : "Unknown reason."), TftColor::PURPLE, 2);
 }
 
 uint8_t ProgrammerFromSd::read_byte() {
@@ -113,14 +113,26 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_ee.write(addr, data);
 
   m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10,   10, "Wrote",                             TftColor::CYAN,  3);
-  m_tft.drawText(10,   37, STRFMT_NOBUF("data %02X", data),     TftColor::GREEN, 4);
-  m_tft.drawText(10,   73, "to",                                TftColor::CYAN,  3);
-  m_tft.drawText(10,  100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN, 4);
+  m_tft.drawText(10,   10, "Wrote",                             TftColor::DGREEN, 3);
+  m_tft.drawText(10,   37, STRFMT_NOBUF("data %02X", data),     TftColor::GREEN,  4);
+  m_tft.drawText(10,   73, "to",                                TftColor::DGREEN, 3);
+  m_tft.drawText(10,  100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);
   continue_btn.wait_for_press(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
+  TftYesNoMenu vrf_menu(m_tft, 50, 17);
+  vrf_menu.draw(m_tft);
+
+  uint8_t should_verify = vrf_menu.wait_for_press(m_tch, m_tft);
+
+  if (should_verify == 0 && m_ee.read(addr) != data) {
+    return 3;
+  }
 
   m_tft.fillScreen(TftColor::BLACK);
 

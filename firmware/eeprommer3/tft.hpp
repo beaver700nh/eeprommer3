@@ -13,6 +13,7 @@ namespace TftColor {
     RED     = 0xF800,
     ORANGE  = 0xFEE3,
     YELLOW  = 0xFFE0,
+    DGREEN  = 0x03E0,
     GREEN   = 0x07E0,
     CYAN    = 0x07FF,
     BLUE    = 0x001F,
