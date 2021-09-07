@@ -141,7 +141,7 @@ public:
     tft.fillRect(x, y, tft.width() - x, 7 * font_size, bg);
 
     char strfmt_buf[50];
-    sprintf(strfmt_buf, "Addr: [%%0%dX]", BIT_WIDTH(T) / 4);
+    sprintf(strfmt_buf, "Val: [%%0%dX]", BIT_WIDTH(T) / 4);
 
     tft.drawText(x, y, STRFMT_NOBUF(strfmt_buf, m_val), fg, font_size);
   }

@@ -9,12 +9,12 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
-ProgrammerFromSD::ProgrammerFromSD(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft)
+ProgrammerFromSd::ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft)
   : m_ee(ee), m_sd(sd), m_tch(tch), m_tft(tft) {
   // Empty
 }
 
-void ProgrammerFromSD::run() {
+void ProgrammerFromSd::run() {
   TftMenu menu;
   menu.add_btn(new TftBtn( 10,  10, 225, 24,  61, 5, "Read Byte",    TftColor::BLUE,   TftColor::CYAN));
   menu.add_btn(new TftBtn(245,  10, 225, 24,  55, 5, "Write Byte",   TftColor::RED,    TftColor::PINKK));
@@ -46,14 +46,14 @@ void ProgrammerFromSD::run() {
   }
 }
 
-uint8_t ProgrammerFromSD::do_action(uint8_t action) {
+uint8_t ProgrammerFromSd::do_action(uint8_t action) {
   m_tft.fillScreen(TftColor::BLACK);
 
   uint8_t status_code = 1;
 
   switch (action) {
-  case 0: status_code = read_byte(); break;
-  case 1: status_code = 1; break;
+  case 0: status_code = read_byte();  break;
+  case 1: status_code = write_byte(); break;
   case 2: status_code = 1; break;
   case 3: status_code = 1; break;
   case 4: status_code = 1; break;
@@ -71,47 +71,30 @@ uint8_t ProgrammerFromSD::do_action(uint8_t action) {
   return status_code;
 }
 
-void ProgrammerFromSD::show_status(uint8_t code) {
+void ProgrammerFromSd::show_status(uint8_t code) {
   m_tft.fillScreen(TftColor::BLACK);
   m_tft.drawText(10, 10, "Result:", TftColor::CYAN, 4);
 
-  const char *details_buf[4] = {
+  const char *details_buf[] = {
     "No errors.",
     "Invalid action.",
     "Failed to open file.",
-    "Verification failed.",
   };
 
   m_tft.drawText(15, 50, (code ? "Failed!" : "Success!"), (code ? TftColor::RED : TftColor::GREEN), 3);
-  m_tft.drawText(15, 80, (code < 4 ? details_buf[code] : "Unknown reason."), TftColor::PURPLE, 2);
+  m_tft.drawText(15, 80, (code < 3 ? details_buf[code] : "Unknown reason."), TftColor::PURPLE, 2);
 }
 
-uint8_t ProgrammerFromSD::read_byte() {
-  m_tft.drawText(10, 10, "What address?", TftColor::CYAN, 4);
-
-  TftHexSelMenu<uint16_t> menu(m_tft, 50, 17);
-  menu.add_btn(new TftBtn(10, 286, 460, 24, 184, 5, "Continue"));
-
-  while (true) { // Loop to get an addr
-    menu.erase(m_tft);
-    menu.draw(m_tft);
-    menu.show_val(m_tft, 90, 170, 4, TftColor::ORANGE, TftColor::BLACK);
-
-    uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
-
-    if (btn_pressed == 16) break;
-
-    menu.update_val(btn_pressed);
-  }
-
-  uint8_t val = m_ee.read(menu.get_val());
+uint8_t ProgrammerFromSd::read_byte() {
+  uint16_t addr = ask_val<uint16_t>("Type an address:");
+  uint8_t data = m_ee.read(addr);
 
   m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10,  10, STRFMT_NOBUF("Value at address %04X:", menu.get_val()), TftColor::CYAN,   3);
-  m_tft.drawText(20,  50, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(val)),      TftColor::YELLOW, 2);
-  m_tft.drawText(20,  80, STRFMT_NOBUF("OCT: %03o",      val),                    TftColor::YELLOW, 2);
-  m_tft.drawText(20, 110, STRFMT_NOBUF("HEX: %02X",      val),                    TftColor::YELLOW, 2);
-  m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      val),                    TftColor::YELLOW, 2);
+  m_tft.drawText(10,  10, STRFMT_NOBUF("Value at address %04X:", addr),       TftColor::CYAN,   3);
+  m_tft.drawText(20,  50, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(data)), TftColor::YELLOW, 2);
+  m_tft.drawText(20,  80, STRFMT_NOBUF("OCT: %03o",      data),               TftColor::YELLOW, 2);
+  m_tft.drawText(20, 110, STRFMT_NOBUF("HEX: %02X",      data),               TftColor::YELLOW, 2);
+  m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
 
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);
@@ -120,10 +103,31 @@ uint8_t ProgrammerFromSD::read_byte() {
   m_tft.fillScreen(TftColor::BLACK);
 
   return 0;
-}                                  //////////////////////////////////// TODO: write helper function to get address and data
-/////////////////////////////////////////////////////////////////////// OR make them members of TftHexSelMenu class
+}
 
-uint32_t ProgrammerFromSD::write_file(const char *file, uint16_t start, uint16_t n) {
+uint8_t ProgrammerFromSd::write_byte() {
+  uint16_t addr = ask_val<uint16_t>("Type an address:");
+  m_tft.fillScreen(TftColor::BLACK);
+  uint8_t data = ask_val<uint8_t>("Type the data:");
+
+  m_ee.write(addr, data);
+
+  m_tft.fillScreen(TftColor::BLACK);
+  m_tft.drawText(10,   10, "Wrote",                             TftColor::CYAN,  3);
+  m_tft.drawText(10,   37, STRFMT_NOBUF("data %02X", data),     TftColor::GREEN, 4);
+  m_tft.drawText(10,   73, "to",                                TftColor::CYAN,  3);
+  m_tft.drawText(10,  100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN, 4);
+
+  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+  continue_btn.draw(m_tft);
+  continue_btn.wait_for_press(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  return 0;
+}
+
+uint32_t ProgrammerFromSd::write_file(const char *file, uint16_t start, uint16_t n) {
 //  File f = SD.open(file);
 //  uint8_t b;
 //  uint32_t i;
@@ -135,6 +139,6 @@ uint32_t ProgrammerFromSD::write_file(const char *file, uint16_t start, uint16_t
 //  return i - start;
 }
 
-uint32_t ProgrammerFromSD::read_file(const char *file, uint16_t start, uint16_t n) {
+uint32_t ProgrammerFromSd::read_file(const char *file, uint16_t start, uint16_t n) {
   return 0;
 }

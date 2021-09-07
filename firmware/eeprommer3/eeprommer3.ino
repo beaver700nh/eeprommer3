@@ -55,7 +55,7 @@ void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
   if (sd.is_enabled()) {
-    ProgrammerFromSD prog(ee, sd, tch, tft);
+    ProgrammerFromSd prog(ee, sd, tch, tft);
     prog.run();
   }
   else {
