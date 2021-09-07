@@ -5,6 +5,7 @@
 #include <LiquidCrystalIO.h>
 #include <Wire.h>
 
+#include "bitmaps.hpp"
 #include "comm.hpp"
 #include "eeprom.hpp"
 #include "prog.hpp"
@@ -30,6 +31,7 @@ void setup() {
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
+  tft.drawRGBBitmapScaled(40, 10, START_SCREEN, 80, 60, 5);
 
   ee.init();
 
@@ -41,12 +43,12 @@ void setup() {
 
   uint8_t res = sd.init();
 
-  if      (res == 0) tft.drawText(5, tft.height() - 24, "SD was initialized successfully!",   TftColor::GREEN,   2);
-  else if (res == 1) tft.drawText(5, tft.height() - 24, "SD card support has been disabled!", TftColor::ORANGE,  2);
-  else if (res == 2) tft.drawText(5, tft.height() - 24, "SD card failed to initialize!",      TftColor::RED,     2);
-  else               tft.drawText(5, tft.height() - 24, "SD init returned bad error code!",   TftColor::MAGENTA, 2);
+  if      (res == 0) tft.drawText(50, tft.height() - 34, "SD was initialized successfully!",   TftColor::GREEN,   2);
+  else if (res == 1) tft.drawText(50, tft.height() - 34, "SD card support has been disabled!", TftColor::ORANGE,  2);
+  else if (res == 2) tft.drawText(50, tft.height() - 34, "SD card failed to initialize!",      TftColor::RED,     2);
+  else               tft.drawText(50, tft.height() - 34, "SD init returned bad error code!",   TftColor::MAGENTA, 2);
 
-  delay(1000);
+  delay(5000);
 
   mainprog();
 }

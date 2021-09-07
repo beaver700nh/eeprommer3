@@ -23,6 +23,14 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
+void TftCtrl::drawRGBBitmapScaled(uint16_t x, uint16_t y, uint16_t *arr, uint16_t width, uint16_t height, uint8_t scale) {
+  for (uint16_t j = 0; j < height; ++j) {
+    for (uint16_t i = 0; i < width; ++i) {
+      fillRect(x + i * scale, y + j * scale, scale, scale, pgm_read_word(&(arr[j * width + i])));
+    }
+  }
+}
+
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)
   : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg) {
   strncpy(m_text, text, 20);
