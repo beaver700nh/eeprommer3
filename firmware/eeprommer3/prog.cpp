@@ -130,11 +130,22 @@ uint8_t ProgrammerFromSd::write_byte() {
 
   uint8_t should_verify = vrf_menu.wait_for_press(m_tch, m_tft);
 
-  if (should_verify == 0 && m_ee.read(addr) != data) {
-    return 3;
-  }
-
   m_tft.fillScreen(TftColor::BLACK);
+
+  if (should_verify == 0) {
+    uint8_t actual = m_ee.read(addr);
+
+    if (actual != data) {
+      m_tft.drawText(10, 10, "Result:",                              TftColor::ORANGE,  4);
+      m_tft.drawText(15, 50, STRFMT_NOBUF("Supposed: %02X", data),   TftColor::PURPLE,  3);
+      m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3);
+
+      continue_btn.draw(m_tft);
+      continue_btn.wait_for_press(m_tch, m_tft);
+
+      return 3;
+    }
+  }
 
   return 0;
 }
