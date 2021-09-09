@@ -5,7 +5,6 @@
 #include <LiquidCrystalIO.h>
 #include <Wire.h>
 
-#include "bitmaps.hpp"
 #include "comm.hpp"
 #include "eeprom.hpp"
 #include "prog.hpp"
@@ -31,7 +30,6 @@ void setup() {
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
-  tft.drawRGBBitmapScaled(40, 10, START_SCREEN, 80, 60, 5);
 
   ee.init();
 
@@ -42,6 +40,8 @@ void setup() {
   lcd.print(" bit.ly/3DCVkbB ");
 
   uint8_t res = sd.init();
+
+  tft.drawRGBBitmapFromFile(80, 40, "startup.bin", 320, 240);
 
   if      (res == 0) tft.drawText(50, tft.height() - 34, "SD was initialized successfully!",   TftColor::GREEN,   2);
   else if (res == 1) tft.drawText(50, tft.height() - 34, "SD card support has been disabled!", TftColor::ORANGE,  2);

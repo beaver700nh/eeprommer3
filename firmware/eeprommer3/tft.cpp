@@ -2,6 +2,7 @@
 #include "constants.hpp"
 
 #include <MCUFRIEND_kbv.h>
+#include <SD.h>
 #include <TouchScreen.h>
 
 #include "tft.hpp"
@@ -23,12 +24,30 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
-void TftCtrl::drawRGBBitmapScaled(uint16_t x, uint16_t y, uint16_t *arr, uint16_t width, uint16_t height, uint8_t scale) {
-  for (uint16_t j = 0; j < height; ++j) {
-    for (uint16_t i = 0; i < width; ++i) {
-      fillRect(x + i * scale, y + j * scale, scale, scale, pgm_read_word(&(arr[j * width + i])));
+bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height) {
+  File f = SD.open(file);
+  if (!f) return false;
+
+  uint8_t b1, b2;
+  const uint16_t origin_x = x, origin_y = y;
+
+  while (f.available()) {
+    b1 = f.read();
+    if (!f.available()) return false;
+    b2 = f.read();
+
+    drawPixel(x, y, (b1 << 8) | b2);
+
+    if (++x - origin_x >= width) {
+      x = origin_x;
+
+      if (++y - origin_y >= height) {
+        break;
+      }
     }
   }
+
+  return true;
 }
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)

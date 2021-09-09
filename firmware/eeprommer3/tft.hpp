@@ -39,7 +39,7 @@ public:
   void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size = 2);
   void drawText(const char *text);
 
-  void drawRGBBitmapScaled(uint16_t x, uint16_t y, uint16_t *arr, uint16_t width, uint16_t height, uint8_t scale);
+  bool drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height);
 };
 
 class TftBtn {
