@@ -28,25 +28,25 @@ bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, ui
   File f = SD.open(file);
   if (!f) return false;
 
-  uint8_t b1, b2;
-  const uint16_t origin_x = x, origin_y = y;
+  size_t row_size_bytes = width * sizeof(uint16_t);
 
-  while (f.available()) {
-    b1 = f.read();
-    if (!f.available()) return false;
-    b2 = f.read();
+  uint16_t *buf = (uint16_t *) malloc(row_size_bytes);
+  if (buf == nullptr) return false;
 
-    drawPixel(x, y, (b1 << 8) | b2);
+  for (uint16_t j = 0; j < height; ++j) {
+    int16_t res = f.read((uint8_t *) buf, row_size_bytes);
 
-    if (++x - origin_x >= width) {
-      x = origin_x;
+    if (res < 0) {
+      free(buf);
+      return false;
+    }
 
-      if (++y - origin_y >= height) {
-        break;
-      }
+    for (uint16_t i = 0; i < width; ++i) {
+      writePixel(x + i, y + j, (buf[i] << 8) | (buf[i] >> 8));
     }
   }
 
+  free(buf);
   return true;
 }
 
