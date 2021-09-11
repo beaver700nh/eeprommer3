@@ -137,8 +137,8 @@ uint8_t ProgrammerFromSd::write_byte() {
 
     if (actual != data) {
       m_tft.drawText(10, 10, "Result:",                              TftColor::ORANGE,  4);
-      m_tft.drawText(15, 50, STRFMT_NOBUF("Supposed: %02X", data),   TftColor::PURPLE,  3);
-      m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3);
+      m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", data),   TftColor::PURPLE,  3);
+      m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3); // TODO silence warnings and write vector set/get funcs
 
       continue_btn.draw(m_tft);
       continue_btn.wait_for_press(m_tch, m_tft);

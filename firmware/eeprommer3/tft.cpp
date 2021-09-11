@@ -24,7 +24,7 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
-bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height) {
+bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent) {
   File f = SD.open(file);
   if (!f) return false;
 
@@ -42,7 +42,9 @@ bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, ui
     }
 
     for (uint16_t i = 0; i < width; ++i) {
-      writePixel(x + i, y + j, (buf[i] << 8) | (buf[i] >> 8));
+      if (buf[i] != transparent) {
+        writePixel(x + i, y + j, (buf[i] << 8) | (buf[i] >> 8));
+      }
     }
   }
 
