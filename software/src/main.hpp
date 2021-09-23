@@ -48,9 +48,11 @@ public:
   DECLARE_EVENT_TABLE()
 
 private:
-  MenuBar  menu_bar;
-  HexData  hex_data;
-  PortCtrl port_ctrl;
+  MenuBar menu_bar;
+  HexData hex_data;
+
+  PortCtrl   port_ctrl;
+  PortConfig port_config;
 
   wxFont normal_font, header_font;
 };

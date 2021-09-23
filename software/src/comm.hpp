@@ -4,24 +4,28 @@
 #include <cstdint>
 #include <libserialport.h>
 
-typedef enum sp_return sp_return;
+int16_t check_sp(enum sp_return status);
 
-int16_t check_sp(sp_return status);
-void set_default_port_config();
+class PortConfig {
+public:
+  PortConfig() {};
+  PortConfig(
+    uint32_t baud, uint8_t bits, enum sp_parity parity, uint8_t stopbits, enum sp_flowcontrol fctrl
+  );
 
-// Defined and configured in comm.cpp
-extern sp_port_config *default_config;
+  struct sp_port_config *config;
+};
 
 class PortCtrl {
 public:
   PortCtrl() {};
-  PortCtrl(const char *name);
+  PortCtrl(const char *name, PortConfig &config);
 
   bool is_initialized();
 
   int16_t list_ports(char **list); /* Assumes #ports < 256 */
 
-  int8_t set_cur_port(const char *name, sp_port_config *config = default_config);
+  int8_t set_cur_port(const char *name, PortConfig &config);
   const char *get_cur_port();
 
   int16_t close_cur_port();
@@ -33,7 +37,7 @@ public:
 private:
   bool initialized = false;
 
-  sp_port *cur_port;
+  struct sp_port *cur_port;
 };
 
 #endif

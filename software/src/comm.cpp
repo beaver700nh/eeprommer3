@@ -7,19 +7,19 @@
 #include "comm.hpp"
 #include "dlgbox.hpp"
 
-sp_port_config *default_config;
-
-void set_default_port_config() {
-  check_sp(sp_new_config(&default_config));
-  check_sp(sp_set_config_baudrate   (default_config, 115200)); // 115200 baud
-  check_sp(sp_set_config_bits       (default_config, 8));     // 8N1
-  check_sp(sp_set_config_parity     (default_config, SP_PARITY_NONE));
-  check_sp(sp_set_config_stopbits   (default_config, 1));     // No flow control
-  check_sp(sp_set_config_flowcontrol(default_config, SP_FLOWCONTROL_NONE));
+PortConfig::PortConfig(
+  uint32_t baud, uint8_t bits, enum sp_parity parity, uint8_t stopbits, enum sp_flowcontrol fctrl
+) {
+  check_sp(sp_new_config(&config));
+  check_sp(sp_set_config_baudrate   (config, baud));
+  check_sp(sp_set_config_bits       (config, bits));
+  check_sp(sp_set_config_parity     (config, parity));
+  check_sp(sp_set_config_stopbits   (config, stopbits));
+  check_sp(sp_set_config_flowcontrol(config, fctrl));
 }
 
-PortCtrl::PortCtrl(const char *name) {
-  set_cur_port(name);
+PortCtrl::PortCtrl(const char *name, PortConfig &config) {
+  set_cur_port(name, config);
 }
 
 bool PortCtrl::is_initialized() {
@@ -27,10 +27,10 @@ bool PortCtrl::is_initialized() {
 }
 
 int16_t PortCtrl::list_ports(char **list) {
-  sp_port **port_list;
+  struct sp_port **port_list;
 
   // Get the ports
-  sp_return result = sp_list_ports(&port_list);
+  enum sp_return result = sp_list_ports(&port_list);
 
   if (result != SP_OK) {
     return -1;
@@ -39,7 +39,7 @@ int16_t PortCtrl::list_ports(char **list) {
   uint8_t i = 0;
 
   while (port_list[i] != nullptr) {
-    sp_port *port = port_list[i];
+    struct sp_port *port = port_list[i];
 
     // Record the port name
     strcpy(list[i++], sp_get_port_name(port));
@@ -53,12 +53,12 @@ int16_t PortCtrl::list_ports(char **list) {
   return i;
 }
 
-int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {
+int8_t PortCtrl::set_cur_port(const char *name, PortConfig &config) {
   bool was_initialized = initialized;
   initialized = false;
 
   if (was_initialized) {
-    // Do nothing if attempting to open already open port
+    // Do nothing if attempting to open already-open port
     if (strcmp(sp_get_port_name(cur_port), name) == 0) {
       return 0;
     }
@@ -78,7 +78,7 @@ int8_t PortCtrl::set_cur_port(const char *name, sp_port_config *config) {
   }
 
   // Configure the new port
-  if (check_sp(sp_set_config(cur_port, config)) != SP_OK) {
+  if (check_sp(sp_set_config(cur_port, config.config)) != SP_OK) {
     return 3;
   }
 

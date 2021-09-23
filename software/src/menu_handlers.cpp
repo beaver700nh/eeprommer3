@@ -78,7 +78,9 @@ void MainFrame::OMTP_show_dialog(wxArrayString ports, wxString old_port) {
 
     wxString new_port = chooser_box->GetStringSelection();
 
-    int8_t res = port_ctrl.set_cur_port(new_port);
+    // port_config is a member variable, which is an
+    // object constructed in MainFrame::MainFrame()
+    int8_t res = port_ctrl.set_cur_port(new_port, port_config);
 
     if (res == 0) {
       // Success
