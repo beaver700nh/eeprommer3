@@ -39,7 +39,9 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
   hex_data = HexData(panel, wxSize(32, 22), header_font, normal_font);
   hex_data.setup_gui();
 
-  set_default_port_config();
+  // Default port config for comm with arduino is
+  // 115200 baud, 8N1 bits, and no flow control
+  port_config = PortConfig(115200, 8, SP_PARITY_NONE, 1, SP_FLOWCONTROL_NONE);
 
   CenterOnScreen();
 }
