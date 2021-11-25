@@ -43,10 +43,10 @@ void setup() {
 
   tft.drawRGBBitmapFromFile(80, 40, "startup.bin", 320, 240);
 
-  if      (res == 0) tft.drawText(90, tft.height() - 64, "SD init success!",       TftColor::GREEN,   2);
-  else if (res == 1) tft.drawText(90, tft.height() - 64, "SD card disabled!",      TftColor::ORANGE,  2);
-  else if (res == 2) tft.drawText(90, tft.height() - 64, "SD init failed!",        TftColor::RED,     2);
-  else               tft.drawText(90, tft.height() - 64, "SD init -> inv status!", TftColor::MAGENTA, 2);
+  if      (res == 0) tft.drawText(90, tft.height() - 64, "SD init success!",   TftColor::GREEN,   2);
+  else if (res == 1) tft.drawText(90, tft.height() - 64, "SD card disabled!",  TftColor::ORANGE,  2);
+  else if (res == 2) tft.drawText(90, tft.height() - 64, "SD init failed!",    TftColor::RED,     2);
+  else               tft.drawText(90, tft.height() - 64, "SD invalid status!", TftColor::MAGENTA, 2);
 
   delay(5000);
 
