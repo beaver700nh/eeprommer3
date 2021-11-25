@@ -16,13 +16,15 @@ ProgrammerFromSd::ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, T
 
 void ProgrammerFromSd::run() {
   TftMenu menu;
-  menu.add_btn(new TftBtn( 10,  10, 225, 24,  61, 5, "Read Byte",    TftColor::BLUE,   TftColor::CYAN));
-  menu.add_btn(new TftBtn(245,  10, 225, 24,  55, 5, "Write Byte",   TftColor::RED,    TftColor::PINKK));
-  menu.add_btn(new TftBtn( 10,  44, 225, 24,  44, 5, "Read to File", TftColor::CYAN,   TftColor::BLUE));
-  menu.add_btn(new TftBtn(245,  44, 225, 24,  55, 5, "Write File",   TftColor::PINKK,  TftColor::RED));
-  menu.add_btn(new TftBtn( 10,  78, 225, 24,  50, 5, "Read Vector",  TftColor::BLACK,  TftColor::GREEN));
-  menu.add_btn(new TftBtn(245,  78, 225, 24,  44, 5, "Write Vector", TftColor::BLACK,  TftColor::ORANGE));
-  menu.add_btn(new TftBtn( 10, 112, 460, 24, 190, 5, "Confirm",      TftColor::BLACK,  TftColor::WHITE));
+  menu.add_btn(new TftBtn( 10,  10, 225, 24,  61, 5, "Read Byte",    TftColor::BLUE,           TftColor::CYAN));
+  menu.add_btn(new TftBtn(245,  10, 225, 24,  55, 5, "Write Byte",   TftColor::RED,            TftColor::PINKK));
+  menu.add_btn(new TftBtn( 10,  44, 225, 24,  44, 5, "Read to File", TftColor::CYAN,           TftColor::BLUE));
+  menu.add_btn(new TftBtn(245,  44, 225, 24,  55, 5, "Write File",   TftColor::PINKK,          TftColor::RED));
+  menu.add_btn(new TftBtn( 10,  78, 225, 24,  50, 5, "Read Vector",  TO_565(0x00, 0x17, 0x00), TO_565(0x7F, 0xFF, 0x7F)));
+  menu.add_btn(new TftBtn(245,  78, 225, 24,  44, 5, "Write Vector", TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52)));
+  menu.add_btn(new TftBtn( 10, 112, 225, 24,  55, 5, "Read Range",   TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
+  menu.add_btn(new TftBtn(245, 112, 225, 24,  50, 5, "Write Range",  TftColor::BLACK,          TftColor::ORANGE));
+  menu.add_btn(new TftBtn( 10, 286, 460, 24, 190, 5, "Confirm",      TftColor::BLACK,          TftColor::WHITE));
 
   menu.get_btn(0)->highlight(true);
 
@@ -95,6 +97,7 @@ uint8_t ProgrammerFromSd::read_byte() {
   m_tft.drawText(20,  80, STRFMT_NOBUF("OCT: %03o",      data),               TftColor::YELLOW, 2);
   m_tft.drawText(20, 110, STRFMT_NOBUF("HEX: %02X",      data),               TftColor::YELLOW, 2);
   m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
+  m_tft.drawText(20, 170, STRFMT_NOBUF("CHR: %c",        data),               TftColor::YELLOW, 2);
 
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);
