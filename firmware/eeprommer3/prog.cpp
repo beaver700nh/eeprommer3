@@ -97,11 +97,10 @@ uint8_t ProgrammerFromSd::write_byte() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
+  // Done writing, ask to verify
   m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
 
   TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true, 0);
-  vrf_menu.get_btn(0)->highlight(true);
-
   uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -133,31 +132,31 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
   return 0;
 }
 
-uint8_t ProgrammerFromSd::read_vector() {
-  static char *names[3] = {"IRQ", "RESET", "NMI"};
-
+Vector ProgrammerFromSd::ask_vector() {
   m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
 
   TftChoiceMenu menu(50, 10, 10, 10, 3, 54, 1);
-  menu.add_btn_calc(m_tft, names[0], TftColor::CYAN,           TftColor::BLUE);
-  menu.add_btn_calc(m_tft, names[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, names[2], TftColor::PINKK,          TftColor::RED);
+  menu.add_btn_calc(m_tft, Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE);
+  menu.add_btn_calc(m_tft, Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
+  menu.add_btn_calc(m_tft, Vector::NAMES[2], TftColor::PINKK,          TftColor::RED);
   menu.add_btn_confirm(m_tft, true);
 
-  uint8_t cur_choice = menu.wait_for_value(m_tch, m_tft);
+  uint8_t vector_id = menu.wait_for_value(m_tch, m_tft);
+
+  return Vector(vector_id);
+}
+
+uint8_t ProgrammerFromSd::read_vector() {
+  Vector vec = ask_vector();
+  vec.update(m_ee);
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  uint8_t vector_addr = (1 + cur_choice) * 2 + 0xF8;
-  uint8_t vector_l = m_ee.read(0xFF00 + vector_addr);
-  uint8_t vector_h = m_ee.read(0xFF01 + vector_addr);
-  uint16_t vector = (vector_h << 8) | vector_l;
-
-  m_tft.drawText( 10,  10, STRFMT_NOBUF("Value of %s vector:", names[cur_choice]),      TftColor::CYAN,   3);
-  m_tft.drawText(320,  50, STRFMT_NOBUF("(FF%02X-%02X)", vector_addr, vector_addr + 1), TftColor::BLUE,   2);
-  m_tft.drawText( 16,  50, STRFMT_NOBUF("HEX: %04X", vector),                           TftColor::YELLOW, 2);
-  m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vector_h)),      TftColor::YELLOW, 2);
-  m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vector_l)),      TftColor::YELLOW, 2);
+  m_tft.drawText( 10,  10, STRFMT_NOBUF("Value of %s vector:", Vector::NAMES[vec.m_id]), TftColor::CYAN,   3);
+  m_tft.drawText(320,  50, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1),    TftColor::BLUE,   2);
+  m_tft.drawText( 16,  50, STRFMT_NOBUF("HEX: %04X", vec.m_val),                         TftColor::YELLOW, 2);
+  m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
+  m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
 
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);
@@ -169,13 +168,64 @@ uint8_t ProgrammerFromSd::read_vector() {
 }
 
 uint8_t ProgrammerFromSd::write_vector() {
-  return nop();
+  Vector vec = ask_vector();
+  vec.update(m_ee);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  uint16_t new_val = ask_val<uint16_t>("Type the new value:");
+  m_ee.write(vec.m_addr,     new_val & 0xFF);
+  m_ee.write(vec.m_addr + 1, new_val >> 8);
+
+  m_tft.fillScreen(TftColor::BLACK);
+  m_tft.drawText(10,  10, "Wrote",                                                 TftColor::DGREEN, 3);
+  m_tft.drawText(10,  37, STRFMT_NOBUF("value %04X", new_val),                     TftColor::GREEN,  4);
+  m_tft.drawText(10,  73, "to",                                                    TftColor::DGREEN, 3);
+  m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
+  m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
+
+  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+  continue_btn.draw(m_tft);
+  continue_btn.wait_for_press(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  // Done writing, ask to verify
+  m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
+
+  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true, 0);
+  uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if (should_verify == 0) {
+    return verify_vector(vec.m_addr, new_val);
+  }
+
+  return 0;
 }
 
 uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
-  return nop();
+  uint16_t actual = (m_ee.read(addr + 1) << 8) | m_ee.read(addr);
+
+  if (actual != data) {
+    m_tft.drawText(10, 10, "Result:",                              TftColor::ORANGE,  4);
+    m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", data),   TftColor::PURPLE,  3);
+    m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual), TftColor::MAGENTA, 3);
+
+    TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+    continue_btn.draw(m_tft);
+    continue_btn.wait_for_press(m_tch, m_tft);
+
+    m_tft.fillScreen(TftColor::BLACK);
+
+    return 3;
+  }
+
+  return 0;
 }
 
+// Dummy function for unimplemented actions
 uint8_t ProgrammerFromSd::nop() {
   return 0;
 }

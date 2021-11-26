@@ -9,6 +9,27 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
+struct Vector {
+  Vector(uint8_t id)
+    : m_id(id), m_addr(0xFFF8 + 2 * (id + 1)) {
+    // Empty
+  }
+
+  void update(EepromCtrl &ee) {
+    m_lo = ee.read(m_addr);
+    m_hi = ee.read(m_addr + 1);
+    m_val = (m_hi << 8) | m_lo;
+  }
+
+  uint8_t m_id;
+  uint16_t m_addr;
+
+  uint8_t m_lo, m_hi;
+  uint16_t m_val;
+
+  inline static constexpr char *NAMES[3] = {"NMI", "RESET", "IRQ"};
+};
+
 class ProgrammerFromSd {
 public:
   ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft);
@@ -22,10 +43,9 @@ public:
   
     TftHexSelMenu<T> menu(m_tft, 50, 17);
     menu.add_btn(new TftBtn(10, 286, 460, 24, 184, 5, "Continue"));
+    menu.draw(m_tft);
   
     while (true) { // Loop to get a val
-      menu.erase(m_tft);
-      menu.draw(m_tft);
       menu.show_val(m_tft, 10, 170, 4, TftColor::ORANGE, TftColor::BLACK);
   
       uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
@@ -37,6 +57,8 @@ public:
   
     return menu.get_val();
   }
+
+  Vector ask_vector();
 
   typedef uint8_t (ProgrammerFromSd::*action_func)();
 
