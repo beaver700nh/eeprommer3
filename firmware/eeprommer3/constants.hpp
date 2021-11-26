@@ -55,6 +55,7 @@ static char custom_strfmt_buf[100];
 #define STRINGIFY(s) XSTRINGIFY(s)
 #define XSTRINGIFY(s) #s
 
+#define ARRLEN(a) (sizeof((a)) / sizeof((a)[0]))
 #define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
 
 #define TO_565(r, g, b) (((r) >> 3 << 11) | ((g) >> 2 << 5) | ((b) >> 3))

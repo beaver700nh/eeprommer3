@@ -14,7 +14,6 @@ public:
   ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft);
 
   void run();
-  uint8_t do_action(uint8_t action);
   void show_status(uint8_t code);
 
   template<typename T>
@@ -39,11 +38,16 @@ public:
     return menu.get_val();
   }
 
+  static constexpr uint8_t NUM_ACTIONS = 2;
+
+  typedef uint8_t (ProgrammerFromSd::*action_func)();
+
   uint8_t read_byte();
   uint8_t write_byte();
 
-  uint32_t write_file(const char *file, uint16_t start, uint16_t n);
-  uint32_t read_file(const char *file, uint16_t start, uint16_t n);
+  action_func action_map[NUM_ACTIONS] = {
+    &read_byte, &write_byte,
+  };
 
 private:
   EepromCtrl &m_ee;

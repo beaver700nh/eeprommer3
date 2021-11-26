@@ -37,7 +37,7 @@ void ProgrammerFromSd::run() {
 
       uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
   
-      if (btn_pressed == 6) break;
+      if (btn_pressed == menu.get_num_btns() - 1) break;
   
       menu.get_btn(cur_choice)->highlight(false); // Old "current" choice
       cur_choice = (uint8_t) btn_pressed;
@@ -46,7 +46,7 @@ void ProgrammerFromSd::run() {
   
     m_tft.fillScreen(TftColor::BLACK);
 
-    uint8_t status_code = do_action(cur_choice);
+    uint8_t status_code = (cur_choice < NUM_ACTIONS ? (this->*(action_map[cur_choice]))() : 1);
     show_status(status_code);
 
     TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
@@ -55,21 +55,6 @@ void ProgrammerFromSd::run() {
 
     m_tft.fillScreen(TftColor::BLACK);
   }
-}
-
-uint8_t ProgrammerFromSd::do_action(uint8_t action) {
-  uint8_t status_code = 1;
-
-  switch (action) {
-  case 0: status_code = read_byte();  break;
-  case 1: status_code = write_byte(); break;
-  case 2: status_code = 1; break;
-  case 3: status_code = 1; break;
-  case 4: status_code = 1; break;
-  case 5: status_code = 1; break;
-  }
-
-  return status_code;
 }
 
 void ProgrammerFromSd::show_status(uint8_t status_code) {
@@ -150,21 +135,5 @@ uint8_t ProgrammerFromSd::write_byte() {
     }
   }
 
-  return 0;
-}
-
-uint32_t ProgrammerFromSd::write_file(const char *file, uint16_t start, uint16_t n) {
-//  File f = SD.open(file);
-//  uint8_t b;
-//  uint32_t i;
-//
-//  for (i = start; (f.read(&b, 1) != -1) && (i < 0x10000) && (i < start + n); ++i) {
-//    ee.write(i, b);
-//  }
-//
-//  return i - start;
-}
-
-uint32_t ProgrammerFromSd::read_file(const char *file, uint16_t start, uint16_t n) {
   return 0;
 }
