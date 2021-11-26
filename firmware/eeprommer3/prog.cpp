@@ -135,23 +135,38 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_vector() {
+  static char *names[3] = {"IRQ", "RESET", "NMI"};
+
   m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
 
   TftChoiceMenu menu(50, 10, 10, 10, 3, 54);
-  menu.add_btn_calc(m_tft, "IRQ",   TftColor::CYAN,           TftColor::BLUE);
-  menu.add_btn_calc(m_tft, "RESET", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, "NMI",   TftColor::PINKK,          TftColor::RED);
+  menu.add_btn_calc(m_tft, names[0], TftColor::CYAN,           TftColor::BLUE);
+  menu.add_btn_calc(m_tft, names[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
+  menu.add_btn_calc(m_tft, names[2], TftColor::PINKK,          TftColor::RED);
   menu.add_btn_confirm(m_tft, true);
 
   uint8_t cur_choice = menu.wait_for_value(m_tch, m_tft);
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  cur_choice = constrain(cur_choice, 0, 2);
-  cur_choice = (1 + cur_choice) * 2 + 0xF8;
+  uint8_t vector_addr = (1 + cur_choice) * 2 + 0xF8;
+  uint8_t vector_l = m_ee.read(0xFF00 + vector_addr);
+  uint8_t vector_h = m_ee.read(0xFF01 + vector_addr);
+  uint16_t vector = (vector_h << 8) | vector_l;
 
-  m_tft.drawText(10, 10, STRFMT_NOBUF("%02X", cur_choice), TftColor::RED, 3);
-  delay(1000);
+  m_tft.drawText( 10, 10, STRFMT_NOBUF("Value of %s vector:", names[cur_choice]), TftColor::CYAN, 3);
+  m_tft.drawText(320, 50, STRFMT_NOBUF("(FF%02X-%02X)", vector_addr, vector_addr + 1), TftColor::BLUE, 2);
+
+  m_tft.drawText(16, 50, STRFMT_NOBUF("HEX: %04X", vector), TftColor::YELLOW, 2);
+  m_tft.drawText(
+    16, 80, STRFMT_NOBUF("BIN: " BYTE_FMT "" BYTE_FMT, BYTE_FMT_VAL(vector_h), BYTE_FMT_VAL(vector_l)), TftColor::YELLOW, 2
+  );
+
+  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+  continue_btn.draw(m_tft);
+  continue_btn.wait_for_press(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
 
   return 0;
 }
