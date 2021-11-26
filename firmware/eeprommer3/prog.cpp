@@ -146,7 +146,40 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_vector() {
-  return nop();
+  m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
+
+  TftMenu menu;
+  menu.add_btn(new TftBtn( 10,  45, 147, 54, 57, 20, "IRQ",     TftColor::CYAN,           TftColor::BLUE));
+  menu.add_btn(new TftBtn(167,  45, 146, 54, 44, 20, "RESET",   TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
+  menu.add_btn(new TftBtn(323,  45, 147, 54, 57, 20, "NMI",     TftColor::PINKK,          TftColor::RED));
+  menu.add_btn(new TftBtn( 10, 286, 460, 24, 190, 5, "Confirm", TftColor::BLACK,          TftColor::WHITE));
+
+  menu.get_btn(1)->highlight(true);
+
+  uint8_t cur_choice = 1;
+
+  while (true) {
+    menu.erase(m_tft);
+    menu.draw(m_tft);
+
+    uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
+
+    if (btn_pressed == menu.get_num_btns() - 1) break;
+
+    menu.get_btn(cur_choice)->highlight(false); // Old "current" choice
+    cur_choice = (uint8_t) btn_pressed;
+    menu.get_btn(cur_choice)->highlight(true);
+  }
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  cur_choice = constrain(cur_choice, 0, 2);
+  cur_choice = (1 + cur_choice) * 2 + 0xF8;
+
+  m_tft.drawText(10, 10, STRFMT_NOBUF("%02X", cur_choice), TftColor::RED, 3);
+  delay(1000);
+
+  return 0;
 }
 
 uint8_t ProgrammerFromSd::write_vector() {

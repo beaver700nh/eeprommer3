@@ -48,7 +48,7 @@ void setup() {
   else if (res == 2) tft.drawText(90, tft.height() - 64, "SD init failed!",    TftColor::RED,     2);
   else               tft.drawText(90, tft.height() - 64, "SD invalid status!", TftColor::MAGENTA, 2);
 
-  delay(3000);
+  delay(2000);
 
   mainprog();
 }
