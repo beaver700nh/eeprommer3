@@ -161,9 +161,11 @@ public:
   TftChoiceMenu(
     uint8_t v_margin, uint8_t h_margin,
     uint8_t v_padding, uint8_t h_padding,
-    uint8_t num_cols, uint16_t btn_height
+    uint8_t num_cols, uint16_t btn_height,
+    uint8_t initial_choice = 0
   );
 
+  bool add_btn(TftBtn *btn);
   bool add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
   bool add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
   uint8_t wait_for_value(TouchCtrl &tch, TftCtrl &tft);
@@ -181,7 +183,7 @@ public:
     TftCtrl &tft,
     uint8_t v_margin, uint8_t h_margin,
     uint8_t v_padding, uint8_t h_padding,
-    bool force_bottom
+    bool force_bottom, uint8_t initial_choice = 0
   );
 };
 

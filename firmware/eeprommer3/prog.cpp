@@ -26,8 +26,6 @@ void ProgrammerFromSd::run() {
   menu.add_btn_calc(m_tft, "Write Range",  TftColor::BLACK,          TftColor::ORANGE);
   menu.add_btn_confirm(m_tft, true);
 
-  menu.get_btn(0)->highlight(true);
-
   while (true) { // Main loop
     m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
     uint8_t cur_choice = menu.wait_for_value(m_tch, m_tft);
@@ -46,7 +44,6 @@ void ProgrammerFromSd::run() {
 }
 
 void ProgrammerFromSd::show_status(uint8_t status_code) {
-  m_tft.fillScreen(TftColor::BLACK);
   m_tft.drawText(10, 10, "Result:", TftColor::CYAN, 4);
 
   const char *details_buf[] = {
@@ -102,7 +99,7 @@ uint8_t ProgrammerFromSd::write_byte() {
 
   m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
 
-  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true);
+  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true, 0);
   vrf_menu.get_btn(0)->highlight(true);
 
   uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
@@ -128,6 +125,8 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
     continue_btn.draw(m_tft);
     continue_btn.wait_for_press(m_tch, m_tft);
 
+    m_tft.fillScreen(TftColor::BLACK);
+
     return 3;
   }
 
@@ -139,7 +138,7 @@ uint8_t ProgrammerFromSd::read_vector() {
 
   m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
 
-  TftChoiceMenu menu(50, 10, 10, 10, 3, 54);
+  TftChoiceMenu menu(50, 10, 10, 10, 3, 54, 1);
   menu.add_btn_calc(m_tft, names[0], TftColor::CYAN,           TftColor::BLUE);
   menu.add_btn_calc(m_tft, names[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
   menu.add_btn_calc(m_tft, names[2], TftColor::PINKK,          TftColor::RED);
@@ -154,13 +153,11 @@ uint8_t ProgrammerFromSd::read_vector() {
   uint8_t vector_h = m_ee.read(0xFF01 + vector_addr);
   uint16_t vector = (vector_h << 8) | vector_l;
 
-  m_tft.drawText( 10, 10, STRFMT_NOBUF("Value of %s vector:", names[cur_choice]), TftColor::CYAN, 3);
-  m_tft.drawText(320, 50, STRFMT_NOBUF("(FF%02X-%02X)", vector_addr, vector_addr + 1), TftColor::BLUE, 2);
-
-  m_tft.drawText(16, 50, STRFMT_NOBUF("HEX: %04X", vector), TftColor::YELLOW, 2);
-  m_tft.drawText(
-    16, 80, STRFMT_NOBUF("BIN: " BYTE_FMT "" BYTE_FMT, BYTE_FMT_VAL(vector_h), BYTE_FMT_VAL(vector_l)), TftColor::YELLOW, 2
-  );
+  m_tft.drawText( 10,  10, STRFMT_NOBUF("Value of %s vector:", names[cur_choice]),      TftColor::CYAN,   3);
+  m_tft.drawText(320,  50, STRFMT_NOBUF("(FF%02X-%02X)", vector_addr, vector_addr + 1), TftColor::BLUE,   2);
+  m_tft.drawText( 16,  50, STRFMT_NOBUF("HEX: %04X", vector),                           TftColor::YELLOW, 2);
+  m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vector_h)),      TftColor::YELLOW, 2);
+  m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vector_l)),      TftColor::YELLOW, 2);
 
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);

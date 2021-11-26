@@ -240,12 +240,23 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
 TftChoiceMenu::TftChoiceMenu(
   uint8_t v_margin, uint8_t h_margin,
   uint8_t v_padding, uint8_t h_padding,
-  uint8_t num_cols, uint16_t btn_height
+  uint8_t num_cols, uint16_t btn_height,
+  uint8_t initial_choice
 )
   : m_v_margin(v_margin), m_h_margin(h_margin),
   m_v_padding(v_padding), m_h_padding(h_padding),
-  m_num_cols(num_cols), m_btn_height(btn_height) {
+  m_num_cols(num_cols), m_btn_height(btn_height),
+  m_cur_choice(initial_choice) {
   // Empty
+}
+
+bool TftChoiceMenu::add_btn(TftBtn *btn) {
+  bool retval = TftMenu::add_btn(btn);
+  if (m_num_btns - 1 == m_cur_choice) {
+    get_btn(m_num_btns - 1)->highlight(true);
+  }
+
+  return retval;
 }
 
 bool TftChoiceMenu::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg) {
@@ -299,9 +310,9 @@ TftYesNoMenu::TftYesNoMenu(
   TftCtrl &tft,
   uint8_t v_margin, uint8_t h_margin,
   uint8_t v_padding, uint8_t h_padding,
-  bool force_bottom
+  bool force_bottom, uint8_t initial_choice
 )
-  : TftChoiceMenu(v_margin, h_margin, v_padding, h_padding, 2, 120) {
+  : TftChoiceMenu(v_margin, h_margin, v_padding, h_padding, 2, 120, initial_choice) {
   add_btn_calc(tft, "Yes", TftColor::BLACK, TftColor::GREEN);
   add_btn_calc(tft, "No",  TftColor::WHITE, TftColor::RED);
   add_btn_confirm(tft, force_bottom);
