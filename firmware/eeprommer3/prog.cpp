@@ -101,10 +101,10 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_ee.write(addr, data);
 
   m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10,   10, "Wrote",                             TftColor::DGREEN, 3);
-  m_tft.drawText(10,   37, STRFMT_NOBUF("data %02X", data),     TftColor::GREEN,  4);
-  m_tft.drawText(10,   73, "to",                                TftColor::DGREEN, 3);
-  m_tft.drawText(10,  100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
+  m_tft.drawText(10,  10, "Wrote",                             TftColor::DGREEN, 3);
+  m_tft.drawText(10,  37, STRFMT_NOBUF("data %02X", data),     TftColor::GREEN,  4);
+  m_tft.drawText(10,  73, "to",                                TftColor::DGREEN, 3);
+  m_tft.drawText(10, 100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
   TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
   continue_btn.draw(m_tft);
@@ -121,19 +121,42 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_tft.fillScreen(TftColor::BLACK);
 
   if (should_verify == 0) {
-    uint8_t actual = m_ee.read(addr);
-
-    if (actual != data) {
-      m_tft.drawText(10, 10, "Result:",                              TftColor::ORANGE,  4);
-      m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", data),   TftColor::PURPLE,  3);
-      m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3); // TODO silence warnings and write vector set/get funcs
-
-      continue_btn.draw(m_tft);
-      continue_btn.wait_for_press(m_tch, m_tft);
-
-      return 3;
-    }
+    return verify_byte(addr, data);
   }
 
+  return 0;
+}
+
+uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
+  uint8_t actual = m_ee.read(addr);
+
+  if (actual != data) {
+    m_tft.drawText(10, 10, "Result:",                              TftColor::ORANGE,  4);
+    m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", data),   TftColor::PURPLE,  3);
+    m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3);
+
+    TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+    continue_btn.draw(m_tft);
+    continue_btn.wait_for_press(m_tch, m_tft);
+
+    return 3;
+  }
+
+  return 0;
+}
+
+uint8_t ProgrammerFromSd::read_vector() {
+  return nop();
+}
+
+uint8_t ProgrammerFromSd::write_vector() {
+  return nop();
+}
+
+uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
+  return nop();
+}
+
+uint8_t ProgrammerFromSd::nop() {
   return 0;
 }

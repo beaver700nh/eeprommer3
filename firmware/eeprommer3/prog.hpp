@@ -38,15 +38,25 @@ public:
     return menu.get_val();
   }
 
-  static constexpr uint8_t NUM_ACTIONS = 2;
-
   typedef uint8_t (ProgrammerFromSd::*action_func)();
 
   uint8_t read_byte();
   uint8_t write_byte();
+  uint8_t verify_byte(uint16_t addr, uint8_t data);
+
+  uint8_t read_vector();
+  uint8_t write_vector();
+  uint8_t verify_vector(uint16_t addr, uint16_t data);
+
+  uint8_t nop();
+
+  static constexpr uint8_t NUM_ACTIONS = 8;
 
   action_func action_map[NUM_ACTIONS] = {
-    &read_byte, &write_byte,
+    &read_byte,   &write_byte,
+    &nop,         &nop,
+    &read_vector, &write_vector,
+    &nop,         &nop,
   };
 
 private:
