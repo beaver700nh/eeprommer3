@@ -11,7 +11,7 @@
 namespace TftColor {
   enum : uint16_t {
     RED     = 0xF800,
-    ORANGE  = 0xFEE3,
+    ORANGE  = 0xFCE3,
     YELLOW  = 0xFFE0,
     DGREEN  = 0x03E0,
     GREEN   = 0x07E0,
@@ -156,9 +156,33 @@ private:
   T m_val = 0;
 };
 
-class TftYesNoMenu : public TftMenu {
+class TftChoiceMenu : public TftMenu {
 public:
-  TftYesNoMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin);
+  TftChoiceMenu(
+    uint8_t v_margin, uint8_t h_margin,
+    uint8_t v_padding, uint8_t h_padding,
+    uint8_t num_cols, uint16_t btn_height
+  );
+
+  bool add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
+  bool add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
+  uint8_t wait_for_value(TouchCtrl &tch, TftCtrl &tft);
+
+protected:
+  uint8_t m_cur_choice = 0;
+  uint8_t m_v_margin, m_h_margin, m_v_padding, m_h_padding;
+  uint8_t m_num_cols, m_btn_height;
+  uint8_t m_confirm_btn = 0;
+};
+
+class TftYesNoMenu : public TftChoiceMenu {
+public:
+  TftYesNoMenu(
+    TftCtrl &tft,
+    uint8_t v_margin, uint8_t h_margin,
+    uint8_t v_padding, uint8_t h_padding,
+    bool force_bottom
+  );
 };
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);

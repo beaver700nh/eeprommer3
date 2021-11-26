@@ -15,34 +15,22 @@ ProgrammerFromSd::ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, T
 }
 
 void ProgrammerFromSd::run() {
-  TftMenu menu;
-  menu.add_btn(new TftBtn( 10,  10, 225, 24,  61, 5, "Read Byte",    TftColor::BLUE,           TftColor::CYAN));
-  menu.add_btn(new TftBtn(245,  10, 225, 24,  55, 5, "Write Byte",   TftColor::RED,            TftColor::PINKK));
-  menu.add_btn(new TftBtn( 10,  44, 225, 24,  44, 5, "Read to File", TftColor::CYAN,           TftColor::BLUE));
-  menu.add_btn(new TftBtn(245,  44, 225, 24,  55, 5, "Write File",   TftColor::PINKK,          TftColor::RED));
-  menu.add_btn(new TftBtn( 10,  78, 225, 24,  50, 5, "Read Vector",  TO_565(0x00, 0x17, 0x00), TO_565(0x7F, 0xFF, 0x7F)));
-  menu.add_btn(new TftBtn(245,  78, 225, 24,  44, 5, "Write Vector", TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52)));
-  menu.add_btn(new TftBtn( 10, 112, 225, 24,  55, 5, "Read Range",   TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
-  menu.add_btn(new TftBtn(245, 112, 225, 24,  50, 5, "Write Range",  TftColor::BLACK,          TftColor::ORANGE));
-  menu.add_btn(new TftBtn( 10, 286, 460, 24, 190, 5, "Confirm",      TftColor::BLACK,          TftColor::WHITE));
+  TftChoiceMenu menu(50, 10, 10, 10, 2, 30);
+  menu.add_btn_calc(m_tft, "Read Byte",    TftColor::BLUE,           TftColor::CYAN);
+  menu.add_btn_calc(m_tft, "Write Byte",   TftColor::RED,            TftColor::PINKK);
+  menu.add_btn_calc(m_tft, "Read to File", TftColor::CYAN,           TftColor::BLUE);
+  menu.add_btn_calc(m_tft, "Write File",   TftColor::PINKK,          TftColor::RED);
+  menu.add_btn_calc(m_tft, "Read Vector",  TO_565(0x00, 0x17, 0x00), TO_565(0x7F, 0xFF, 0x7F));
+  menu.add_btn_calc(m_tft, "Write Vector", TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
+  menu.add_btn_calc(m_tft, "Read Range",   TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
+  menu.add_btn_calc(m_tft, "Write Range",  TftColor::BLACK,          TftColor::ORANGE);
+  menu.add_btn_confirm(m_tft, true);
 
   menu.get_btn(0)->highlight(true);
 
-  uint8_t cur_choice = 0;
-
   while (true) { // Main loop
-    while (true) { // Loop to get action
-      menu.erase(m_tft);
-      menu.draw(m_tft);
-
-      uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
-  
-      if (btn_pressed == menu.get_num_btns() - 1) break;
-  
-      menu.get_btn(cur_choice)->highlight(false); // Old "current" choice
-      cur_choice = (uint8_t) btn_pressed;
-      menu.get_btn(cur_choice)->highlight(true);
-    }
+    m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
+    uint8_t cur_choice = menu.wait_for_value(m_tch, m_tft);
   
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -113,10 +101,11 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_tft.fillScreen(TftColor::BLACK);
 
   m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
-  TftYesNoMenu vrf_menu(m_tft, 50, 17);
-  vrf_menu.draw(m_tft);
 
-  uint8_t should_verify = vrf_menu.wait_for_press(m_tch, m_tft);
+  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true);
+  vrf_menu.get_btn(0)->highlight(true);
+
+  uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -148,28 +137,13 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 uint8_t ProgrammerFromSd::read_vector() {
   m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
 
-  TftMenu menu;
-  menu.add_btn(new TftBtn( 10,  45, 147, 54, 57, 20, "IRQ",     TftColor::CYAN,           TftColor::BLUE));
-  menu.add_btn(new TftBtn(167,  45, 146, 54, 44, 20, "RESET",   TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
-  menu.add_btn(new TftBtn(323,  45, 147, 54, 57, 20, "NMI",     TftColor::PINKK,          TftColor::RED));
-  menu.add_btn(new TftBtn( 10, 286, 460, 24, 190, 5, "Confirm", TftColor::BLACK,          TftColor::WHITE));
+  TftChoiceMenu menu(50, 10, 10, 10, 3, 54);
+  menu.add_btn_calc(m_tft, "IRQ",   TftColor::CYAN,           TftColor::BLUE);
+  menu.add_btn_calc(m_tft, "RESET", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
+  menu.add_btn_calc(m_tft, "NMI",   TftColor::PINKK,          TftColor::RED);
+  menu.add_btn_confirm(m_tft, true);
 
-  menu.get_btn(1)->highlight(true);
-
-  uint8_t cur_choice = 1;
-
-  while (true) {
-    menu.erase(m_tft);
-    menu.draw(m_tft);
-
-    uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
-
-    if (btn_pressed == menu.get_num_btns() - 1) break;
-
-    menu.get_btn(cur_choice)->highlight(false); // Old "current" choice
-    cur_choice = (uint8_t) btn_pressed;
-    menu.get_btn(cur_choice)->highlight(true);
-  }
+  uint8_t cur_choice = menu.wait_for_value(m_tch, m_tft);
 
   m_tft.fillScreen(TftColor::BLACK);
 

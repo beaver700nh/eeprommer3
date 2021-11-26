@@ -237,23 +237,74 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
   return -1;
 }
 
-TftYesNoMenu::TftYesNoMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin) {
-  const uint16_t cell_margin = 10;
-  const uint16_t cell_width = (tft.width() - 2 * side_margin - cell_margin) / 2;
-  const uint16_t cell_height = (float) cell_width / 1.618;
+TftChoiceMenu::TftChoiceMenu(
+  uint8_t v_margin, uint8_t h_margin,
+  uint8_t v_padding, uint8_t h_padding,
+  uint8_t num_cols, uint16_t btn_height
+)
+  : m_v_margin(v_margin), m_h_margin(h_margin),
+  m_v_padding(v_padding), m_h_padding(h_padding),
+  m_num_cols(num_cols), m_btn_height(btn_height) {
+  // Empty
+}
 
-  const uint16_t yesx = side_margin;
-  const uint16_t yesy = top_margin;
-  const uint16_t yestx = (cell_width - 34) / 2;
-  const uint16_t yesty = (cell_height - 16) / 2;
+bool TftChoiceMenu::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg) {
+  uint16_t x, y, w, h, tx, ty;
 
-  const uint16_t nox = side_margin + cell_width + cell_margin;
-  const uint16_t noy = top_margin;
-  const uint16_t notx = (cell_width - 22) / 2;
-  const uint16_t noty = (cell_height - 16) / 2;
+  uint8_t col = m_num_btns % m_num_cols;
+  uint8_t row = m_num_btns / m_num_cols;
 
-  add_btn(new TftBtn(yesx, yesy, cell_width, cell_height, yestx, yesty, "Yes", TftColor::BLACK, TftColor::GREEN));
-  add_btn(new TftBtn(nox,  noy,  cell_width, cell_height, notx,  noty,  "No",  TftColor::WHITE, TftColor::RED));
+  h = m_btn_height;
+  w = (tft.width() - (2 * m_h_margin) - ((m_num_cols - 1) * m_h_padding)) / m_num_cols;
+
+  x = m_h_margin + col * (w + m_h_padding);
+  y = m_v_margin + row * (h + m_v_padding);
+
+  tx = (w / 2) - (6 * strlen(text) - 1);
+  ty = (h / 2) - 7;
+
+  return add_btn(new TftBtn(x, y, w, h, tx, ty, text, fg, bg));
+}
+
+bool TftChoiceMenu::add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg, uint16_t bg) {
+  m_confirm_btn = m_num_btns;
+
+  uint16_t y, w, tx;
+
+  y = tft.height() - (force_bottom ? 10 : m_v_margin) - 24;
+  w = tft.width() - (2 * m_h_margin);
+  tx = (w / 2) - 41;
+
+  return add_btn(new TftBtn(m_h_margin, y, w, 24, tx, 5, "Confirm", fg, bg));
+}
+
+uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
+  while (true) {
+    erase(tft);
+    draw(tft);
+
+    uint8_t btn_pressed = wait_for_press(tch, tft);
+
+    if (btn_pressed == m_confirm_btn) break;
+
+    get_btn(m_cur_choice)->highlight(false); // Old "current" choice
+    m_cur_choice = (uint8_t) btn_pressed;
+    get_btn(m_cur_choice)->highlight(true);
+  }
+
+  return m_cur_choice;
+}
+
+TftYesNoMenu::TftYesNoMenu(
+  TftCtrl &tft,
+  uint8_t v_margin, uint8_t h_margin,
+  uint8_t v_padding, uint8_t h_padding,
+  bool force_bottom
+)
+  : TftChoiceMenu(v_margin, h_margin, v_padding, h_padding, 2, 120) {
+  add_btn_calc(tft, "Yes", TftColor::BLACK, TftColor::GREEN);
+  add_btn_calc(tft, "No",  TftColor::WHITE, TftColor::RED);
+  add_btn_confirm(tft, force_bottom);
 }
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
