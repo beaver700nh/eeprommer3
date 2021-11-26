@@ -165,6 +165,11 @@ public:
     uint8_t initial_choice = 0
   );
 
+  typedef void (*Callback)(TftCtrl &tft, uint8_t btn_id, bool is_confirm);
+
+  void set_callback(Callback callback);
+  Callback get_callback();
+
   bool add_btn(TftBtn *btn);
   bool add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
   bool add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
@@ -175,6 +180,8 @@ protected:
   uint8_t m_v_margin, m_h_margin, m_v_padding, m_h_padding;
   uint8_t m_num_cols, m_btn_height;
   uint8_t m_confirm_btn = 0;
+
+  Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {};
 };
 
 class TftYesNoMenu : public TftChoiceMenu {

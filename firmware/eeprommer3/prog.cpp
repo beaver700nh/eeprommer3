@@ -14,6 +14,24 @@ ProgrammerFromSd::ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, T
   // Empty
 }
 
+void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
+  if (is_confirm) return;
+
+  static const char *helps[] = {
+    "Read a byte from EEPROM.",
+    "Write a byte to EEPROM.",
+    "Read entire EEPROM to a file.",
+    "Write file to EEPROM somewhere.",
+    "Read 6502 jump vector contents.",
+    "Write to a 6502 jump vector.",
+    "Read multiple bytes from EEPROM.",
+    "Write multiple bytes to EEPROM.",
+  };
+
+  tft.fillRect(10, 220, 470, 16, TftColor::BLACK);
+  tft.drawText(10, 220, (btn_id < ARRLEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
+}
+
 void ProgrammerFromSd::run() {
   TftChoiceMenu menu(50, 10, 10, 10, 2, 30);
   menu.add_btn_calc(m_tft, "Read Byte",    TftColor::BLUE,           TftColor::CYAN);
@@ -26,9 +44,14 @@ void ProgrammerFromSd::run() {
   menu.add_btn_calc(m_tft, "Write Range",  TftColor::BLACK,          TftColor::ORANGE);
   menu.add_btn_confirm(m_tft, true);
 
+  menu.set_callback(show_help);
+
+  uint8_t cur_choice = 0;
+
   while (true) { // Main loop
     m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
-    uint8_t cur_choice = menu.wait_for_value(m_tch, m_tft);
+    show_help(m_tft, cur_choice, false);
+    cur_choice = menu.wait_for_value(m_tch, m_tft);
   
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -153,7 +176,7 @@ uint8_t ProgrammerFromSd::read_vector() {
   m_tft.fillScreen(TftColor::BLACK);
 
   m_tft.drawText( 10,  10, STRFMT_NOBUF("Value of %s vector:", Vector::NAMES[vec.m_id]), TftColor::CYAN,   3);
-  m_tft.drawText(320,  50, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1),    TftColor::BLUE,   2);
+  m_tft.drawText(320,  50, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1),      TftColor::BLUE,   2);
   m_tft.drawText( 16,  50, STRFMT_NOBUF("HEX: %04X", vec.m_val),                         TftColor::YELLOW, 2);
   m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
   m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);

@@ -250,6 +250,14 @@ TftChoiceMenu::TftChoiceMenu(
   // Empty
 }
 
+void TftChoiceMenu::set_callback(Callback callback) {
+  m_callback = callback;
+}
+
+TftChoiceMenu::Callback TftChoiceMenu::get_callback() {
+  return m_callback;
+}
+
 bool TftChoiceMenu::add_btn(TftBtn *btn) {
   bool retval = TftMenu::add_btn(btn);
   if (m_num_btns - 1 == m_cur_choice) {
@@ -295,6 +303,7 @@ uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
     draw(tft);
 
     uint8_t btn_pressed = wait_for_press(tch, tft);
+    (*m_callback)(tft, btn_pressed, btn_pressed == m_confirm_btn);
 
     if (btn_pressed == m_confirm_btn) break;
 
