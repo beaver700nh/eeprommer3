@@ -248,6 +248,81 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
   return 0;
 }
 
+uint8_t ProgrammerFromSd::read_range() {
+  uint16_t addr = ask_val<uint16_t>("Type an address:");
+  m_tft.fillScreen(TftColor::BLACK);
+  uint8_t length = ask_val<uint8_t>("How many bytes?");
+
+  uint8_t *data = malloc(length * sizeof(*data));
+
+  for (uint8_t *ptr = data; ptr - data < length; ++ptr) {
+    *ptr = m_ee.read(addr + (ptr - data));
+  }
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  m_tft.drawText(10, 10, "Select viewing method:", TftColor::CYAN, 3);
+
+  TftChoiceMenu menu(50, 10, 10, 10, 2, 80, 0);
+  menu.add_btn_calc(m_tft, "Raw Hex",    TftColor::BLACK, TftColor::ORANGE);
+  menu.add_btn_calc(m_tft, "Characters", TftColor::BLUE,  TftColor::CYAN);
+  menu.add_btn_confirm(m_tft, true);
+
+  uint8_t method = menu.wait_for_value(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if (method == 0) {
+    show_range_as_hex(data, length);
+  }
+  else if (method == 1) {
+    show_range_as_chars(data, length);
+  }
+  else {
+    m_tft.drawText(10,  10, "INTERNAL ERROR",               TftColor::RED,     3);
+    m_tft.drawText(10,  50, "Got nonexistent",              TftColor::MAGENTA, 2);
+    m_tft.drawText(10,  80, "viewing method.",              TftColor::MAGENTA, 2);
+    m_tft.drawText(10, 110, STRFMT_NOBUF("ID: %d", method), TftColor::PURPLE,  2);
+  }
+
+  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+  continue_btn.draw(m_tft);
+  continue_btn.wait_for_press(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  free(data);
+
+  return 0;
+}
+///////////////////////////////////////////////////////////////////////////////////////TODO: support 16-bit length
+void ProgrammerFromSd::show_range_as_hex(uint8_t *data, uint16_t length) {
+  m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", length), TftColor::CYAN, 3);
+  m_tft.drawRect(m_tft.width() / 2 - 147, 50, 294, 166, TftColor::DGRAY);
+  m_tft.drawRect(m_tft.width() / 2 - 146, 51, 292, 164, TftColor::DGRAY);
+  m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
+
+  for (uint8_t i = 0; i < length; ++i) {
+    uint16_t y = i / 16 * 10 + 55;
+    // Calculate left margin of block
+    uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
+
+    m_tft.drawText(x + 18 * (i % 8), y, STRFMT_NOBUF("%02X", data[i]), TftColor::WHITE, 1);
+  }
+}
+
+void ProgrammerFromSd::show_range_as_chars(uint8_t *data, uint16_t length) {
+  return;
+}
+
+uint8_t ProgrammerFromSd::write_range() {
+  return nop();
+}
+
+uint8_t ProgrammerFromSd::verify_range(uint16_t addr, uint16_t length, uint8_t *data) {
+  return 3;
+}
+
 // Dummy function for unimplemented actions
 uint8_t ProgrammerFromSd::nop() {
   return 0;

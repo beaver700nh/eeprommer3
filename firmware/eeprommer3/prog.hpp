@@ -70,6 +70,13 @@ public:
   uint8_t write_vector();
   uint8_t verify_vector(uint16_t addr, uint16_t data);
 
+  uint8_t read_range();
+  uint8_t write_range();
+  uint8_t verify_range(uint16_t addr, uint16_t length, uint8_t *data);
+
+  void show_range_as_hex(uint8_t *data, uint16_t length);
+  void show_range_as_chars(uint8_t *data, uint16_t length);
+
   uint8_t nop();
 
   static constexpr uint8_t NUM_ACTIONS = 8;
@@ -78,7 +85,7 @@ public:
     &read_byte,   &write_byte,
     &nop,         &nop,
     &read_vector, &write_vector,
-    &nop,         &nop,
+    &read_range,  &write_range,
   };
 
 private:
