@@ -1,2 +1,8 @@
-- actually implement this thing
-- add more pictures/icon for window
+SOFTWARE
+- add more pictures/icons for window
+
+FIRMWARE
+- add comments at top of HPPs
+- add comments at top of classes decls when necessary
+- add "loading" for range r/w because it freezes to access EEPROM
+- allow reading more bytes at a time than 255 in Range Read

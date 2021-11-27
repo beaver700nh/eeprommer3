@@ -48,6 +48,8 @@ bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, ui
     }
   }
 
+  f.close();
+
   free(buf);
   return true;
 }
