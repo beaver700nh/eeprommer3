@@ -9,6 +9,12 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
+/*
+ * Vector is a helper class for the
+ * "read vector" and "write vector"
+ * actions.
+ */
+
 struct Vector {
   Vector(uint8_t id)
     : m_id(id), m_addr(0xFFF8 + 2 * (id + 1)) {
@@ -29,6 +35,13 @@ struct Vector {
 
   inline static constexpr char *NAMES[3] = {"NMI", "RESET", "IRQ"};
 };
+
+/*
+ * ProgrammerFromSd is a class that
+ * connects the front-end and back-end
+ * for programming the EEPROM from the
+ * on-board SD card.
+ */
 
 class ProgrammerFromSd {
 public:

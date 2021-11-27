@@ -8,6 +8,12 @@
 
 #include "input.hpp"
 
+/*
+ * This file contains classes for various
+ * front-end purposes.
+ */
+
+// Makes specifying TFT colors easier
 namespace TftColor {
   enum : uint16_t {
     RED     = 0xF800,
@@ -28,8 +34,17 @@ namespace TftColor {
   };
 };
 
+/*
+ * Forward declaration because some of
+ * TftCtrl's methods depend on TouchCtrl
+ */
 class TouchCtrl;
 
+/*
+ * TftCtrl is the main class to interface
+ * with the TFT; it is a wrapper around the
+ * 3rd-party class MCUFRIEND_kbv.
+ */
 class TftCtrl : public MCUFRIEND_kbv {
 public:
   TftCtrl() {};
@@ -42,6 +57,14 @@ public:
   bool drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent = 0x0000);
 };
 
+// Classes from here on are for GUI
+
+/*
+ * TftBtn: stores its own data,
+ * can detect if it is pressed,
+ * and can draw itself to the
+ * TFT screen.
+ */
 class TftBtn {
 public:
   TftBtn() {};
@@ -94,6 +117,10 @@ private:
   char m_text[21];
 };
 
+/*
+ * TftMenu makes creating menus easier;
+ * it's basically just a group of buttons.
+ */
 class TftMenu {
 public:
   TftMenu() {};
@@ -119,6 +146,13 @@ protected:
   uint8_t m_num_btns = 0;
 };
 
+/*
+ * TftHexSelMenu is a TftMenu but specialized
+ * for inputting numbers in hexadecimal.
+ *
+ * Type T is an integer type and determines what
+ * numbers can be inputted.
+ */
 template<typename T>
 class TftHexSelMenu : public TftMenu {
 public:
@@ -156,6 +190,10 @@ private:
   T m_val = 0;
 };
 
+/*
+ * TftChoiceMenu is a specialized TftMenu to
+ * choose one option from a selection of choices.
+ */
 class TftChoiceMenu : public TftMenu {
 public:
   TftChoiceMenu(
@@ -184,6 +222,12 @@ protected:
   Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {};
 };
 
+/*
+ * TftYesNoMenu is a specialized TftChoiceMenu
+ * which only has the options "Yes" and "No".
+ * It also automatically adds the "Confirm" button
+ * upon construction.
+ */
 class TftYesNoMenu : public TftChoiceMenu {
 public:
   TftYesNoMenu(
@@ -194,6 +238,10 @@ public:
   );
 };
 
+/*
+ * Debug function for testing touchscreen and
+ * TFT screen.
+ */
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
 
 #endif
