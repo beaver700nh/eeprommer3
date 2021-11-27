@@ -24,7 +24,9 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
-bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent) {
+bool TftCtrl::drawRGBBitmapFromFile(
+  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent
+) {
   File f = SD.open(file);
   if (!f) return false;
 
@@ -37,6 +39,7 @@ bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, ui
     int16_t res = f.read((uint8_t *) buf, row_size_bytes);
 
     if (res < 0) {
+      f.close();
       free(buf);
       return false;
     }
@@ -49,7 +52,44 @@ bool TftCtrl::drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, ui
   }
 
   f.close();
+  free(buf);
+  return true;
+}
 
+bool TftCtrl::drawRGBBitmapFromFile(
+  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent, TftBtn *skip_btn, TouchCtrl &tch
+) {
+  File f = SD.open(file);
+  if (!f) return false;
+
+  size_t row_size_bytes = width * sizeof(uint16_t);
+
+  uint16_t *buf = (uint16_t *) malloc(row_size_bytes);
+  if (buf == nullptr) return false;
+
+  for (uint16_t j = 0; j < height; ++j) {
+    int16_t res = f.read((uint8_t *) buf, row_size_bytes);
+
+    if (res < 0) {
+      f.close();
+      free(buf);
+      return false;
+    }
+
+    for (uint16_t i = 0; i < width; ++i) {
+      if (buf[i] != transparent) {
+        writePixel(x + i, y + j, (buf[i] << 8) | (buf[i] >> 8));
+      }
+    }
+
+    if (skip_btn->is_pressed(tch, *this)) {
+      f.close();
+      free(buf);
+      return true;
+    }
+  }
+
+  f.close();
   free(buf);
   return true;
 }
@@ -90,11 +130,7 @@ void TftBtn::draw(TftCtrl &tft) {
   tft.fillRect(m_x, m_y, m_w, m_h, m_bg);
   tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg);
 
-  if (m_is_highlighted) {
-    tft.drawRect(m_x - 1, m_y - 1, m_w + 2, m_h + 2, TftColor::YELLOW);
-    tft.drawRect(m_x - 2, m_y - 2, m_w + 4, m_h + 4, TftColor::YELLOW);
-    tft.drawRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, TftColor::YELLOW);
-  }
+  draw_highlight(tft);
 }
 
 void TftBtn::erase(TftCtrl &tft) {
@@ -104,6 +140,14 @@ void TftBtn::erase(TftCtrl &tft) {
   else {
     tft.fillRect(m_x, m_y, m_w, m_h, TftColor::BLACK);
   }
+}
+
+void TftBtn::draw_highlight(TftCtrl &tft) {
+  auto color = (m_is_highlighted ? TftColor::YELLOW : TftColor::BLACK);
+
+  tft.drawRect(m_x - 1, m_y - 1, m_w + 2, m_h + 2, color);
+  tft.drawRect(m_x - 2, m_y - 2, m_w + 4, m_h + 4, color);
+  tft.drawRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, color);
 }
 
 void TftBtn::highlight(bool highlight) {
@@ -300,21 +344,28 @@ bool TftChoiceMenu::add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg
 }
 
 uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
-  while (true) {
-    erase(tft);
-    draw(tft);
+  draw(tft);
 
+  while (true) {
     uint8_t btn_pressed = wait_for_press(tch, tft);
     (*m_callback)(tft, btn_pressed, btn_pressed == m_confirm_btn);
 
     if (btn_pressed == m_confirm_btn) break;
 
-    get_btn(m_cur_choice)->highlight(false); // Old "current" choice
+    m_old_choice = m_cur_choice;
     m_cur_choice = (uint8_t) btn_pressed;
+    get_btn(m_old_choice)->highlight(false);
     get_btn(m_cur_choice)->highlight(true);
+
+    update(tft);
   }
 
   return m_cur_choice;
+}
+
+void TftChoiceMenu::update(TftCtrl &tft) {
+  get_btn(m_old_choice)->draw_highlight(tft);
+  get_btn(m_cur_choice)->draw_highlight(tft);
 }
 
 TftYesNoMenu::TftYesNoMenu(

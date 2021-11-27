@@ -35,10 +35,11 @@ namespace TftColor {
 };
 
 /*
- * Forward declaration because some of
- * TftCtrl's methods depend on TouchCtrl
+ * Forward declarations because some of
+ * TftCtrl's methods depend on these
  */
 class TouchCtrl;
+class TftBtn;
 
 /*
  * TftCtrl is the main class to interface
@@ -54,7 +55,13 @@ public:
   void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size = 2);
   void drawText(const char *text);
 
-  bool drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent = 0x0000);
+  bool drawRGBBitmapFromFile(
+    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent
+  );
+
+  bool drawRGBBitmapFromFile(
+    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent, TftBtn *skip_btn, TouchCtrl &tch
+  );
 };
 
 // Classes from here on are for GUI
@@ -98,6 +105,7 @@ public:
 
   void draw(TftCtrl &tft);
   void erase(TftCtrl &tft);
+  void draw_highlight(TftCtrl &tft);
 
   void highlight(bool highlight);
   bool is_highlighted();
@@ -208,6 +216,8 @@ public:
   void set_callback(Callback callback);
   Callback get_callback();
 
+  void update(TftCtrl &tft);
+
   bool add_btn(TftBtn *btn);
   bool add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
   bool add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
@@ -215,6 +225,7 @@ public:
 
 protected:
   uint8_t m_cur_choice = 0;
+  uint8_t m_old_choice = 0;
   uint8_t m_v_margin, m_h_margin, m_v_padding, m_h_padding;
   uint8_t m_num_cols, m_btn_height;
   uint8_t m_confirm_btn = 0;

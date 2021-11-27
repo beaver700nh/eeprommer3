@@ -253,6 +253,8 @@ uint8_t ProgrammerFromSd::read_range() {
   m_tft.fillScreen(TftColor::BLACK);
   uint8_t length = ask_val<uint8_t>("How many bytes?");
 
+  m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
+
   uint8_t *data = malloc(length * sizeof(*data));
 
   for (uint8_t *ptr = data; ptr - data < length; ++ptr) {
@@ -295,6 +297,7 @@ uint8_t ProgrammerFromSd::read_range() {
 
   return 0;
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////TODO: support 16-bit length
 void ProgrammerFromSd::show_range_as_hex(uint8_t *data, uint16_t length) {
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", length), TftColor::CYAN, 3);

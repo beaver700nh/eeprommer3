@@ -41,14 +41,25 @@ void setup() {
 
   uint8_t res = sd.init();
 
-  tft.drawRGBBitmapFromFile(80, 40, "startup.bin", 320, 240);
+  TftBtn *skip_btn = new TftBtn(80, 273, 320, 24, 137, 5, "Skip", TftColor::WHITE, TftColor::DGREEN);
+  skip_btn->draw(tft);
 
-  if      (res == 0) tft.drawText(90, tft.height() - 64, "SD init success!",   TftColor::GREEN,   2);
-  else if (res == 1) tft.drawText(90, tft.height() - 64, "SD card disabled!",  TftColor::ORANGE,  2);
-  else if (res == 2) tft.drawText(90, tft.height() - 64, "SD init failed!",    TftColor::RED,     2);
-  else               tft.drawText(90, tft.height() - 64, "SD invalid status!", TftColor::MAGENTA, 2);
+  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, TftColor::BLACK, skip_btn, tch);
 
-  delay(2000);
+  if      (res == 0) tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
+  else if (res == 1) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
+  else if (res == 2) tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
+  else               tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
+
+  auto t1 = millis();
+
+  while (millis() - t1 < 2000) {
+    if (skip_btn->is_pressed(tch, tft)) {
+      break;
+    }
+  }
+
+  delete skip_btn;
 
   mainprog();
 }
