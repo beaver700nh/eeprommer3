@@ -303,8 +303,8 @@ void ProgrammerFromSd::show_range(
 ) {
   // Draw frame for this page
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
-  m_tft.drawRect(m_tft.width() / 2 - 147, 50, 294, 166, TftColor::DGRAY);
-  m_tft.drawRect(m_tft.width() / 2 - 146, 51, 292, 164, TftColor::DGRAY);
+  m_tft.drawRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::DGRAY);
+  m_tft.drawRect(m_tft.width() / 2 - 146, 51, 293, 164, TftColor::DGRAY);
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
   uint8_t offset;
@@ -318,21 +318,35 @@ void ProgrammerFromSd::show_range(
 
   menu.draw(m_tft);
 
+  uint8_t cur_page = 0;
+  uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
+
   while (true) {
-    for (uint8_t i = addr1 % 0x0100; /* condition is in loop body */; ++i) {
+    m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGREEN);
+    m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGREEN);
+
+    m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
+    m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);
+
+    for (uint16_t i = cur_page * 0x0100; /* condition is in loop body */; ++i) {
+      if (i < addr1) continue;
+
       // x is the left margin of the block
       uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
-      uint16_t y = i / 16 * 10 + 55;
+      uint16_t y = (i % 0x0100) / 16 * 10 + 55;
 
-      (this->*calc)(&offset, text, &color, data[i]);
+      (this->*calc)(&offset, text, &color, data[i - addr1]);
       m_tft.drawText(x + 18 * (i % 8) + offset, y, text, color, 1);
 
-      if (i == (addr2 % 0x0100) || i == 0xFF) break;
+      // Stop if we have reached end of data or end of page
+      if (i == addr2 || i % 0x0100 == 0xFF) break;
     }
 
     uint8_t btn = menu.wait_for_press(m_tch, m_tft);
 
-    if (btn == 2) break;
+    if      (btn == 2) break;
+    else if (btn == 0) cur_page = (cur_page == 0 ? max_page : cur_page - 1);
+    else if (btn == 1) cur_page = (cur_page == max_page ? 0 : cur_page + 1);
   }
 
   free(text);
