@@ -33,7 +33,7 @@ struct Vector {
   uint8_t m_lo, m_hi;
   uint16_t m_val;
 
-  inline static constexpr char *NAMES[3] = {"NMI", "RESET", "IRQ"};
+  inline static const char *NAMES[3] = {"NMI", "RESET", "IRQ"};
 };
 
 /*
@@ -110,11 +110,11 @@ public:
   static constexpr uint8_t NUM_ACTIONS = 10;
 
   action_func action_map[NUM_ACTIONS] = {
-    &read_byte,   &write_byte,
-    &nop,         &nop,
-    &read_vector, &write_vector,
-    &read_range,  &write_range,
-    &draw,        &debug,
+    &ProgrammerFromSd::read_byte,   &ProgrammerFromSd::write_byte,
+    &ProgrammerFromSd::nop,         &ProgrammerFromSd::nop,
+    &ProgrammerFromSd::read_vector, &ProgrammerFromSd::write_vector,
+    &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_range,
+    &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,
   };
 
 private:

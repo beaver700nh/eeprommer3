@@ -259,7 +259,7 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
-  uint8_t *data = malloc(addr2 - addr1 + 1 * sizeof(*data));
+  uint8_t *data = (uint8_t *) malloc(addr2 - addr1 + 1 * sizeof(*data));
 
   for (uint16_t i = addr1; /* condition is in loop body */; ++i) {
     data[i - addr1] = m_ee.read(i);
@@ -280,8 +280,8 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  if      (method == 0) show_range(data, addr1, addr2, &calc_hex);
-  else if (method == 1) show_range(data, addr1, addr2, &calc_chars);
+  if      (method == 0) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_hex);
+  else if (method == 1) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_chars);
   else {
     m_tft.drawText(10,  10, "INTERNAL ERROR",               TftColor::RED,     3);
     m_tft.drawText(10,  50, "Got nonexistent",              TftColor::MAGENTA, 2);
@@ -310,7 +310,7 @@ void ProgrammerFromSd::show_range(
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
   uint8_t offset;
-  char *text = malloc(3 * sizeof(*text));
+  char *text = (char *) malloc(3 * sizeof(*text));
   uint16_t color;
 
   TftMenu menu;
