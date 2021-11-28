@@ -58,12 +58,16 @@ void ProgrammerFromSd::run() {
     uint8_t status_code = (cur_choice < NUM_ACTIONS ? (this->*(action_map[cur_choice]))() : 1);
     show_status(status_code);
 
-    TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-    continue_btn.draw(m_tft);
-    continue_btn.wait_for_press(m_tch, m_tft);
+    wait_continue();
 
     m_tft.fillScreen(TftColor::BLACK);
   }
+}
+
+void ProgrammerFromSd::wait_continue() {
+  static TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+  continue_btn.draw(m_tft);
+  continue_btn.wait_for_press(m_tch, m_tft);
 }
 
 void ProgrammerFromSd::show_status(uint8_t status_code) {
@@ -92,9 +96,7 @@ uint8_t ProgrammerFromSd::read_byte() {
   m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
   m_tft.drawText(20, 170, STRFMT_NOBUF("CHR: %c",        data),               TftColor::YELLOW, 2);
 
-  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-  continue_btn.draw(m_tft);
-  continue_btn.wait_for_press(m_tch, m_tft);
+  wait_continue();
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -114,9 +116,7 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_tft.drawText(10,  73, "to",                                TftColor::DGREEN, 3);
   m_tft.drawText(10, 100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
-  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-  continue_btn.draw(m_tft);
-  continue_btn.wait_for_press(m_tch, m_tft);
+  wait_continue();
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -143,9 +143,7 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", data),   TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3);
 
-    TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-    continue_btn.draw(m_tft);
-    continue_btn.wait_for_press(m_tch, m_tft);
+    wait_continue();
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -181,9 +179,7 @@ uint8_t ProgrammerFromSd::read_vector() {
   m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
   m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
 
-  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-  continue_btn.draw(m_tft);
-  continue_btn.wait_for_press(m_tch, m_tft);
+  wait_continue();
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -207,9 +203,7 @@ uint8_t ProgrammerFromSd::write_vector() {
   m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
   m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
 
-  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-  continue_btn.draw(m_tft);
-  continue_btn.wait_for_press(m_tch, m_tft);
+  wait_continue();
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -236,9 +230,7 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", data),   TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual), TftColor::MAGENTA, 3);
 
-    TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-    continue_btn.draw(m_tft);
-    continue_btn.wait_for_press(m_tch, m_tft);
+    wait_continue();
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -248,17 +240,29 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
   return 0;
 }
 
+template<typename T>
+static void swap(T *a, T *b) {
+  T temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
 uint8_t ProgrammerFromSd::read_range() {
-  uint16_t addr = ask_val<uint16_t>("Type an address:");
+  uint16_t addr1 = ask_val<uint16_t>("Start address?");
   m_tft.fillScreen(TftColor::BLACK);
-  uint8_t length = ask_val<uint8_t>("How many bytes?");
+  uint16_t addr2 = ask_val<uint16_t>("End address?");
+
+  // Make sure addr1 <= addr2
+  if (addr2 < addr1) swap<uint16_t>(&addr1, &addr2);
 
   m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
-  uint8_t *data = malloc(length * sizeof(*data));
+  uint8_t *data = malloc(addr2 - addr1 + 1 * sizeof(*data));
 
-  for (uint8_t *ptr = data; ptr - data < length; ++ptr) {
-    *ptr = m_ee.read(addr + (ptr - data));
+  for (uint8_t i = addr1; /* condition is in loop body */; ++i) {
+    data[i - addr1] = m_ee.read(i);
+
+    if (i == addr2) break;
   }
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -274,12 +278,8 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (method == 0) {
-    show_range_as_hex(data, length);
-  }
-  else if (method == 1) {
-    show_range_as_chars(data, length);
-  }
+  if      (method == 0) show_range_as_hex(data, addr1, addr2);
+  else if (method == 1) show_range_as_chars(data, addr1, addr2);
   else {
     m_tft.drawText(10,  10, "INTERNAL ERROR",               TftColor::RED,     3);
     m_tft.drawText(10,  50, "Got nonexistent",              TftColor::MAGENTA, 2);
@@ -287,9 +287,7 @@ uint8_t ProgrammerFromSd::read_range() {
     m_tft.drawText(10, 110, STRFMT_NOBUF("ID: %d", method), TftColor::PURPLE,  2);
   }
 
-  TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
-  continue_btn.draw(m_tft);
-  continue_btn.wait_for_press(m_tch, m_tft);
+  wait_continue();
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -298,23 +296,25 @@ uint8_t ProgrammerFromSd::read_range() {
   return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////TODO: support 16-bit length
-void ProgrammerFromSd::show_range_as_hex(uint8_t *data, uint16_t length) {
-  m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", length), TftColor::CYAN, 3);
+// Assumes addr1 <= addr2
+void ProgrammerFromSd::show_range_as_hex(uint8_t *data, uint16_t addr1, uint16_t addr2) {
+  m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
   m_tft.drawRect(m_tft.width() / 2 - 147, 50, 294, 166, TftColor::DGRAY);
   m_tft.drawRect(m_tft.width() / 2 - 146, 51, 292, 164, TftColor::DGRAY);
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
-  for (uint8_t i = 0; i < length; ++i) {
-    uint16_t y = i / 16 * 10 + 55;
-    // Calculate left margin of block
+  for (uint8_t i = addr1 % 0x0100; /* condition is in loop body */; ++i) {
+    // x is the left margin of the block
     uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
+    uint16_t y = i / 16 * 10 + 55;
 
     m_tft.drawText(x + 18 * (i % 8), y, STRFMT_NOBUF("%02X", data[i]), TftColor::WHITE, 1);
+
+    if (i == addr2 % 0x0100 || i == 0xFF) break;
   }
 }
 
-void ProgrammerFromSd::show_range_as_chars(uint8_t *data, uint16_t length) {
+void ProgrammerFromSd::show_range_as_chars(uint8_t *data, uint16_t addr1, uint16_t addr2) {
   return;
 }
 

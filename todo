@@ -2,5 +2,4 @@ SOFTWARE
 - add more pictures/icons for window
 
 FIRMWARE
-- add "loading" for range r/w because it freezes to access EEPROM
-- allow reading more bytes at a time than 255 in Range Read
+- allow reading more bytes at a time than 255 in Range Read [IN PROGRESS] - broken, fix ASAP

@@ -73,6 +73,8 @@ public:
 
   Vector ask_vector();
 
+  void wait_continue();
+
   typedef uint8_t (ProgrammerFromSd::*action_func)();
 
   /* 
@@ -92,8 +94,8 @@ public:
   uint8_t write_range();
   uint8_t verify_range(uint16_t addr, uint16_t length, uint8_t *data);
 
-  void show_range_as_hex(uint8_t *data, uint16_t length);
-  void show_range_as_chars(uint8_t *data, uint16_t length);
+  void show_range_as_hex(uint8_t *data, uint16_t addr1, uint16_t addr2);
+  void show_range_as_chars(uint8_t *data, uint16_t addr1, uint16_t addr2);
 
   uint8_t nop();
 
