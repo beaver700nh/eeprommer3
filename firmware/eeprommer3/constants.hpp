@@ -60,6 +60,8 @@ static char custom_strfmt_buf[100];
 
 #define TO_565(r, g, b) (((r) >> 3 << 11) | ((g) >> 2 << 5) | ((b) >> 3))
 
+#define CONTINUE_BTN(tft) 10, (tft).height() - 34, (tft).width() - 20, 24, (tft).width() / 2 - 46, 5, "Continue"
+
 /*****************************************/
 /** Constants ****************************/
 /*****************************************/

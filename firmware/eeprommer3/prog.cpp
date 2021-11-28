@@ -65,7 +65,7 @@ void ProgrammerFromSd::run() {
 }
 
 void ProgrammerFromSd::wait_continue() {
-  static TftBtn continue_btn(10, 286, 460, 24, 184, 5, "Continue");
+  static TftBtn continue_btn(CONTINUE_BTN(m_tft));
   continue_btn.draw(m_tft);
   continue_btn.wait_for_press(m_tch, m_tft);
 }
@@ -259,7 +259,7 @@ uint8_t ProgrammerFromSd::read_range() {
 
   uint8_t *data = malloc(addr2 - addr1 + 1 * sizeof(*data));
 
-  for (uint8_t i = addr1; /* condition is in loop body */; ++i) {
+  for (uint16_t i = addr1; /* condition is in loop body */; ++i) {
     data[i - addr1] = m_ee.read(i);
 
     if (i == addr2) break;
@@ -278,16 +278,16 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  if      (method == 0) show_range_as_hex(data, addr1, addr2);
-  else if (method == 1) show_range_as_chars(data, addr1, addr2);
+  if      (method == 0) show_range(data, addr1, addr2, &calc_hex);
+  else if (method == 1) show_range(data, addr1, addr2, &calc_chars);
   else {
     m_tft.drawText(10,  10, "INTERNAL ERROR",               TftColor::RED,     3);
     m_tft.drawText(10,  50, "Got nonexistent",              TftColor::MAGENTA, 2);
     m_tft.drawText(10,  80, "viewing method.",              TftColor::MAGENTA, 2);
     m_tft.drawText(10, 110, STRFMT_NOBUF("ID: %d", method), TftColor::PURPLE,  2);
-  }
 
-  wait_continue();
+    wait_continue();
+  }
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -297,25 +297,59 @@ uint8_t ProgrammerFromSd::read_range() {
 }
 
 // Assumes addr1 <= addr2
-void ProgrammerFromSd::show_range_as_hex(uint8_t *data, uint16_t addr1, uint16_t addr2) {
+void ProgrammerFromSd::show_range(
+  uint8_t *data, uint16_t addr1, uint16_t addr2,
+  void (ProgrammerFromSd::*calc)(uint8_t *offset, char *text, uint16_t *color, uint8_t data)
+) {
+  // Draw frame for this page
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
   m_tft.drawRect(m_tft.width() / 2 - 147, 50, 294, 166, TftColor::DGRAY);
   m_tft.drawRect(m_tft.width() / 2 - 146, 51, 292, 164, TftColor::DGRAY);
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
-  for (uint8_t i = addr1 % 0x0100; /* condition is in loop body */; ++i) {
-    // x is the left margin of the block
-    uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
-    uint16_t y = i / 16 * 10 + 55;
+  uint8_t offset;
+  char *text = malloc(3 * sizeof(*text));
+  uint16_t color;
 
-    m_tft.drawText(x + 18 * (i % 8), y, STRFMT_NOBUF("%02X", data[i]), TftColor::WHITE, 1);
+  TftMenu menu;
+  menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "<"));
+  menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, ">"));
+  menu.add_btn(new TftBtn(CONTINUE_BTN(m_tft)));
 
-    if (i == addr2 % 0x0100 || i == 0xFF) break;
+  menu.draw(m_tft);
+
+  while (true) {
+    for (uint8_t i = addr1 % 0x0100; /* condition is in loop body */; ++i) {
+      // x is the left margin of the block
+      uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
+      uint16_t y = i / 16 * 10 + 55;
+
+      (this->*calc)(&offset, text, &color, data[i]);
+      m_tft.drawText(x + 18 * (i % 8) + offset, y, text, color, 1);
+
+      if (i == (addr2 % 0x0100) || i == 0xFF) break;
+    }
+
+    uint8_t btn = menu.wait_for_press(m_tch, m_tft);
+
+    if (btn == 2) break;
   }
+
+  free(text);
 }
 
-void ProgrammerFromSd::show_range_as_chars(uint8_t *data, uint16_t addr1, uint16_t addr2) {
-  return;
+void ProgrammerFromSd::calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data) {
+  *offset = 0;
+  *color = TftColor::WHITE;
+
+  sprintf(text, "%02X", data);
+}
+
+void ProgrammerFromSd::calc_chars(uint8_t *offset, char *text, uint16_t *color, uint8_t data) {
+  *offset = 3;
+  *color = (isprint((char) data) ? TftColor::WHITE : TftColor::GRAY);
+
+  sprintf(text, "%c", (isprint((char) data) ? (char) data : '?'));
 }
 
 uint8_t ProgrammerFromSd::write_range() {

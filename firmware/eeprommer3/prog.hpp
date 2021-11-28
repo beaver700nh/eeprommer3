@@ -94,8 +94,13 @@ public:
   uint8_t write_range();
   uint8_t verify_range(uint16_t addr, uint16_t length, uint8_t *data);
 
-  void show_range_as_hex(uint8_t *data, uint16_t addr1, uint16_t addr2);
-  void show_range_as_chars(uint8_t *data, uint16_t addr1, uint16_t addr2);
+  void show_range(
+    uint8_t *data, uint16_t addr1, uint16_t addr2,
+    void (ProgrammerFromSd::*calc)(uint8_t *offset, char *text, uint16_t *color, uint8_t data)
+  );
+
+  void calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
+  void calc_chars(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
   uint8_t nop();
 

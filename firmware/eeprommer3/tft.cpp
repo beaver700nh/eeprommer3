@@ -244,6 +244,8 @@ void TftMenu::purge_btns() {
   while (m_num_btns > 0) {
     purge_btn(m_num_btns - 1); // Purge last button in array
   }
+
+  m_num_btns = 0;
 }
 
 uint8_t TftMenu::get_num_btns() {
