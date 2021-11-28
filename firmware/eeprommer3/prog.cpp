@@ -28,8 +28,8 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
     "Write multiple bytes to EEPROM.",
   };
 
-  tft.fillRect(10, 220, 470, 16, TftColor::BLACK);
-  tft.drawText(10, 220, (btn_id < ARRLEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
+  tft.fillRect(10, 250, 470, 16, TftColor::BLACK);
+  tft.drawText(10, 250, (btn_id < ARRLEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
 }
 
 void ProgrammerFromSd::run() {
@@ -42,6 +42,8 @@ void ProgrammerFromSd::run() {
   menu.add_btn_calc(m_tft, "Write Vector", TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
   menu.add_btn_calc(m_tft, "Read Range",   TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
   menu.add_btn_calc(m_tft, "Write Range",  TftColor::BLACK,          TftColor::ORANGE);
+  menu.add_btn_calc(m_tft, "Draw Test",    TftColor::DGRAY,          TftColor::GRAY);
+  menu.add_btn_calc(m_tft, "Debug Tools",  TftColor::DGRAY,          TftColor::GRAY);
   menu.add_btn_confirm(m_tft, true);
 
   menu.set_callback(show_help);
@@ -372,6 +374,18 @@ uint8_t ProgrammerFromSd::write_range() {
 
 uint8_t ProgrammerFromSd::verify_range(uint16_t addr, uint16_t length, uint8_t *data) {
   return 3;
+}
+
+// This method never finishes executing
+uint8_t ProgrammerFromSd::draw() {
+  tft_draw_test(m_tch, m_tft);
+
+  // So this return will never happen
+  return 0;
+}
+
+uint8_t ProgrammerFromSd::debug() {
+  return 2; // TODO
 }
 
 // Dummy function for unimplemented actions

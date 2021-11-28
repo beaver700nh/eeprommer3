@@ -4,7 +4,7 @@
 all: build run
 
 build:
-	arduino-cli-mega-compile . --verbose
+	arduino-cli-mega-compile . --verbose --warnings pedantic
 
 run:
 	arduino-cli-mega-upload . /dev/ttyACM0 --verbose

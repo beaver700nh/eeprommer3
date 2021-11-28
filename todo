@@ -1,5 +1,2 @@
 SOFTWARE
 - add more pictures/icons for window
-
-FIRMWARE
-- allow reading more bytes at a time than 255 in Range Read [IN PROGRESS] - broken, fix ASAP

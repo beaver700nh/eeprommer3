@@ -102,15 +102,19 @@ public:
   void calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
   void calc_chars(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
+  uint8_t draw();
+  uint8_t debug();
+
   uint8_t nop();
 
-  static constexpr uint8_t NUM_ACTIONS = 8;
+  static constexpr uint8_t NUM_ACTIONS = 10;
 
   action_func action_map[NUM_ACTIONS] = {
     &read_byte,   &write_byte,
     &nop,         &nop,
     &read_vector, &write_vector,
     &read_range,  &write_range,
+    &draw,        &debug,
   };
 
 private:

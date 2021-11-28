@@ -71,9 +71,6 @@ static char custom_strfmt_buf[100];
 
 #define TFT_DRIVER 0x9486
 
-#define TFT_WIDTH  480
-#define TFT_HEIGHT 320
-
 #define TS_XP     8
 #define TS_XM     A2
 #define TS_YP     A3
@@ -82,7 +79,7 @@ static char custom_strfmt_buf[100];
 
 #define TS_MINX 913
 #define TS_MAXX 131
-#define TS_MINY 934
+#define TS_MINY 944
 #define TS_MAXY 90
 
 #define MCP_GPA(n) (n)
