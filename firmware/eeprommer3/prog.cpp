@@ -29,7 +29,7 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
   };
 
   tft.fillRect(10, 250, 470, 16, TftColor::BLACK);
-  tft.drawText(10, 250, (btn_id < ARRLEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
+  tft.drawText(10, 250, (btn_id < ARR_LEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
 }
 
 void ProgrammerFromSd::run() {
@@ -67,7 +67,7 @@ void ProgrammerFromSd::run() {
 }
 
 void ProgrammerFromSd::wait_continue() {
-  static TftBtn continue_btn(CONTINUE_BTN(m_tft));
+  static TftBtn continue_btn(BOTTOM_BTN(m_tft, "Continue"));
   continue_btn.draw(m_tft);
   continue_btn.wait_for_press(m_tch, m_tft);
 }
@@ -316,7 +316,7 @@ void ProgrammerFromSd::show_range(
   TftMenu menu;
   menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "<"));
   menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, ">"));
-  menu.add_btn(new TftBtn(CONTINUE_BTN(m_tft)));
+  menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Continue")));
 
   menu.draw(m_tft);
 
@@ -385,7 +385,55 @@ uint8_t ProgrammerFromSd::draw() {
 }
 
 uint8_t ProgrammerFromSd::debug() {
-  return 2; // TODO
+  TftMenu menu;
+  menu.add_btn(new TftBtn( 10,  50, 225, 30,  23, 8, "WE HI (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
+  menu.add_btn(new TftBtn(245,  50, 225, 30,  29, 8, "WE LO (Enable)",  TftColor::PINKK,          TftColor::RED));
+  menu.add_btn(new TftBtn( 10,  90, 460, 30, 147, 8, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
+  menu.add_btn(new TftBtn( 10, 130, 225, 30,  37, 8, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN));
+  menu.add_btn(new TftBtn(245, 130, 225, 30,  29, 8, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE));
+  menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
+
+  m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
+  menu.draw(m_tft);
+
+  while (true) {
+    uint8_t btn = menu.wait_for_press(m_tch, m_tft);
+
+    if (btn == menu.get_num_btns() - 1) break;
+
+    uint16_t val16;
+    uint8_t val8;
+
+    switch (btn) {
+    case 0: m_ee.set_we(true);  continue;
+    case 1: m_ee.set_we(false); continue;
+    case 2:
+      m_tft.fillScreen(TftColor::BLACK); 
+      val16 = ask_val<uint16_t>("Type the value:");
+      m_ee.set_addr_and_oe(val16);
+      break;
+    case 3:
+      m_tft.fillScreen(TftColor::BLACK); 
+      val8 = m_ee.get_data();
+      m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
+      m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val8)), TftColor::YELLOW, 2);
+      wait_continue();
+      break;
+    case 4:
+      m_tft.fillScreen(TftColor::BLACK); 
+      val8 = ask_val<uint8_t>("Type the value:");
+      m_ee.set_data(val8);
+      break;
+    }
+
+    m_tft.fillScreen(TftColor::BLACK);
+    m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
+    menu.draw(m_tft);
+  }
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  return 0;
 }
 
 // Dummy function for unimplemented actions
