@@ -303,10 +303,10 @@ void ProgrammerFromSd::show_range(
   uint8_t *data, uint16_t addr1, uint16_t addr2,
   void (ProgrammerFromSd::*calc)(uint8_t *offset, char *text, uint16_t *color, uint8_t data)
 ) {
-  // Draw frame for this page
+  // Draw frame for the data
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
-  m_tft.drawRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::DGRAY);
-  m_tft.drawRect(m_tft.width() / 2 - 146, 51, 293, 164, TftColor::DGRAY);
+  m_tft.drawRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE);
+  m_tft.drawRect(m_tft.width() / 2 - 146, 51, 293, 164, TftColor::WHITE);
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
   uint8_t offset;
@@ -324,8 +324,8 @@ void ProgrammerFromSd::show_range(
   uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
 
   while (true) {
-    m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGREEN);
-    m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGREEN);
+    m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
+    m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
 
     m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
     m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);

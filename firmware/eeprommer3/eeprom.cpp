@@ -10,6 +10,7 @@ void EepromCtrl::init(uint8_t addr_exp_0, uint8_t addr_exp_1) {
   m_exp_1.pinMode(MCP_EE_WE, OUTPUT);
   set_we(true);
 
+  // Set address pins + OE to outputs
   for (uint8_t i = 0; i < 16; ++i) {
     m_exp_0.pinMode(i, OUTPUT);
   }
@@ -47,6 +48,7 @@ void EepromCtrl::set_oe(bool oe) {
 }
 
 uint8_t EepromCtrl::read(uint16_t addr) {
+  set_we(true);
   set_addr_and_oe(addr & ~0x8000); // ~OE is off to enable output
   delayMicroseconds(10);
   uint8_t data = get_data();

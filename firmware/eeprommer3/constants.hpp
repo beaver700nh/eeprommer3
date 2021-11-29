@@ -89,9 +89,9 @@ static char custom_strfmt_buf[100];
 #define MCP_EE_OE MCP_GPB(7) // I2C addr 0x20
 
 #define MCP_EE_DATA_PORT  0
-#define MCP_EE_DATA(n)    n // I2C addr 0x21
+#define MCP_EE_DATA(n)    (n) // I2C addr 0x21
 #define MCP_EE_ADDRL_PORT 0
 #define MCP_EE_ADDRH_PORT 1
-#define MCP_EE_ADDR(n)    n // I2C addr 0x20
+#define MCP_EE_ADDR(n)    (n) // I2C addr 0x20
 
 #endif

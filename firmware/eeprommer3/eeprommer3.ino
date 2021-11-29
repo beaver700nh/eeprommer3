@@ -2,7 +2,6 @@
 #include "constants.hpp"
 
 #include <IoAbstractionWire.h>
-#include <LiquidCrystalIO.h>
 #include <Wire.h>
 
 #include "comm.hpp"
@@ -21,7 +20,6 @@ TouchCtrl tch(TS_XP, TS_XM, TS_YP, TS_YM, TS_RESIST);
 SdCtrl sd(SD_CS, SD_EN);
 
 EepromCtrl ee;
-LiquidCrystal lcd(MCP_GPB(4), MCP_GPB(5), MCP_GPB(6), MCP_GPB(0), MCP_GPB(1), MCP_GPB(2), MCP_GPB(3), ioFrom23017(0x21));
 
 void setup() {
   delay(1000);
@@ -32,12 +30,6 @@ void setup() {
   tft.fillScreen(TftColor::BLACK);
 
   ee.init();
-
-  lcd.begin(16, 2);
-  lcd.setCursor(0, 0);
-  lcd.print(" Hello World :) ");
-  lcd.setCursor(0, 1);
-  lcd.print(" bit.ly/3DCVkbB ");
 
   uint8_t res = sd.init();
 
