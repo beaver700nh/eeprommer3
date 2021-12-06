@@ -1,2 +1,5 @@
 SOFTWARE
 - add more pictures/icons for window
+
+FIRMWARE
+- shorten ProgrammerFromSd's range functions (split them up)

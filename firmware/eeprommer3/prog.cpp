@@ -309,15 +309,12 @@ void ProgrammerFromSd::show_range(
   m_tft.drawRect(m_tft.width() / 2 - 146, 51, 293, 164, TftColor::WHITE);
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
-  uint8_t offset;
   char *text = (char *) malloc(3 * sizeof(*text));
-  uint16_t color;
 
   TftMenu menu;
   menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "<"));
   menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, ">"));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Continue")));
-
   menu.draw(m_tft);
 
   uint8_t cur_page = 0;
@@ -336,6 +333,9 @@ void ProgrammerFromSd::show_range(
       // x is the left margin of the block
       uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
       uint16_t y = (i % 0x0100) / 16 * 10 + 55;
+
+      uint8_t offset;
+      uint16_t color;
 
       (this->*calc)(&offset, text, &color, data[i - addr1]);
       m_tft.drawText(x + 18 * (i % 8) + offset, y, text, color, 1);
