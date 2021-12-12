@@ -259,13 +259,7 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
-  uint8_t *data = (uint8_t *) malloc(addr2 - addr1 + 1 * sizeof(*data));
-
-  for (uint16_t i = addr1; /* condition is in loop body */; ++i) {
-    data[i - addr1] = m_ee.read(i);
-
-    if (i == addr2) break;
-  }
+  uint8_t *data = get_range(addr1, addr2);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -298,18 +292,25 @@ uint8_t ProgrammerFromSd::read_range() {
   return 0;
 }
 
+uint8_t *ProgrammerFromSd::get_range(uint16_t addr1, uint16_t addr2) {
+  uint8_t *data = (uint8_t *) malloc(addr2 - addr1 + 1 * sizeof(*data));
+
+  for (uint16_t i = addr1; /* condition is in loop body */; ++i) {
+    data[i - addr1] = m_ee.read(i);
+
+    if (i == addr2) break;
+  }
+
+  return data;
+}
+
 // Assumes addr1 <= addr2
-void ProgrammerFromSd::show_range(
-  uint8_t *data, uint16_t addr1, uint16_t addr2,
-  void (ProgrammerFromSd::*calc)(uint8_t *offset, char *text, uint16_t *color, uint8_t data)
-) {
+void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc) {
   // Draw frame for the data
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
   m_tft.drawRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE);
   m_tft.drawRect(m_tft.width() / 2 - 146, 51, 293, 164, TftColor::WHITE);
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
-
-  char *text = (char *) malloc(3 * sizeof(*text));
 
   TftMenu menu;
   menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "<"));
@@ -321,37 +322,45 @@ void ProgrammerFromSd::show_range(
   uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
 
   while (true) {
-    m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
-    m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
+    uint8_t req = show_page(data, addr1, addr2, calc, cur_page, max_page, menu);
 
-    m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
-    m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);
+    if      (req == 2) break;
+    else if (req == 0) cur_page = (cur_page == 0 ? max_page : cur_page - 1);
+    else if (req == 1) cur_page = (cur_page == max_page ? 0 : cur_page + 1);
+  }
+}
 
-    for (uint16_t i = cur_page * 0x0100; /* condition is in loop body */; ++i) {
-      if (i < addr1) continue;
+uint8_t ProgrammerFromSd::show_page(
+  uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc, uint8_t cur_page, uint8_t max_page, TftMenu &menu
+) {
+  char *text = (char *) malloc(3 * sizeof(*text));
 
-      // x is the left margin of the block
-      uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
-      uint16_t y = (i % 0x0100) / 16 * 10 + 55;
+  m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
+  m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
 
-      uint8_t offset;
-      uint16_t color;
+  m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
+  m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);
 
-      (this->*calc)(&offset, text, &color, data[i - addr1]);
-      m_tft.drawText(x + 18 * (i % 8) + offset, y, text, color, 1);
+  for (uint16_t i = cur_page * 0x0100; /* condition is in loop body */; ++i) {
+    if (i < addr1) continue;
 
-      // Stop if we have reached end of data or end of page
-      if (i == addr2 || i % 0x0100 == 0xFF) break;
-    }
+    // x is the left margin of the block
+    uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
+    uint16_t y = (i % 0x0100) / 16 * 10 + 55;
 
-    uint8_t btn = menu.wait_for_press(m_tch, m_tft);
+    uint8_t offset;
+    uint16_t color;
 
-    if      (btn == 2) break;
-    else if (btn == 0) cur_page = (cur_page == 0 ? max_page : cur_page - 1);
-    else if (btn == 1) cur_page = (cur_page == max_page ? 0 : cur_page + 1);
+    (this->*calc)(&offset, text, &color, data[i - addr1]);
+    m_tft.drawText(x + 18 * (i % 8) + offset, y, text, color, 1);
+
+    // Stop if we have reached end of data or end of page
+    if (i == addr2 || i % 0x0100 == 0xFF) break;
   }
 
   free(text);
+
+  return menu.wait_for_press(m_tch, m_tft);
 }
 
 void ProgrammerFromSd::calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data) {
@@ -372,15 +381,19 @@ uint8_t ProgrammerFromSd::write_range() {
   return nop();
 }
 
+void ProgrammerFromSd::set_range(uint16_t addr1, uint16_t addr2, uint8_t *data) {
+  // Empty - TODO
+}
+
 uint8_t ProgrammerFromSd::verify_range(uint16_t addr, uint16_t length, uint8_t *data) {
   return 3;
 }
 
-// This method never finishes executing
+// This method never finishes executing...
 uint8_t ProgrammerFromSd::draw() {
   tft_draw_test(m_tch, m_tft);
 
-  // So this return will never happen
+  // ...so this return will never happen
   return 0;
 }
 
