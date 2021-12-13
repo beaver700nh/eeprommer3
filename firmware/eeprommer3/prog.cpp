@@ -389,11 +389,10 @@ uint8_t ProgrammerFromSd::verify_range(uint16_t addr, uint16_t length, uint8_t *
   return 3;
 }
 
-// This method never finishes executing...
 uint8_t ProgrammerFromSd::draw() {
   tft_draw_test(m_tch, m_tft);
 
-  // ...so this return will never happen
+  // This return will never happen because tft_draw_test() contains an infinite loop
   return 0;
 }
 
