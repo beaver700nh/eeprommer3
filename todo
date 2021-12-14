@@ -2,4 +2,5 @@ SOFTWARE
 - add more pictures/icons for window
 
 FIRMWARE
-- add ProgrammerFromSd's write_range functions
+- add ProgrammerFromSd's write_multiple functions
+- transition code to use a faster library

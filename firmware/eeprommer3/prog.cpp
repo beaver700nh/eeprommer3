@@ -34,16 +34,16 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
 
 void ProgrammerFromSd::run() {
   TftChoiceMenu menu(50, 10, 10, 10, 2, 30);
-  menu.add_btn_calc(m_tft, "Read Byte",    TftColor::BLUE,           TftColor::CYAN);
-  menu.add_btn_calc(m_tft, "Write Byte",   TftColor::RED,            TftColor::PINKK);
-  menu.add_btn_calc(m_tft, "Read to File", TftColor::CYAN,           TftColor::BLUE);
-  menu.add_btn_calc(m_tft, "Write File",   TftColor::PINKK,          TftColor::RED);
-  menu.add_btn_calc(m_tft, "Read Vector",  TO_565(0x00, 0x17, 0x00), TO_565(0x7F, 0xFF, 0x7F));
-  menu.add_btn_calc(m_tft, "Write Vector", TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  menu.add_btn_calc(m_tft, "Read Range",   TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, "Write Range",  TftColor::BLACK,          TftColor::ORANGE);
-  menu.add_btn_calc(m_tft, "Draw Test",    TftColor::DGRAY,          TftColor::GRAY);
-  menu.add_btn_calc(m_tft, "Debug Tools",  TftColor::DGRAY,          TftColor::GRAY);
+  menu.add_btn_calc(m_tft, "Read Byte",      TftColor::BLUE,           TftColor::CYAN);
+  menu.add_btn_calc(m_tft, "Write Byte",     TftColor::RED,            TftColor::PINKK);
+  menu.add_btn_calc(m_tft, "Read to File",   TftColor::CYAN,           TftColor::BLUE);
+  menu.add_btn_calc(m_tft, "Write File",     TftColor::PINKK,          TftColor::RED);
+  menu.add_btn_calc(m_tft, "Read Vector",    TO_565(0x00, 0x17, 0x00), TO_565(0x7F, 0xFF, 0x7F));
+  menu.add_btn_calc(m_tft, "Write Vector",   TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
+  menu.add_btn_calc(m_tft, "Read Range",     TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
+  menu.add_btn_calc(m_tft, "Write Multiple", TftColor::BLACK,          TftColor::ORANGE);
+  menu.add_btn_calc(m_tft, "Draw Test",      TftColor::DGRAY,          TftColor::GRAY);
+  menu.add_btn_calc(m_tft, "Debug Tools",    TftColor::DGRAY,          TftColor::GRAY);
   menu.add_btn_confirm(m_tft, true);
 
   menu.set_callback(show_help);
@@ -377,15 +377,24 @@ void ProgrammerFromSd::calc_chars(uint8_t *offset, char *text, uint16_t *color, 
   sprintf(text, "%c", (isprint((char) data) ? (char) data : '?'));
 }
 
-uint8_t ProgrammerFromSd::write_range() {
+uint8_t ProgrammerFromSd::write_multi() {
+  /*
+   * Interface:
+   *
+   * Dialog with a scrolling list of addr-data pairs
+   * Button to add, button to remove
+   * Remove button requires you to click a pair
+   * At bottom is an apply button and a cancel button
+   * Apply writes pairs and exits, cancel just exits
+   *
+   * Pseudocode: TODO
+   *
+   */
+
   return nop();
 }
 
-void ProgrammerFromSd::set_range(uint16_t addr1, uint16_t addr2, uint8_t *data) {
-  // Empty - TODO
-}
-
-uint8_t ProgrammerFromSd::verify_range(uint16_t addr, uint16_t length, uint8_t *data) {
+uint8_t ProgrammerFromSd::verify_multi(uint16_t addr, uint16_t length, uint8_t *data) {
   return 3;
 }
 

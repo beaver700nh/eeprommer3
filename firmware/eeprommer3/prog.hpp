@@ -91,8 +91,8 @@ public:
   uint8_t verify_vector(uint16_t addr, uint16_t data);
 
   uint8_t read_range();
-  uint8_t write_range();
-  uint8_t verify_range(uint16_t addr, uint16_t length, uint8_t *data);
+  uint8_t write_multi();
+  uint8_t verify_multi(uint16_t addr, uint16_t length, uint8_t *data);
 
   uint8_t *get_range(uint16_t addr1, uint16_t addr2);
   void set_range(uint16_t addr1, uint16_t addr2, uint8_t *data);
@@ -117,7 +117,7 @@ public:
     &ProgrammerFromSd::read_byte,   &ProgrammerFromSd::write_byte,
     &ProgrammerFromSd::nop,         &ProgrammerFromSd::nop,
     &ProgrammerFromSd::read_vector, &ProgrammerFromSd::write_vector,
-    &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_range,
+    &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_multi,
     &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,
   };
 
