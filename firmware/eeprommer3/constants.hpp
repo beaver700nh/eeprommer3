@@ -94,4 +94,15 @@ static char custom_strfmt_buf[100];
 #define MCP_EE_ADDRH_PORT 1
 #define MCP_EE_ADDR(n)    (n) // I2C addr 0x20
 
+/*****************************************/
+/** Other ********************************/
+/*****************************************/
+
+template<typename T>
+void swap(T *a, T *b) {
+  T temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
 #endif

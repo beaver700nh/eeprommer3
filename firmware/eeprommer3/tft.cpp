@@ -25,8 +25,11 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
 }
 
 bool TftCtrl::drawRGBBitmapFromFile(
-  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent
+  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, bool swap_endian,
+  bool skippable, TftBtn *skip_btn, TouchCtrl &tch
 ) {
+  bool success = true;
+
   File f = SD.open(file);
   if (!f) return false;
 
@@ -39,59 +42,26 @@ bool TftCtrl::drawRGBBitmapFromFile(
     int16_t res = f.read((uint8_t *) buf, row_size_bytes);
 
     if (res < 0) {
-      f.close();
-      free(buf);
-      return false;
+      success = false;
+      goto done;
     }
 
-    for (uint16_t i = 0; i < width; ++i) {
-      if (buf[i] != transparent) {
-        writePixel(x + i, y + j, (buf[i] << 8) | (buf[i] >> 8));
-      }
-    }
-  }
-
-  f.close();
-  free(buf);
-  return true;
-}
-
-bool TftCtrl::drawRGBBitmapFromFile(
-  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent, TftBtn *skip_btn, TouchCtrl &tch
-) {
-  File f = SD.open(file);
-  if (!f) return false;
-
-  size_t row_size_bytes = width * sizeof(uint16_t);
-
-  uint16_t *buf = (uint16_t *) malloc(row_size_bytes);
-  if (buf == nullptr) return false;
-
-  for (uint16_t j = 0; j < height; ++j) {
-    int16_t res = f.read((uint8_t *) buf, row_size_bytes);
-
-    if (res < 0) {
-      f.close();
-      free(buf);
-      return false;
-    }
-
-    for (uint16_t i = 0; i < width; ++i) {
-      if (buf[i] != transparent) {
-        writePixel(x + i, y + j, (buf[i] << 8) | (buf[i] >> 8));
+    if (swap_endian) {
+      for (uint16_t i = 0; i < width; ++i) {
+        buf[i] = (buf[i] << 8) | (buf[i] >> 8);
       }
     }
 
-    if (skip_btn->is_pressed(tch, *this)) {
-      f.close();
-      free(buf);
-      return true;
-    }
+    setAddrWindow(x, y + j, x + width, y + j);
+    pushColors(buf, width, true);
+
+    if (skippable && skip_btn->is_pressed(tch, *this)) goto done;
   }
 
+done:
   f.close();
   free(buf);
-  return true;
+  return success;
 }
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)

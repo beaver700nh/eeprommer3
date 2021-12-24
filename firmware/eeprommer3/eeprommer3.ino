@@ -36,7 +36,7 @@ void setup() {
   TftBtn *skip_btn = new TftBtn(80, 273, 320, 24, 137, 5, "Skip", TftColor::WHITE, TftColor::DGREEN);
   skip_btn->draw(tft);
 
-  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, TftColor::BLACK, skip_btn, tch);
+  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, true, skip_btn, tch);
 
   if      (res == 0) tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
   else if (res == 1) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);

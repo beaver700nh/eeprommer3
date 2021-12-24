@@ -3,4 +3,4 @@ SOFTWARE
 
 FIRMWARE
 - add ProgrammerFromSd's write_multiple functions
-- transition code to use a faster library
+- start work on from_serial programmer

@@ -242,13 +242,6 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
   return 0;
 }
 
-template<typename T>
-static void swap(T *a, T *b) {
-  T temp = *a;
-  *a = *b;
-  *b = temp;
-}
-
 uint8_t ProgrammerFromSd::read_range() {
   uint16_t addr1 = ask_val<uint16_t>("Start address?");
   m_tft.fillScreen(TftColor::BLACK);

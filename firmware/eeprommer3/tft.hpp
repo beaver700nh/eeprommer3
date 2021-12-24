@@ -13,6 +13,27 @@
  * front-end purposes.
  */
 
+// Removes color constants from MCUFRIEND_kbv library
+#undef TFT_BLACK
+#undef TFT_NAVY
+#undef TFT_DARKGREEN
+#undef TFT_DARKCYAN
+#undef TFT_MAROON
+#undef TFT_PURPLE
+#undef TFT_OLIVE
+#undef TFT_LIGHTGREY
+#undef TFT_DARKGREY
+#undef TFT_BLUE
+#undef TFT_GREEN
+#undef TFT_CYAN
+#undef TFT_RED
+#undef TFT_MAGENTA
+#undef TFT_YELLOW
+#undef TFT_WHITE
+#undef TFT_ORANGE
+#undef TFT_GREENYELLOW
+#undef TFT_PINK
+
 // Makes specifying TFT colors easier
 namespace TftColor {
   enum : uint16_t {
@@ -56,11 +77,8 @@ public:
   void drawText(const char *text);
 
   bool drawRGBBitmapFromFile(
-    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent
-  );
-
-  bool drawRGBBitmapFromFile(
-    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, int32_t transparent, TftBtn *skip_btn, TouchCtrl &tch
+    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, bool swap_endian,
+    bool skippable, TftBtn *skip_btn, TouchCtrl &tch
   );
 };
 
