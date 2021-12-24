@@ -50,6 +50,8 @@ public:
   void run();
   void show_status(uint8_t code);
 
+  // Helper function to ask the user for
+  // an arbitrarily-sized integer
   template<typename T>
   T ask_val(const char *prompt) {
     m_tft.drawText(10, 10, prompt, TftColor::CYAN, 4);

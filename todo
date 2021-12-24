@@ -3,4 +3,7 @@ SOFTWARE
 
 FIRMWARE
 - add ProgrammerFromSd's write_multiple functions
+- turn bulk io functions into base EepromCtrl features
+  instead of leaving it for client to implement
+- use do-while loops instead of infinite for loops with breaks for inclusive range looping
 - start work on from_serial programmer

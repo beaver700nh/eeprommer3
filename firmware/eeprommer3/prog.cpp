@@ -155,6 +155,8 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
   return 0;
 }
 
+// Helper function to ask the user to choose
+// one of the 6502's three jump vectors
 Vector ProgrammerFromSd::ask_vector() {
   m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
 
@@ -285,6 +287,8 @@ uint8_t ProgrammerFromSd::read_range() {
   return 0;
 }
 
+// Helper function to read a range of values
+// TODO: move this into eeprom.cpp
 uint8_t *ProgrammerFromSd::get_range(uint16_t addr1, uint16_t addr2) {
   uint8_t *data = (uint8_t *) malloc(addr2 - addr1 + 1 * sizeof(*data));
 
@@ -323,6 +327,8 @@ void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2,
   }
 }
 
+// Helper function of show_range() that shows
+// only one page of data from a large buffer
 uint8_t ProgrammerFromSd::show_page(
   uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc, uint8_t cur_page, uint8_t max_page, TftMenu &menu
 ) {
@@ -356,6 +362,11 @@ uint8_t ProgrammerFromSd::show_page(
   return menu.wait_for_press(m_tch, m_tft);
 }
 
+// calc_hex() and calc_chars() are helper functions
+// to calculate where and how data should be displayed
+// for the different modes: hex and chars
+
+// Hex mode shows the data as raw hexadecimal values in white
 void ProgrammerFromSd::calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data) {
   *offset = 0;
   *color = TftColor::WHITE;
@@ -363,6 +374,8 @@ void ProgrammerFromSd::calc_hex(uint8_t *offset, char *text, uint16_t *color, ui
   sprintf(text, "%02X", data);
 }
 
+// Chars mode shows the data as printable characters
+// White character if printable, gray "?" if not
 void ProgrammerFromSd::calc_chars(uint8_t *offset, char *text, uint16_t *color, uint8_t data) {
   *offset = 3;
   *color = (isprint((char) data) ? TftColor::WHITE : TftColor::GRAY);
@@ -379,8 +392,6 @@ uint8_t ProgrammerFromSd::write_multi() {
    * Remove button requires you to click a pair
    * At bottom is an apply button and a cancel button
    * Apply writes pairs and exits, cancel just exits
-   *
-   * Pseudocode: TODO
    *
    */
 
@@ -452,5 +463,6 @@ uint8_t ProgrammerFromSd::debug() {
 
 // Dummy function for unimplemented actions
 uint8_t ProgrammerFromSd::nop() {
+  // Always returns 0 for success
   return 0;
 }
