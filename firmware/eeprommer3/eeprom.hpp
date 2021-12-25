@@ -6,6 +6,8 @@
 
 #include <Adafruit_MCP23X17.h>
 
+#include "ad_map.hpp"
+
 class EepromCtrl {
 public:
   EepromCtrl() {};
@@ -23,6 +25,9 @@ public:
 
   uint8_t read(uint16_t addr);
   void write(uint16_t addr, uint8_t data);
+
+  uint8_t *read(uint16_t addr1, uint16_t addr2);
+  void write(AddrDataMap *buf);
 
 private:
   Adafruit_MCP23X17 m_exp_0, m_exp_1;

@@ -3,6 +3,8 @@
 
 #include "eeprom.hpp"
 
+#include "ad_map.hpp"
+
 void EepromCtrl::init(uint8_t addr_exp_0, uint8_t addr_exp_1) {
   m_exp_0.begin_I2C(addr_exp_0);
   m_exp_1.begin_I2C(addr_exp_1);
@@ -65,3 +67,61 @@ void EepromCtrl::write(uint16_t addr, uint8_t data) {
   set_we(true);
   delay(10);
 }
+
+uint8_t *EepromCtrl::read(uint16_t addr1, uint16_t addr2) {
+  uint8_t *data = (uint8_t *) malloc((addr2 - addr1 + 1) * sizeof(*data));
+
+  for (uint16_t i = addr1; /* condition is in loop body */; ++i) {
+    data[i - addr1] = read(i);
+
+    if (i == addr2) break;
+  }
+
+  return data;
+}
+
+void EepromCtrl::write(AddrDataMap *buf) {
+  if (buf->len < 1) return;
+
+  AddrDataMapPair pair;
+
+  uint16_t addr0;
+
+  {
+    uint32_t temp;
+    buf->get_24bit(0, &temp);
+    addr0 = temp >> 8;
+  }
+
+  uint16_t i = 0;
+
+  while (buf->get_pair(i, &pair) == true) {
+    // Skip pairs that are not in the same page as pair #0 [1]
+    if (~(pair.addr ^ addr0) != 0x7FC0) continue;
+
+    set_addr_and_oe(pair.addr | 0x8000); // ~OE is on to disable output
+    set_data(pair.data);
+
+    set_we(false);
+    delayMicroseconds(10);
+    set_we(true);
+    delayMicroseconds(2);
+  }
+
+  // Delay to be sure that the next operation is treated
+  // as a different one than this operation
+  delay(10);
+}
+
+/*
+ * [1]
+ *
+ * A ^ B     returns value with bits turned on if different, off if same
+ * ~(A ^ B)  returns value with bits turned off if different, ON IF SAME
+ *
+ * If returned value of ~(A ^ B) is 0x7FC0,
+ * then A and B are in the same page; if it
+ * != 0x7FC0, A and B are in different pages
+ *
+ * 0x7FC0 = 0111'1111'1100'0000
+ */

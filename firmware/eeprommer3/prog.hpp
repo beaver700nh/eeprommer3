@@ -96,9 +96,6 @@ public:
   uint8_t write_multi();
   uint8_t verify_multi(uint16_t addr, uint16_t length, uint8_t *data);
 
-  uint8_t *get_range(uint16_t addr1, uint16_t addr2);
-  void set_range(uint16_t addr1, uint16_t addr2, uint8_t *data);
-
   typedef void (ProgrammerFromSd::*calc_func)(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc);

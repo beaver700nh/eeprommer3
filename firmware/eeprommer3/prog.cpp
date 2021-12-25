@@ -254,7 +254,7 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
-  uint8_t *data = get_range(addr1, addr2);
+  uint8_t *data = m_ee.read(addr1, addr2);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -285,20 +285,6 @@ uint8_t ProgrammerFromSd::read_range() {
   free(data);
 
   return 0;
-}
-
-// Helper function to read a range of values
-// TODO: move this into eeprom.cpp
-uint8_t *ProgrammerFromSd::get_range(uint16_t addr1, uint16_t addr2) {
-  uint8_t *data = (uint8_t *) malloc(addr2 - addr1 + 1 * sizeof(*data));
-
-  for (uint16_t i = addr1; /* condition is in loop body */; ++i) {
-    data[i - addr1] = m_ee.read(i);
-
-    if (i == addr2) break;
-  }
-
-  return data;
 }
 
 // Assumes addr1 <= addr2

@@ -149,20 +149,17 @@ TftMenu::~TftMenu() {
 }
 
 bool TftMenu::add_btn(TftBtn *btn) {
-  ++m_num_btns;
+  auto new_arr = (TftBtn **) malloc((m_num_btns + 1) * sizeof(*m_btns));
 
-  auto new_arr = (TftBtn **) malloc(m_num_btns * sizeof(TftBtn *));
+  if (new_arr == nullptr) return false;
 
-  if (new_arr == nullptr) {
-    return false;
-  }
-
-  memcpy(new_arr, m_btns, m_num_btns * sizeof(TftBtn *));
-  new_arr[m_num_btns - 1] = btn;
+  memcpy(new_arr, m_btns, (m_num_btns + 1) * sizeof(*m_btns));
+  new_arr[m_num_btns] = btn;
 
   free(m_btns);
 
   m_btns = new_arr;
+  ++m_num_btns;
 
   return true;
 }
@@ -170,43 +167,42 @@ bool TftMenu::add_btn(TftBtn *btn) {
 bool TftMenu::rm_btn(uint8_t btn_idx) {
   if (btn_idx >= m_num_btns) return false;
 
-  auto new_arr = (TftBtn **) malloc((m_num_btns - 1) * sizeof(TftBtn *));
+  auto new_arr = (TftBtn **) malloc((m_num_btns - 1) * sizeof(*m_btns));
 
-  if (new_arr == nullptr) {
-    return false;
-  }
+  if (new_arr == nullptr) return false;
 
-  memcpy(new_arr, m_btns, btn_idx * sizeof(TftBtn *));
-  memcpy(new_arr + btn_idx, m_btns + btn_idx + 1, (m_num_btns - btn_idx - 1) * sizeof(TftBtn *));
+  memcpy(new_arr, m_btns, btn_idx * sizeof(*m_btns));
+  memcpy(new_arr + btn_idx, m_btns + btn_idx + 1, (m_num_btns - btn_idx - 1) * sizeof(*m_btns));
 
   free(m_btns);
 
   m_btns = new_arr;
-
   --m_num_btns;
 
   return true;
 }
 
 bool TftMenu::set_btn(uint8_t btn_idx, TftBtn *btn) {
-  if (m_num_btns == 0 || btn_idx >= m_num_btns) return false;
+  if (btn_idx >= m_num_btns) return false;
 
   m_btns[btn_idx] = btn;
   return true;
 }
 
 TftBtn *TftMenu::get_btn(uint8_t btn_idx) {
-  if (m_num_btns == 0 || btn_idx >= m_num_btns) return nullptr;
+  if (btn_idx >= m_num_btns) return nullptr;
 
   return m_btns[btn_idx];
 }
 
 bool TftMenu::purge_btn(uint8_t btn_idx) {
-  if (m_num_btns == 0 || btn_idx >= m_num_btns) return false;
+  if (btn_idx >= m_num_btns) return false;
 
   TftBtn *to_del = m_btns[btn_idx];
+
   if (!rm_btn(btn_idx)) return false;
   delete to_del;
+
   return true;
 }
 
