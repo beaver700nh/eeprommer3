@@ -81,7 +81,7 @@ uint8_t *EepromCtrl::read(uint16_t addr1, uint16_t addr2) {
 }
 
 void EepromCtrl::write(AddrDataMap *buf) {
-  if (buf->len < 1) return;
+  if (buf->get_len() < 1) return;
 
   AddrDataMapPair pair;
 

@@ -2,30 +2,16 @@
 
 #include "ad_map.hpp"
 
-AddrDataMapPair::AddrDataMapPair(uint16_t addr, uint8_t data)
-  : addr(addr), data(data) {
-  // Empty
-};
-
-AddrDataMapPair::AddrDataMapPair(const AddrDataMapPair &other)
-  : AddrDataMapPair(other.addr, other.data) {
-  // Empty
-};
-
-AddrDataMap::AddrDataMap() {
-  // Empty
-};
-
 AddrDataMap::~AddrDataMap() {
   purge();
 }
 
 bool AddrDataMap::extend(uint16_t capacity) {
-  auto *new_arr = (AddrDataMapPair *) malloc((m_len + capacity) * sizeof(*m_data));
+  auto *new_arr = (AddrDataMapPair *) malloc((m_len + capacity) * sizeof(AddrDataMapPair));
 
   if (new_arr == nullptr) return false;
 
-  memcpy(new_arr, m_data, (m_len + capacity) * sizeof(*m_data));
+  memcpy(new_arr, m_data, m_len * sizeof(AddrDataMapPair));
 
   free(m_data);
 
@@ -35,7 +21,7 @@ bool AddrDataMap::extend(uint16_t capacity) {
   return true;
 }
 
-bool AddrDataMap::append(AddrDataMapPair &pair) {
+bool AddrDataMap::append(const AddrDataMapPair &pair) {
   if (!extend(1)) return false;
 
   set_pair(m_len - 1, pair);
@@ -45,12 +31,12 @@ bool AddrDataMap::append(AddrDataMapPair &pair) {
 bool AddrDataMap::remove(uint16_t idx) {
   if (idx >= m_len) return false;
 
-  auto new_arr = (AddrDataMapPair *) malloc((m_len - 1) * sizeof(*m_data));
+  auto new_arr = (AddrDataMapPair *) malloc((m_len - 1) * sizeof(AddrDataMapPair));
 
   if (new_arr == nullptr) return false;
 
-  memcpy(new_arr, m_data, idx * sizeof(*m_data));
-  memcpy(new_arr + idx, m_data + idx + 1, (m_len - idx - 1) * sizeof(*m_data));
+  memcpy(new_arr, m_data, idx * sizeof(AddrDataMapPair));
+  memcpy(new_arr + idx, m_data + idx + 1, (m_len - idx - 1) * sizeof(AddrDataMapPair));
 
   free(m_data);
 
@@ -60,7 +46,7 @@ bool AddrDataMap::remove(uint16_t idx) {
   return true;
 }
 
-bool AddrDataMap::set_pair(uint16_t idx, AddrDataMapPair &pair) {
+bool AddrDataMap::set_pair(uint16_t idx, const AddrDataMapPair &pair) {
   if (idx >= m_len) return false;
 
   m_data[idx] = pair;
@@ -73,7 +59,7 @@ bool AddrDataMap::get_pair(uint16_t idx, AddrDataMapPair *pair) {
   uint32_t temp;
   get_24bit(idx, &temp);
 
-  *pair = AddrDataMapPair(temp >> 8, temp & 0xFF);
+  *pair = (AddrDataMapPair) {(uint16_t) (temp >> 8), (uint8_t) (temp & 0xFF)};
   return true;
 }
 
@@ -84,20 +70,10 @@ bool AddrDataMap::get_24bit(uint16_t idx, uint32_t *val) {
   return true;
 }
 
-bool AddrDataMap::purge(uint8_t idx) {
-  if (idx >= m_len) return false;
-
-  AddrDataMapPair *to_del = m_data[idx];
-
-  if (!remove(idx)) return false;
-  delete to_del;
-
-  return true;
-}
-
 void AddrDataMap::purge() {
-  while (m_len > 0) {
-    purge_btn(m_len - 1); // Purge last pair in array
+  if (m_data != nullptr) {
+    free(m_data);
+    m_data = nullptr;
   }
 
   m_len = 0;

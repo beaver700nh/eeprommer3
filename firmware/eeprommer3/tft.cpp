@@ -149,11 +149,11 @@ TftMenu::~TftMenu() {
 }
 
 bool TftMenu::add_btn(TftBtn *btn) {
-  auto new_arr = (TftBtn **) malloc((m_num_btns + 1) * sizeof(*m_btns));
+  auto new_arr = (TftBtn **) malloc((m_num_btns + 1) * sizeof(TftBtn *));
 
   if (new_arr == nullptr) return false;
 
-  memcpy(new_arr, m_btns, (m_num_btns + 1) * sizeof(*m_btns));
+  memcpy(new_arr, m_btns, m_num_btns * sizeof(TftBtn *));
   new_arr[m_num_btns] = btn;
 
   free(m_btns);
@@ -167,12 +167,12 @@ bool TftMenu::add_btn(TftBtn *btn) {
 bool TftMenu::rm_btn(uint8_t btn_idx) {
   if (btn_idx >= m_num_btns) return false;
 
-  auto new_arr = (TftBtn **) malloc((m_num_btns - 1) * sizeof(*m_btns));
+  auto new_arr = (TftBtn **) malloc((m_num_btns - 1) * sizeof(TftBtn *));
 
   if (new_arr == nullptr) return false;
 
-  memcpy(new_arr, m_btns, btn_idx * sizeof(*m_btns));
-  memcpy(new_arr + btn_idx, m_btns + btn_idx + 1, (m_num_btns - btn_idx - 1) * sizeof(*m_btns));
+  memcpy(new_arr, m_btns, btn_idx * sizeof(TftBtn *));
+  memcpy(new_arr + btn_idx, m_btns + btn_idx + 1, (m_num_btns - btn_idx - 1) * sizeof(TftBtn *));
 
   free(m_btns);
 

@@ -7,3 +7,4 @@ FIRMWARE
   instead of leaving it for client to implement
 - use do-while loops instead of infinite for loops with breaks for inclusive range looping
 - start work on from_serial programmer
+- add more DEBUG_MODE-logging
