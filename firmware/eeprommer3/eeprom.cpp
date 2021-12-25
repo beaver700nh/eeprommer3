@@ -95,7 +95,7 @@ void EepromCtrl::write(AddrDataMap *buf) {
 
   uint16_t i = 0;
 
-  while (buf->get_pair(i, &pair) == true) {
+  while (buf->get_pair(i++, &pair) == true) {
     // Skip pairs that are not in the same page as pair #0 [1]
     if (~(pair.addr ^ addr0) != 0x7FC0) continue;
 

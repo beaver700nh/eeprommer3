@@ -3,6 +3,7 @@
 
 #include <SD.h>
 
+#include "ad_map.hpp"
 #include "eeprom.hpp"
 #include "input.hpp"
 #include "prog.hpp"
@@ -373,13 +374,32 @@ uint8_t ProgrammerFromSd::write_multi() {
   /*
    * Interface:
    *
-   * Dialog with a scrolling list of addr-data pairs
-   * Button to add, button to remove
-   * Remove button requires you to click a pair
-   * At bottom is an apply button and a cancel button
-   * Apply writes pairs and exits, cancel just exits
+   * Button to add spanning width of screen at top,
+   * just below title text
+   * Below that is a scrollable list of menus in this format
+   *  ____________________________
+   * I                            I
+   * I  AAAA     BB     [Delete]  I
+   * I____________________________I
    *
+   * Where AAAA is the address, in 4 hexadecimal digits
+   * and BB is the data, in 2 hexadecimal digits
+   *
+   * The DELETE button deletes the pair from the list
+   * Spanning each half of the bottom is an apply button
+   * and a cancel button, respectively; Apply writes pairs
+   * to EEPROM and exits, cancel just exits
    */
+
+  AddrDataMap buf;
+  buf.append((AddrDataMapPair) {0xFFFA, 0x01});
+  buf.append((AddrDataMapPair) {0xFFFB, 0x12});
+  buf.append((AddrDataMapPair) {0xFFFC, 0x23});
+  buf.append((AddrDataMapPair) {0xFFFD, 0x34});
+  buf.append((AddrDataMapPair) {0xFFFE, 0x45});
+  buf.append((AddrDataMapPair) {0xFFFF, 0x56});
+
+  m_ee.write(&buf);
 
   return nop();
 }
