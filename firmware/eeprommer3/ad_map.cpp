@@ -66,7 +66,7 @@ bool AddrDataMap::get_pair(uint16_t idx, AddrDataMapPair *pair) {
 bool AddrDataMap::get_24bit(uint16_t idx, uint32_t *val) {
   if (idx >= m_len) return false;
 
-  *val = (m_data[idx].addr << 8) | (m_data[idx].data);
+  *val = (((uint32_t) m_data[idx].addr) << 8) | m_data[idx].data;
   return true;
 }
 

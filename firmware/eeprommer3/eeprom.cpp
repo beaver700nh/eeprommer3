@@ -96,8 +96,8 @@ void EepromCtrl::write(AddrDataMap *buf) {
   uint16_t i = 0;
 
   while (buf->get_pair(i++, &pair) == true) {
-    // Skip pairs that are not in the same page as pair #0 [1]
-    if (~(pair.addr ^ addr0) != 0x7FC0) continue;
+    // Skip pairs that are not in the same page as pair #0
+    if ((0x7FC0 & ~(pair.addr ^ addr0)) != 0x7FC0) continue;
 
     set_addr_and_oe(pair.addr | 0x8000); // ~OE is on to disable output
     set_data(pair.data);
@@ -112,16 +112,3 @@ void EepromCtrl::write(AddrDataMap *buf) {
   // as a different one than this operation
   delay(10);
 }
-
-/*
- * [1]
- *
- * A ^ B     returns value with bits turned on if different, off if same
- * ~(A ^ B)  returns value with bits turned off if different, ON IF SAME
- *
- * If returned value of ~(A ^ B) is 0x7FC0,
- * then A and B are in the same page; if it
- * != 0x7FC0, A and B are in different pages
- *
- * 0x7FC0 = 0111'1111'1100'0000
- */
