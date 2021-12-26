@@ -84,14 +84,10 @@ void EepromCtrl::write(AddrDataMap *buf) {
   if (buf->get_len() < 1) return;
 
   AddrDataMapPair pair;
+  AddrDataMapPair pair0;
 
-  uint16_t addr0;
-
-  {
-    uint32_t temp;
-    buf->get_24bit(0, &temp);
-    addr0 = temp >> 8;
-  }
+  buf->get_pair(0, &pair0);
+  uint16_t addr0 = pair0.addr;
 
   uint16_t i = 0;
 

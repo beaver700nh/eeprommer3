@@ -8,8 +8,6 @@
 
 #include "ad_map.hpp"
 
-#include "tft.hpp"
-
 class EepromCtrl {
 public:
   EepromCtrl() {};

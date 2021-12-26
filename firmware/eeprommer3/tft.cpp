@@ -34,16 +34,19 @@ bool TftCtrl::drawRGBBitmapFromFile(
   if (!f) return false;
 
   size_t row_size_bytes = width * sizeof(uint16_t);
-
   uint16_t *buf = (uint16_t *) malloc(row_size_bytes);
-  if (buf == nullptr) return false;
+
+  if (buf == nullptr) {
+    f.close();
+    return false;
+  }
 
   for (uint16_t j = 0; j < height; ++j) {
     int16_t res = f.read((uint8_t *) buf, row_size_bytes);
 
     if (res < 0) {
       success = false;
-      goto done;
+      break;
     }
 
     if (swap_endian) {
@@ -55,10 +58,9 @@ bool TftCtrl::drawRGBBitmapFromFile(
     setAddrWindow(x, y + j, x + width, y + j);
     pushColors(buf, width, true);
 
-    if (skippable && skip_btn->is_pressed(tch, *this)) goto done;
+    if (skippable && skip_btn->is_pressed(tch, *this)) break;
   }
 
-done:
   f.close();
   free(buf);
   return success;
