@@ -79,11 +79,6 @@ public:
 
   typedef uint8_t (ProgrammerFromSd::*action_func)();
 
-  /* 
-   * Values returned from these functions are indexes
-   * into the array details_buf in show_status()
-   */
-
   uint8_t read_byte();
   uint8_t write_byte();
   uint8_t verify_byte(uint16_t addr, uint8_t data);
@@ -118,6 +113,14 @@ public:
     &ProgrammerFromSd::read_vector, &ProgrammerFromSd::write_vector,
     &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_multi,
     &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,
+  };
+
+  enum {
+    STATUS_OK,
+    STATUS_ERR_INVALID,
+    STATUS_ERR_FILE,
+    STATUS_ERR_VERIFY,
+    STATUS_ERR_MEMORY,
   };
 
 private:

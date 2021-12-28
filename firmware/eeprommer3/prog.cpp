@@ -81,10 +81,11 @@ void ProgrammerFromSd::show_status(uint8_t status_code) {
     "Invalid action.",
     "Failed to open file.",
     "Verification failed.",
+    "Failed to allocate memory.",
   };
 
   m_tft.drawText(15, 50, (status_code ? "Failed!" : "Success!"), (status_code ? TftColor::RED : TftColor::GREEN), 3);
-  m_tft.drawText(15, 80, (status_code < 4 ? details_buf[status_code] : "Unknown reason."), TftColor::PURPLE, 2);
+  m_tft.drawText(15, 80, (status_code < 5 ? details_buf[status_code] : "Unknown reason."), TftColor::PURPLE, 2);
 }
 
 uint8_t ProgrammerFromSd::read_byte() {
@@ -103,7 +104,7 @@ uint8_t ProgrammerFromSd::read_byte() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return 0;
+  return STATUS_OK;
 }
 
 uint8_t ProgrammerFromSd::write_byte() {
@@ -135,7 +136,7 @@ uint8_t ProgrammerFromSd::write_byte() {
     return verify_byte(addr, data);
   }
 
-  return 0;
+  return STATUS_OK;
 }
 
 uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
@@ -150,10 +151,10 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 
     m_tft.fillScreen(TftColor::BLACK);
 
-    return 3;
+    return STATUS_ERR_VERIFY;
   }
 
-  return 0;
+  return STATUS_OK;
 }
 
 // Helper function to ask the user to choose
@@ -188,7 +189,7 @@ uint8_t ProgrammerFromSd::read_vector() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return 0;
+  return STATUS_OK;
 }
 
 uint8_t ProgrammerFromSd::write_vector() {
@@ -224,7 +225,7 @@ uint8_t ProgrammerFromSd::write_vector() {
     return verify_vector(vec.m_addr, new_val);
   }
 
-  return 0;
+  return STATUS_OK;
 }
 
 uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
@@ -239,10 +240,10 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
 
     m_tft.fillScreen(TftColor::BLACK);
 
-    return 3;
+    return STATUS_ERR_VERIFY;
   }
 
-  return 0;
+  return STATUS_OK;
 }
 
 uint8_t ProgrammerFromSd::read_range() {
@@ -255,10 +256,15 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
-  uint8_t *data = m_ee.read(addr1, addr2);
+  auto *data = (uint8_t *) malloc((addr2 - addr1 + 1) * sizeof(uint8_t));
+  if (data == nullptr) {
+    m_tft.fillScreen(TftColor::BLACK);
+    return STATUS_ERR_MEMORY;
+  }
+
+  m_ee.read(addr1, addr2, data);
 
   m_tft.fillScreen(TftColor::BLACK);
-
   m_tft.drawText(10, 10, "Select viewing method:", TftColor::CYAN, 3);
 
   TftChoiceMenu menu(50, 10, 10, 10, 2, 80, 0);
@@ -272,20 +278,12 @@ uint8_t ProgrammerFromSd::read_range() {
 
   if      (method == 0) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_hex);
   else if (method == 1) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_chars);
-  else {
-    m_tft.drawText(10,  10, "INTERNAL ERROR",               TftColor::RED,     3);
-    m_tft.drawText(10,  50, "Got nonexistent",              TftColor::MAGENTA, 2);
-    m_tft.drawText(10,  80, "viewing method.",              TftColor::MAGENTA, 2);
-    m_tft.drawText(10, 110, STRFMT_NOBUF("ID: %d", method), TftColor::PURPLE,  2);
-
-    wait_continue();
-  }
 
   m_tft.fillScreen(TftColor::BLACK);
 
   free(data);
 
-  return 0;
+  return STATUS_OK;
 }
 
 // Assumes addr1 <= addr2
@@ -391,28 +389,32 @@ uint8_t ProgrammerFromSd::write_multi() {
    * to EEPROM and exits, cancel just exits
    */
 
-  AddrDataArray buf;
-  buf.append((AddrDataArrayPair) {0xFFFA, 0x01});
-  buf.append((AddrDataArrayPair) {0xFFFB, 0x12});
-  buf.append((AddrDataArrayPair) {0xFFFC, 0x23});
-  buf.append((AddrDataArrayPair) {0xFFFD, 0x34});
-  buf.append((AddrDataArrayPair) {0xFFFE, 0x45});
-  buf.append((AddrDataArrayPair) {0xFFFF, 0x56});
+  // AddrDataArray buf;
+  // buf.append((AddrDataArrayPair) {0xFFFA, 0x01});
+  // buf.append((AddrDataArrayPair) {0xFFFB, 0x12});
+  // buf.append((AddrDataArrayPair) {0xFFFC, 0x23});
+  // buf.append((AddrDataArrayPair) {0xFFFD, 0x34});
+  // buf.append((AddrDataArrayPair) {0xFFFE, 0x45});
+  // buf.append((AddrDataArrayPair) {0xFFFF, 0x56});
 
-  m_ee.write(&buf);
+  // m_ee.write(&buf);
+
+  uint8_t buf[] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+
+  m_ee.write(0xFFFA, buf, 100);
 
   return nop();
 }
 
 uint8_t ProgrammerFromSd::verify_multi(uint16_t addr, uint16_t length, uint8_t *data) {
-  return 3;
+  return STATUS_ERR_VERIFY;
 }
 
 uint8_t ProgrammerFromSd::draw() {
   tft_draw_test(m_tch, m_tft);
 
   // This return will never happen because tft_draw_test() contains an infinite loop
-  return 0;
+  return STATUS_OK;
 }
 
 uint8_t ProgrammerFromSd::debug() {
@@ -464,11 +466,11 @@ uint8_t ProgrammerFromSd::debug() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return 0;
+  return STATUS_OK;
 }
 
 // Dummy function for unimplemented actions
 uint8_t ProgrammerFromSd::nop() {
   // Always returns 0 for success
-  return 0;
+  return STATUS_OK;
 }

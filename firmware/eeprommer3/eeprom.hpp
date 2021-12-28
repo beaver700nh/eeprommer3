@@ -26,7 +26,8 @@ public:
   uint8_t read(uint16_t addr);
   void write(uint16_t addr, uint8_t data);
 
-  uint8_t *read(uint16_t addr1, uint16_t addr2);
+  void read(uint16_t addr1, uint16_t addr2, uint8_t *buf);
+  void write(uint16_t addr, uint8_t *buf, uint16_t len);
   void write(AddrDataArray *buf);
 
 private:

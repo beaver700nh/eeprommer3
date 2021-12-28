@@ -7,7 +7,6 @@ FIRMWARE
 - use do-while loops instead of infinite for loops with breaks for inclusive range looping
 - start work on from_serial programmer
 - add more DEBUG_MODE-logging
-- add EepromCtrl::write() to write buffer to eeprom (for write from file)
-- make uint8_t *EepromCtrl::read() read into a buffer instead of allocating its own
+- create an enum for status codes
 - make ProgrammerFromSd::calc_hex and calc_chars static
 - IMPORTANT - fix read_range bug in high pages

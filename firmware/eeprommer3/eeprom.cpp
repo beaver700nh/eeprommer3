@@ -68,16 +68,35 @@ void EepromCtrl::write(uint16_t addr, uint8_t data) {
   delay(10);
 }
 
-uint8_t *EepromCtrl::read(uint16_t addr1, uint16_t addr2) {
-  uint8_t *data = (uint8_t *) malloc((addr2 - addr1 + 1) * sizeof(*data));
+void EepromCtrl::read(uint16_t addr1, uint16_t addr2, uint8_t *buf) {
+  uint16_t i = addr1;
 
-  for (uint16_t i = addr1; /* condition is in loop body */; ++i) {
-    data[i - addr1] = read(i);
-
-    if (i == addr2) break;
+  do {
+    buf[i - addr1] = read(i);
   }
+  while (i++ != addr2);
+}
 
-  return data;
+void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
+  uint16_t i = addr;
+
+  do {
+    // If pair not in the same page as pair #0 then start a new operation
+    if ((0x7FC0 & ~(i ^ addr)) != 0x7FC0) delay(10);
+
+    set_addr_and_oe(i | 0x8000); // ~OE is on to disable output
+    set_data(buf[i - addr]);
+
+    set_we(false);
+    delayMicroseconds(10);
+    set_we(true);
+    delayMicroseconds(2);
+  }
+  while ((i - addr + 1) < len && ++i);
+
+  // Delay to be sure that the next operation is treated
+  // as a different one than this operation
+  delay(10);
 }
 
 void EepromCtrl::write(AddrDataArray *buf) {
@@ -92,8 +111,8 @@ void EepromCtrl::write(AddrDataArray *buf) {
   uint16_t i = 0;
 
   while (buf->get_pair(i++, &pair) == true) {
-    // Skip pairs that are not in the same page as pair #0
-    if ((0x7FC0 & ~(pair.addr ^ addr0)) != 0x7FC0) continue;
+    // If pair not in the same page as pair #0 then start a new operation
+    if ((0x7FC0 & ~(pair.addr ^ addr0)) != 0x7FC0) delay(10);
 
     set_addr_and_oe(pair.addr | 0x8000); // ~OE is on to disable output
     set_data(pair.data);
