@@ -25,8 +25,8 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
 }
 
 bool TftCtrl::drawRGBBitmapFromFile(
-  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, bool swap_endian,
-  bool skippable, TftBtn *skip_btn, TouchCtrl &tch
+  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height,
+  bool swap_endian, bool (*check_skip)()
 ) {
   bool success = true;
 
@@ -58,7 +58,7 @@ bool TftCtrl::drawRGBBitmapFromFile(
     setAddrWindow(x, y + j, x + width, y + j);
     pushColors(buf, width, true);
 
-    if (skippable && skip_btn->is_pressed(tch, *this)) break;
+    if ((*check_skip)()) break;
   }
 
   f.close();

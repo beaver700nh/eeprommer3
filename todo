@@ -7,10 +7,7 @@ FIRMWARE
 - use do-while loops instead of infinite for loops with breaks for inclusive range looping
 - start work on from_serial programmer
 - add more DEBUG_MODE-logging
-- move STRFMT_NOBUF arrays into a separate C++ file and extern them from constants.hpp
-- add STRFMT_PTRBUF which accepts a length parameter
-- rename AddrDataMap to AddrDataArray
 - add EepromCtrl::write() to write buffer to eeprom (for write from file)
-- move TftCtrl::drawRGBBitmapFromFile() outside of TftCtrl to get rid of fwd-decls
 - make uint8_t *EepromCtrl::read() read into a buffer instead of allocating its own
 - make ProgrammerFromSd::calc_hex and calc_chars static
+- IMPORTANT - fix read_range bug in high pages

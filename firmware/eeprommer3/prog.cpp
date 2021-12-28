@@ -3,7 +3,7 @@
 
 #include <SD.h>
 
-#include "ad_map.hpp"
+#include "ad_array.hpp"
 #include "eeprom.hpp"
 #include "input.hpp"
 #include "prog.hpp"
@@ -391,13 +391,13 @@ uint8_t ProgrammerFromSd::write_multi() {
    * to EEPROM and exits, cancel just exits
    */
 
-  AddrDataMap buf;
-  buf.append((AddrDataMapPair) {0xFFFA, 0x01});
-  buf.append((AddrDataMapPair) {0xFFFB, 0x12});
-  buf.append((AddrDataMapPair) {0xFFFC, 0x23});
-  buf.append((AddrDataMapPair) {0xFFFD, 0x34});
-  buf.append((AddrDataMapPair) {0xFFFE, 0x45});
-  buf.append((AddrDataMapPair) {0xFFFF, 0x56});
+  AddrDataArray buf;
+  buf.append((AddrDataArrayPair) {0xFFFA, 0x01});
+  buf.append((AddrDataArrayPair) {0xFFFB, 0x12});
+  buf.append((AddrDataArrayPair) {0xFFFC, 0x23});
+  buf.append((AddrDataArrayPair) {0xFFFD, 0x34});
+  buf.append((AddrDataArrayPair) {0xFFFE, 0x45});
+  buf.append((AddrDataArrayPair) {0xFFFF, 0x56});
 
   m_ee.write(&buf);
 

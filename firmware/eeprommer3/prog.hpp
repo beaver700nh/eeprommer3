@@ -110,15 +110,15 @@ public:
 
   uint8_t nop();
 
-  action_func action_map[] = {
+  static constexpr uint8_t NUM_ACTIONS = 10;
+
+  action_func action_map[NUM_ACTIONS] = {
     &ProgrammerFromSd::read_byte,   &ProgrammerFromSd::write_byte,
     &ProgrammerFromSd::nop,         &ProgrammerFromSd::nop,
     &ProgrammerFromSd::read_vector, &ProgrammerFromSd::write_vector,
     &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_multi,
     &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,
   };
-
-  static constexpr uint8_t NUM_ACTIONS = ARR_LEN(action_map);
 
 private:
   EepromCtrl &m_ee;

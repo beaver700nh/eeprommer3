@@ -3,7 +3,7 @@
 
 #include "eeprom.hpp"
 
-#include "ad_map.hpp"
+#include "ad_array.hpp"
 
 void EepromCtrl::init(uint8_t addr_exp_0, uint8_t addr_exp_1) {
   m_exp_0.begin_I2C(addr_exp_0);
@@ -80,11 +80,11 @@ uint8_t *EepromCtrl::read(uint16_t addr1, uint16_t addr2) {
   return data;
 }
 
-void EepromCtrl::write(AddrDataMap *buf) {
+void EepromCtrl::write(AddrDataArray *buf) {
   if (buf->get_len() < 1) return;
 
-  AddrDataMapPair pair;
-  AddrDataMapPair pair0;
+  AddrDataArrayPair pair;
+  AddrDataArrayPair pair0;
 
   buf->get_pair(0, &pair0);
   uint16_t addr0 = pair0.addr;

@@ -56,13 +56,6 @@ namespace TftColor {
 };
 
 /*
- * Forward declarations because some of
- * TftCtrl's methods depend on these
- */
-class TouchCtrl;
-class TftBtn;
-
-/*
  * TftCtrl is the main class to interface
  * with the TFT; it is a wrapper around the
  * 3rd-party class MCUFRIEND_kbv.
@@ -77,12 +70,18 @@ public:
   void drawText(const char *text);
 
   bool drawRGBBitmapFromFile(
-    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, bool swap_endian,
-    bool skippable, TftBtn *skip_btn, TouchCtrl &tch
+    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height,
+    bool swap_endian, bool (*check_skip)()
   );
 };
 
 // Classes from here on are for GUI
+
+/*
+ * Forward declaration because some of the
+ * GUI classes' methods depend on TouchCtrl
+ */
+class TouchCtrl;
 
 /*
  * TftBtn: stores its own data,

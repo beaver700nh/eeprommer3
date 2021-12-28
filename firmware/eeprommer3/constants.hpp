@@ -1,6 +1,8 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
+#include "strfmt.hpp"
+
 /*****************************************/
 /** Flags ********************************/
 /*****************************************/
@@ -10,34 +12,6 @@
 /*****************************************/
 /** Macros *******************************/
 /*****************************************/
-
-static char custom_printf_buf[100];
-
-#define PRINTF_NOBUF(obj, fmt, ...) \
-  ( \
-    snprintf(custom_printf_buf, sizeof(custom_printf_buf), fmt, ##__VA_ARGS__), \
-    obj.print(custom_printf_buf) \
-  )
-
-#define PRINTF(buf, obj, fmt, ...) \
-  ( \
-    snprintf(buf, sizeof(buf), fmt, ##__VA_ARGS__), \
-    obj.print(buf) \
-  )
-
-static char custom_strfmt_buf[100];
-
-#define STRFMT_NOBUF(fmt, ...) \
-  ( \
-    snprintf(custom_strfmt_buf, sizeof(custom_strfmt_buf), fmt, ##__VA_ARGS__), \
-    custom_strfmt_buf \
-  )
-
-#define STRFMT(buf, fmt, ...) \
-  ( \
-    snprintf(buf, sizeof(buf), fmt, ##__VA_ARGS__), \
-    buf \
-  )
 
 #define BYTE_FMT "%c%c%c%c%c%c%c%c"
 #define BYTE_FMT_VAL(n)   \

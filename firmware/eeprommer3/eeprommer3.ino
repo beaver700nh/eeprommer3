@@ -21,6 +21,9 @@ SdCtrl sd(SD_CS, SD_EN);
 
 EepromCtrl ee;
 
+// Made global to allow capturing by lambdas; is destroyed inside setup()
+TftBtn *skip_btn = new TftBtn(80, 273, 320, 24, 137, 5, "Skip", TftColor::WHITE, TftColor::DGREEN);
+
 void setup() {
   delay(1000);
 
@@ -33,10 +36,14 @@ void setup() {
 
   uint8_t res = sd.init();
 
-  TftBtn *skip_btn = new TftBtn(80, 273, 320, 24, 137, 5, "Skip", TftColor::WHITE, TftColor::DGREEN);
   skip_btn->draw(tft);
 
-  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, true, skip_btn, tch);
+  tft.drawRGBBitmapFromFile(
+    80, 23, "startup.bin", 320, 240, true,
+    [&skip_btn, &tch, &tft]() -> bool {
+      return skip_btn->is_pressed(tch, tft);
+    }
+  );
 
   if      (res == 0) tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
   else if (res == 1) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
