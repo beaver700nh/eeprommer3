@@ -28,6 +28,8 @@ void setup() {
   delay(1000);
 
   Serial.begin(115200);
+  Serial.println("=== EEPROMMER3 ===");
+  Serial.println("Starting up...");
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
@@ -59,6 +61,8 @@ void setup() {
   }
 
   delete skip_btn;
+
+  Serial.println("Hello, world!");
 
   mainprog();
 }

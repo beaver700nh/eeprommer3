@@ -2,11 +2,10 @@ SOFTWARE
 - add more pictures/icons for window
 
 FIRMWARE
+- IMPORTANT - fix read_range bug in high pages
+- make ProgrammerFromSd::calc_hex and calc_chars static
 - add TftMenu derivative to handle key-value pair list inputting (mess around with scrolling too)
 - add ProgrammerFromSd's write_multi functions (REMEMBER TO TEST WITH EEPROM NOT PLUGGED IN)
 - use do-while loops instead of infinite for loops with breaks for inclusive range looping
 - start work on from_serial programmer
 - add more DEBUG_MODE-logging
-- create an enum for status codes
-- make ProgrammerFromSd::calc_hex and calc_chars static
-- IMPORTANT - fix read_range bug in high pages
