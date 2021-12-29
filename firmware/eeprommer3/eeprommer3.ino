@@ -63,6 +63,7 @@ void setup() {
   delete skip_btn;
 
   Serial.println("Hello, world!");
+  Serial.println();
 
   mainprog();
 }

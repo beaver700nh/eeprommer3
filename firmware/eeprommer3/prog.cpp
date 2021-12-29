@@ -264,6 +264,20 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_ee.read(addr1, addr2, data);
 
+  uint8_t j = (addr1 >> 4);
+  uint16_t k = 0;
+
+  do {
+    for (uint8_t i = 0; i < 16; ++i) {
+      Serial.print((IN_RANGE((j << 4) + i, addr1, addr2 + 1) ? STRFMT_NOBUF("%02X ", data[k++]) : ".. "));
+    }
+
+    Serial.println();
+  }
+  while (j++ != (addr2 >> 4));
+
+  Serial.println();
+
   m_tft.fillScreen(TftColor::BLACK);
   m_tft.drawText(10, 10, "Select viewing method:", TftColor::CYAN, 3);
 
