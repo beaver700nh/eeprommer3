@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include <stdarg.h>
+
 #include <MCUFRIEND_kbv.h>
 #include <SD.h>
 #include <TouchScreen.h>
@@ -348,6 +350,38 @@ TftYesNoMenu::TftYesNoMenu(
   add_btn_calc(tft, "Yes", TftColor::BLACK, TftColor::GREEN);
   add_btn_calc(tft, "No",  TftColor::WHITE, TftColor::RED);
   add_btn_confirm(tft, force_bottom);
+}
+
+uint8_t ask_choice(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t num, ...) {
+  va_list args;
+  va_start(args, num);
+
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+
+  uint8_t cols;
+
+  if      (num > 11) cols = 4;
+  else if (num >  8) cols = 3;
+  else if (num >  5) cols = 2;
+  else               cols = 1;
+
+  TftChoiceMenu menu(50, 10, 10, 10, cols, 24, 0);
+
+  while (num --> 0) {
+    const char *text  = va_arg(args, const char *);
+    uint16_t fg_color = va_arg(args, uint16_t);
+    uint16_t bg_color = va_arg(args, uint16_t);
+
+    menu.add_btn_calc(tft, text, fg_color, bg_color);
+  }
+
+  menu.add_btn_confirm(tft, true);
+
+  uint8_t val = menu.wait_for_value(tch, tft);
+
+  va_end(args);
+
+  return val;
 }
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {

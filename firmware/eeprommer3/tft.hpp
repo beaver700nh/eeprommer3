@@ -266,10 +266,32 @@ public:
   );
 };
 
-/*
- * Debug function for testing touchscreen and
- * TFT screen.
- */
+// Function to ask the user for an arbitrarily-sized integer
+template<typename T>
+T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+
+  TftHexSelMenu<T> menu(tft, 50, 17);
+  menu.add_btn(new TftBtn(10, 286, 460, 24, 184, 5, "Continue"));
+  menu.draw(tft);
+
+  while (true) { // Loop to get a val
+    menu.show_val(tft, 10, 170, 4, TftColor::ORANGE, TftColor::BLACK);
+
+    uint8_t btn_pressed = menu.wait_for_press(tch, tft);
+
+    if (btn_pressed == 16) break;
+
+    menu.update_val(btn_pressed);
+  }
+
+  return menu.get_val();
+}
+
+// Function to ask the user to pick from one of `num` choices
+uint8_t ask_choice(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t num, ...);
+
+// Debug function for testing touchscreen and TFT screen.
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
 
 #endif

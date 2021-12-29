@@ -10,6 +10,12 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
+void wait_continue(TftCtrl &tft, TouchCtrl &tch) {
+  static TftBtn continue_btn(BOTTOM_BTN(tft, "Continue"));
+  continue_btn.draw(tft);
+  continue_btn.wait_for_press(tch, tft);
+}
+
 ProgrammerFromSd::ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft)
   : m_ee(ee), m_sd(sd), m_tch(tch), m_tft(tft) {
   // Empty
@@ -61,16 +67,10 @@ void ProgrammerFromSd::run() {
     uint8_t status_code = (cur_choice < NUM_ACTIONS ? (this->*(action_map[cur_choice]))() : 1);
     show_status(status_code);
 
-    wait_continue();
+    wait_continue(m_tft, m_tch);
 
     m_tft.fillScreen(TftColor::BLACK);
   }
-}
-
-void ProgrammerFromSd::wait_continue() {
-  static TftBtn continue_btn(BOTTOM_BTN(m_tft, "Continue"));
-  continue_btn.draw(m_tft);
-  continue_btn.wait_for_press(m_tch, m_tft);
 }
 
 void ProgrammerFromSd::show_status(uint8_t status_code) {
@@ -89,7 +89,7 @@ void ProgrammerFromSd::show_status(uint8_t status_code) {
 }
 
 uint8_t ProgrammerFromSd::read_byte() {
-  uint16_t addr = ask_val<uint16_t>("Type an address:");
+  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
   uint8_t data = m_ee.read(addr);
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -100,7 +100,7 @@ uint8_t ProgrammerFromSd::read_byte() {
   m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
   m_tft.drawText(20, 170, STRFMT_NOBUF("CHR: %c",        data),               TftColor::YELLOW, 2);
 
-  wait_continue();
+  wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -108,9 +108,9 @@ uint8_t ProgrammerFromSd::read_byte() {
 }
 
 uint8_t ProgrammerFromSd::write_byte() {
-  uint16_t addr = ask_val<uint16_t>("Type an address:");
+  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
   m_tft.fillScreen(TftColor::BLACK);
-  uint8_t data = ask_val<uint8_t>("Type the data:");
+  uint8_t data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
 
   m_ee.write(addr, data);
 
@@ -120,7 +120,7 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_tft.drawText(10,  73, "to",                                TftColor::DGREEN, 3);
   m_tft.drawText(10, 100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
-  wait_continue();
+  wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -147,7 +147,7 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", data),   TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3);
 
-    wait_continue();
+    wait_continue(m_tft, m_tch);
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -157,18 +157,25 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
   return STATUS_OK;
 }
 
-// Helper function to ask the user to choose
-// one of the 6502's three jump vectors
 Vector ProgrammerFromSd::ask_vector() {
-  m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
+  // m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
 
-  TftChoiceMenu menu(50, 10, 10, 10, 3, 54, 1);
-  menu.add_btn_calc(m_tft, Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE);
-  menu.add_btn_calc(m_tft, Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, Vector::NAMES[2], TftColor::PINKK,          TftColor::RED);
-  menu.add_btn_confirm(m_tft, true);
+  // TftChoiceMenu menu(50, 10, 10, 10, 3, 54, 1);
+  // menu.add_btn_calc(m_tft, Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE);
+  // menu.add_btn_calc(m_tft, Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
+  // menu.add_btn_calc(m_tft, Vector::NAMES[2], TftColor::PINKK,          TftColor::RED);
+  // menu.add_btn_confirm(m_tft, true);
 
-  uint8_t vector_id = menu.wait_for_value(m_tch, m_tft);
+  // uint8_t vector_id = menu.wait_for_value(m_tch, m_tft);
+
+  // return Vector(vector_id);
+
+  uint8_t vector_id = ask_choice(
+    m_tft, m_tch, "Which vector?", 3,
+    Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE,
+    Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN,
+    Vector::NAMES[2], TftColor::PINKK,          TftColor::RED
+  );
 
   return Vector(vector_id);
 }
@@ -185,7 +192,7 @@ uint8_t ProgrammerFromSd::read_vector() {
   m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
   m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
 
-  wait_continue();
+  wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -198,7 +205,7 @@ uint8_t ProgrammerFromSd::write_vector() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  uint16_t new_val = ask_val<uint16_t>("Type the new value:");
+  uint16_t new_val = ask_val<uint16_t>(m_tft, m_tch, "Type the new value:");
   m_ee.write(vec.m_addr,     new_val & 0xFF);
   m_ee.write(vec.m_addr + 1, new_val >> 8);
 
@@ -209,7 +216,7 @@ uint8_t ProgrammerFromSd::write_vector() {
   m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
   m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
 
-  wait_continue();
+  wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -236,7 +243,7 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", data),   TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual), TftColor::MAGENTA, 3);
 
-    wait_continue();
+    wait_continue(m_tft, m_tch);
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -247,9 +254,9 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_range() {
-  uint16_t addr1 = ask_val<uint16_t>("Start address?");
+  uint16_t addr1 = ask_val<uint16_t>(m_tft, m_tch, "Start address?");
   m_tft.fillScreen(TftColor::BLACK);
-  uint16_t addr2 = ask_val<uint16_t>("End address?");
+  uint16_t addr2 = ask_val<uint16_t>(m_tft, m_tch, "End address?");
 
   // Make sure addr1 <= addr2
   if (addr2 < addr1) swap<uint16_t>(&addr1, &addr2);
@@ -456,7 +463,7 @@ uint8_t ProgrammerFromSd::debug() {
     case 1: m_ee.set_we(false); continue;
     case 2:
       m_tft.fillScreen(TftColor::BLACK); 
-      val16 = ask_val<uint16_t>("Type the value:");
+      val16 = ask_val<uint16_t>(m_tft, m_tch, "Type the value:");
       m_ee.set_addr_and_oe(val16);
       break;
     case 3:
@@ -464,11 +471,11 @@ uint8_t ProgrammerFromSd::debug() {
       val8 = m_ee.get_data();
       m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
       m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val8)), TftColor::YELLOW, 2);
-      wait_continue();
+      wait_continue(m_tft, m_tch);
       break;
     case 4:
       m_tft.fillScreen(TftColor::BLACK); 
-      val8 = ask_val<uint8_t>("Type the value:");
+      val8 = ask_val<uint8_t>(m_tft, m_tch, "Type the value:");
       m_ee.set_data(val8);
       break;
     }

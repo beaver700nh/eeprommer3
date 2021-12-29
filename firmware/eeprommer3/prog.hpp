@@ -10,9 +10,8 @@
 #include "tft.hpp"
 
 /*
- * Vector is a helper class for the
- * "read vector" and "write vector"
- * actions.
+ * Vector is a helper class for
+ * ProgrammerFromSd's vector-related actions.
  */
 
 struct Vector {
@@ -36,6 +35,9 @@ struct Vector {
   inline static const char *NAMES[3] = {"NMI", "RESET", "IRQ"};
 };
 
+// Function to wait for the user to press a "Continue" button
+void wait_continue(TftCtrl &tft, TouchCtrl &tch);
+
 /*
  * ProgrammerFromSd is a class that
  * connects the front-end and back-end
@@ -50,33 +52,6 @@ public:
   void run();
   void show_status(uint8_t code);
 
-  // Helper function to ask the user for
-  // an arbitrarily-sized integer
-  template<typename T>
-  T ask_val(const char *prompt) {
-    m_tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
-  
-    TftHexSelMenu<T> menu(m_tft, 50, 17);
-    menu.add_btn(new TftBtn(10, 286, 460, 24, 184, 5, "Continue"));
-    menu.draw(m_tft);
-  
-    while (true) { // Loop to get a val
-      menu.show_val(m_tft, 10, 170, 4, TftColor::ORANGE, TftColor::BLACK);
-  
-      uint8_t btn_pressed = menu.wait_for_press(m_tch, m_tft);
-  
-      if (btn_pressed == 16) break;
-  
-      menu.update_val(btn_pressed);
-    }
-  
-    return menu.get_val();
-  }
-
-  Vector ask_vector();
-
-  void wait_continue();
-
   typedef uint8_t (ProgrammerFromSd::*action_func)();
 
   uint8_t read_byte();
@@ -87,18 +62,21 @@ public:
   uint8_t write_vector();
   uint8_t verify_vector(uint16_t addr, uint16_t data);
 
+  // Function to ask the user to select a 6502 jump vector
+  Vector ask_vector();
+
   uint8_t read_range();
   uint8_t write_multi();
   uint8_t verify_multi(uint16_t addr, uint16_t length, uint8_t *data);
 
   typedef void (ProgrammerFromSd::*calc_func)(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
-  void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc);
-  uint8_t show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc, uint8_t cur_page, uint8_t max_page, TftMenu &menu);
-
   // These two are `calc_func`s
   void calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
   void calc_chars(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
+
+  void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc);
+  uint8_t show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc, uint8_t cur_page, uint8_t max_page, TftMenu &menu);
 
   uint8_t draw();
   uint8_t debug();
@@ -115,13 +93,7 @@ public:
     &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,
   };
 
-  enum {
-    STATUS_OK,
-    STATUS_ERR_INVALID,
-    STATUS_ERR_FILE,
-    STATUS_ERR_VERIFY,
-    STATUS_ERR_MEMORY,
-  };
+  enum { STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY };
 
 private:
   EepromCtrl &m_ee;
