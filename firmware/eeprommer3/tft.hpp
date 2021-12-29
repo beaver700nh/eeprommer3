@@ -289,7 +289,11 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
 }
 
 // Function to ask the user to pick from one of `num` choices
-uint8_t ask_choice(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t num, ...);
+uint8_t ask_choice(
+  TftCtrl &tft, TouchCtrl &tch, const char *prompt,
+  int8_t cols, int32_t btn_height, int16_t initial_choice,
+  uint8_t num, ...
+);
 
 // Debug function for testing touchscreen and TFT screen.
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);

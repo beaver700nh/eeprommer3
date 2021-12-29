@@ -158,26 +158,14 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 Vector ProgrammerFromSd::ask_vector() {
-  // m_tft.drawText(10, 10, "Select which vector:", TftColor::CYAN, 3);
-
-  // TftChoiceMenu menu(50, 10, 10, 10, 3, 54, 1);
-  // menu.add_btn_calc(m_tft, Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE);
-  // menu.add_btn_calc(m_tft, Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
-  // menu.add_btn_calc(m_tft, Vector::NAMES[2], TftColor::PINKK,          TftColor::RED);
-  // menu.add_btn_confirm(m_tft, true);
-
-  // uint8_t vector_id = menu.wait_for_value(m_tch, m_tft);
-
-  // return Vector(vector_id);
-
-  uint8_t vector_id = ask_choice(
-    m_tft, m_tch, "Which vector?", 3,
-    Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE,
-    Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN,
-    Vector::NAMES[2], TftColor::PINKK,          TftColor::RED
+  return Vector(
+    ask_choice(
+      m_tft, m_tch, "Which vector?", 3, 54, 1, 3,
+      Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE,
+      Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN,
+      Vector::NAMES[2], TftColor::PINKK,          TftColor::RED
+    )
   );
-
-  return Vector(vector_id);
 }
 
 uint8_t ProgrammerFromSd::read_vector() {
@@ -271,6 +259,32 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_ee.read(addr1, addr2, data);
 
+#ifdef DEBUG_MODE
+  debug_print_read_range(addr1, addr2, data);
+#endif
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  uint8_t viewing_method = ask_choice(
+    m_tft, m_tch, "Select viewing method:", 2, 80, 0, 2,
+    "Raw Hex",    TftColor::BLACK, TftColor::ORANGE,
+    "Characters", TftColor::BLUE,  TftColor::CYAN
+  );
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if      (viewing_method == 0) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_hex);
+  else if (viewing_method == 1) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_chars);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  free(data);
+
+  return STATUS_OK;
+}
+
+#ifdef DEBUG_MODE
+void ProgrammerFromSd::debug_print_read_range(uint16_t addr1, uint16_t addr2, uint8_t *data) {
   uint8_t j = (addr1 >> 4);
   uint16_t k = 0;
 
@@ -284,28 +298,8 @@ uint8_t ProgrammerFromSd::read_range() {
   while (j++ != (addr2 >> 4));
 
   Serial.println();
-
-  m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10, 10, "Select viewing method:", TftColor::CYAN, 3);
-
-  TftChoiceMenu menu(50, 10, 10, 10, 2, 80, 0);
-  menu.add_btn_calc(m_tft, "Raw Hex",    TftColor::BLACK, TftColor::ORANGE);
-  menu.add_btn_calc(m_tft, "Characters", TftColor::BLUE,  TftColor::CYAN);
-  menu.add_btn_confirm(m_tft, true);
-
-  uint8_t method = menu.wait_for_value(m_tch, m_tft);
-
-  m_tft.fillScreen(TftColor::BLACK);
-
-  if      (method == 0) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_hex);
-  else if (method == 1) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_chars);
-
-  m_tft.fillScreen(TftColor::BLACK);
-
-  free(data);
-
-  return STATUS_OK;
 }
+#endif
 
 // Assumes addr1 <= addr2
 void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc) {

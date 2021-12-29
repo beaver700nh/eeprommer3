@@ -352,20 +352,29 @@ TftYesNoMenu::TftYesNoMenu(
   add_btn_confirm(tft, force_bottom);
 }
 
-uint8_t ask_choice(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t num, ...) {
+uint8_t ask_choice(
+  TftCtrl &tft, TouchCtrl &tch, const char *prompt,
+  int8_t cols, int32_t btn_height, int16_t initial_choice,
+  uint8_t num, ...
+) {
   va_list args;
   va_start(args, num);
 
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
-  uint8_t cols;
+  uint8_t _cols;
 
-  if      (num > 11) cols = 4;
-  else if (num >  8) cols = 3;
-  else if (num >  5) cols = 2;
-  else               cols = 1;
+  if      (cols > 0) _cols = cols;
+  else if (num > 11) _cols = 4;
+  else if (num >  8) _cols = 3;
+  else if (num >  5) _cols = 2;
+  else               _cols = 1;
 
-  TftChoiceMenu menu(50, 10, 10, 10, cols, 24, 0);
+  TftChoiceMenu menu(
+    50, 10, 10, 10, cols,
+    (btn_height > 0 ? btn_height : 24),
+    (initial_choice < 0 ? 0 : initial_choice)
+  );
 
   while (num --> 0) {
     const char *text  = va_arg(args, const char *);

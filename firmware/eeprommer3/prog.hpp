@@ -96,6 +96,10 @@ public:
   enum { STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY };
 
 private:
+#ifdef DEBUG_MODE
+  void debug_print_read_range(uint16_t addr1, uint16_t addr2, uint8_t *data);
+#endif
+
   EepromCtrl &m_ee;
   SdCtrl &m_sd;
   TouchCtrl &m_tch;

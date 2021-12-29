@@ -3,8 +3,15 @@
 
 all: build run
 
+.ONESHELL:
 build:
-	arduino-cli-mega-compile . --warnings pedantic --build-property=compiler.cpp.extra_flags="-std=c++1z"
+ifeq ($(DEBUG_MODE), 1)
+	debug_arg="--build-property=build.extra_flags=\"-DDEBUG_MODE=1\""
+else
+	debug_arg=""
+endif
+
+	arduino-cli-mega-compile . --warnings pedantic --build-property=compiler.cpp.extra_flags="-std=c++1z" "$$debug_arg"
 
 run:
 	arduino-cli-mega-upload . /dev/ttyACM0 --verbose
