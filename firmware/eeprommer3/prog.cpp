@@ -4,6 +4,7 @@
 #include <SD.h>
 
 #include "ad_array.hpp"
+#include "debug.hpp"
 #include "eeprom.hpp"
 #include "input.hpp"
 #include "prog.hpp"
@@ -260,7 +261,8 @@ uint8_t ProgrammerFromSd::read_range() {
   m_ee.read(addr1, addr2, data);
 
 #ifdef DEBUG_MODE
-  debug_print_read_range(addr1, addr2, data);
+  PRINTF_NOBUF(Serial, "ProgrammerFromSd::read_range(): reading range {%d..%d}\n", addr1, addr2);
+  debug_print_addr_range(addr1, addr2, data);
 #endif
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -283,24 +285,6 @@ uint8_t ProgrammerFromSd::read_range() {
   return STATUS_OK;
 }
 
-#ifdef DEBUG_MODE
-void ProgrammerFromSd::debug_print_read_range(uint16_t addr1, uint16_t addr2, uint8_t *data) {
-  uint8_t j = (addr1 >> 4);
-  uint16_t k = 0;
-
-  do {
-    for (uint8_t i = 0; i < 16; ++i) {
-      Serial.print((IN_RANGE((j << 4) + i, addr1, addr2 + 1) ? STRFMT_NOBUF("%02X ", data[k++]) : ".. "));
-    }
-
-    Serial.println();
-  }
-  while (j++ != (addr2 >> 4));
-
-  Serial.println();
-}
-#endif
-
 // Assumes addr1 <= addr2
 void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc) {
   // Draw frame for the data
@@ -314,6 +298,10 @@ void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2,
   menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, ">"));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Continue")));
   menu.draw(m_tft);
+
+#ifdef DEBUG_MODE
+  PRINTF_NOBUF(Serial, "ProgrammerFromSd::show_range(): showing range {%d..%d}\n", addr1, addr2);
+#endif
 
   uint8_t cur_page = 0;
   uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
@@ -332,6 +320,14 @@ void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2,
 uint8_t ProgrammerFromSd::show_page(
   uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc, uint8_t cur_page, uint8_t max_page, TftMenu &menu
 ) {
+#ifdef DEBUG_MODE
+  PRINTF_NOBUF(
+    Serial,
+    "ProgrammerFromSd::show_range(): showing page #%d out of %d pages, from range {%d..%d}\n",
+    cur_page, max_page, addr1, addr2
+  );
+#endif
+
   char *text = (char *) malloc(3 * sizeof(*text));
 
   m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);

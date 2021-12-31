@@ -16,6 +16,15 @@ endif
 run:
 	arduino-cli-mega-upload . /dev/ttyACM0 --verbose
 
+### sleep to allow Arduino to initialize
+### before starting picocom
+	sleep 11
+
 ifeq ($(SER_MON), 1)
-	putty /dev/ttyACM0 -serial -sercfg 115200,8,n,1,N &
+### Baudrate:   115200
+### paritY:     none
+### Databits:   8
+### stoPbits:   1
+### MAPping:    LF -> CR + LF
+	picocom -b 115200 -y n -d 8 -p 1 --imap="lfcrlf" /dev/ttyACM0 &
 endif
