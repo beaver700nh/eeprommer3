@@ -1,10 +1,12 @@
-.SILENT: all build run
-.PHONY: all build run
+.SILENT: all build compile upload run
+.PHONY: all build compile upload run
 
-all: build run
+all: compile upload run
+
+build: compile upload
 
 .ONESHELL:
-build:
+compile:
 ifeq ($(DEBUG_MODE), 1)
 	debug_arg="--build-property=build.extra_flags=\"-DDEBUG_MODE=1\""
 else
@@ -13,18 +15,11 @@ endif
 
 	arduino-cli-mega-compile . --warnings pedantic --build-property=compiler.cpp.extra_flags="-std=c++1z" "$$debug_arg"
 
-run:
+upload:
 	arduino-cli-mega-upload . /dev/ttyACM0 --verbose
 
-### sleep to allow Arduino to initialize
-### before starting picocom
-	sleep 11
-
+run:
 ifeq ($(SER_MON), 1)
-### Baudrate:   115200
-### paritY:     none
-### Databits:   8
-### stoPbits:   1
-### MAPping:    LF -> CR + LF
-	picocom -b 115200 -y n -d 8 -p 1 --imap="lfcrlf" /dev/ttyACM0 &
+### Map LF to CR+LF to avoid staircase printing
+	picocom --baud=115200 --databits=8 --parity=n --stopbits=1 --flow=n --imap="lfcrlf" /dev/ttyACM0
 endif
