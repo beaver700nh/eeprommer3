@@ -19,6 +19,7 @@ void debug_print_addr_range(uint16_t addr1, uint16_t addr2, uint8_t *data) {
   while (j++ != (addr2 >> 4));
 
   Serial.println();
+  Serial.println();
 }
 
 #endif

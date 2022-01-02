@@ -247,6 +247,10 @@ uint8_t ProgrammerFromSd::read_range() {
   m_tft.fillScreen(TftColor::BLACK);
   uint16_t addr2 = ask_val<uint16_t>(m_tft, m_tch, "End address?");
 
+  // Turn off top bit of both addresses ensure validity
+  addr1 &= ~0x8000;
+  addr2 &= ~0x8000;
+
   // Make sure addr1 <= addr2
   if (addr2 < addr1) swap<uint16_t>(&addr1, &addr2);
 
@@ -280,6 +284,10 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
+#ifdef DEBUG_MODE
+  Serial.println();
+#endif
+
   free(data);
 
   return STATUS_OK;
@@ -300,7 +308,7 @@ void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2,
   menu.draw(m_tft);
 
 #ifdef DEBUG_MODE
-  PRINTF_NOBUF(Serial, "ProgrammerFromSd::show_range(): showing range {%d..%d}\n", addr1, addr2);
+  PRINTF_NOBUF(Serial, "ProgrammerFromSd::show_range(): showing range {%d..%d}\n\n", addr1, addr2);
 #endif
 
   uint8_t cur_page = 0;
@@ -324,11 +332,9 @@ uint8_t ProgrammerFromSd::show_page(
   PRINTF_NOBUF(
     Serial,
     "ProgrammerFromSd::show_range(): showing page #%d out of %d pages, from range {%d..%d}\n",
-    cur_page, max_page, addr1, addr2
+    cur_page, max_page + 1, addr1, addr2
   );
 #endif
-
-  char *text = (char *) malloc(3 * sizeof(*text));
 
   m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
   m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
@@ -336,24 +342,31 @@ uint8_t ProgrammerFromSd::show_page(
   m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
   m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);
 
-  for (uint16_t i = cur_page * 0x0100; /* condition is in loop body */; ++i) {
-    if (i < addr1) continue;
+  uint8_t row = (addr1 >> 4); // SUS - also it doesn't check for pages
+  uint16_t idx = 0;
 
-    // x is the left margin of the block
-    uint16_t x = ((i / 8) % 2 == 0 ? m_tft.width() / 2 - 142 : m_tft.width() / 2 + 6);
-    uint16_t y = (i % 0x0100) / 16 * 10 + 55;
+  uint8_t offset;
+  char text[3];
+  uint16_t color;
 
-    uint8_t offset;
-    uint16_t color;
+  do {
+    uint16_t y = 55 + 10 * row;
 
-    (this->*calc)(&offset, text, &color, data[i - addr1]);
-    m_tft.drawText(x + 18 * (i % 8) + offset, y, text, color, 1);
+    for (uint8_t col = 0; col < 16; ++col) {
+      (this->*calc)(&offset, text, &color, data[idx++]);
 
-    // Stop if we have reached end of data or end of page
-    if (i == addr2 || i % 0x0100 == 0xFF) break;
+      uint16_t x = m_tft.width() / 2 + ((col < 8) ? -141 : 5) + (col % 8) * 18 + offset;
+
+      m_tft.drawText(x, y, (IN_RANGE((row << 4) + col, addr1, addr2 + 1) ? text : ".."), color, 1);
+    }
+
+    if (row == 15) break;
   }
+  while (row++ != (addr2 >> 4));
 
-  free(text);
+#ifdef DEBUG_MODE
+  Serial.println();
+#endif
 
   return menu.wait_for_press(m_tch, m_tft);
 }
