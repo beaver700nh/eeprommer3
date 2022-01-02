@@ -20,6 +20,8 @@
 
 #define BIT_WIDTH(t) sizeof(t) * 8
 
+#define PAGE_ADJUSTED(addr, page) (((page) << 8) + ((addr) & 0xFF))
+
 #define STRINGIFY(s) XSTRINGIFY(s)
 #define XSTRINGIFY(s) #s
 

@@ -342,27 +342,28 @@ uint8_t ProgrammerFromSd::show_page(
   m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
   m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);
 
-  uint8_t row = (addr1 >> 4); // SUS - also it doesn't check for pages
-  uint16_t idx = 0;
-
-  uint8_t offset;
-  char text[3];
+  uint8_t x_offset;
+  char byte_as_text[3];
   uint16_t color;
 
-  do {
-    uint16_t y = 55 + 10 * row;
+  uint8_t start_col = addr1 & 0x0F;
 
-    for (uint8_t col = 0; col < 16; ++col) {
-      (this->*calc)(&offset, text, &color, data[idx++]);
+  for (uint16_t idx = 0; /* condition is in loop body */; ++idx) {
+    uint8_t col = idx + start_col;
+    uint8_t row = (addr1 >> 4) & 0x0F;
 
-      uint16_t x = m_tft.width() / 2 + ((col < 8) ? -141 : 5) + (col % 8) * 18 + offset;
+    PRINTF_NOBUF(Serial, "ROW = %02X; COL = %02X\n", row, col);
 
-      m_tft.drawText(x, y, (IN_RANGE((row << 4) + col, addr1, addr2 + 1) ? text : ".."), color, 1);
-    }
+    (this->*calc)(&x_offset, byte_as_text, &color, data[idx]);
 
-    if (row == 15) break;
+    uint16_t block_x = m_tft.width() / 2 + (col < 8 ? -141 : 5);
+    uint16_t byte_x = block_x + (16 * col) + x_offset;
+    uint16_t byte_y = 55 + (10 * row);
+
+    m_tft.drawText(byte_x, byte_y, byte_as_text, color, 1);
+
+    if (idx == 0xFF || idx == PAGE_ADJUSTED(addr2, cur_page)) break;
   }
-  while (row++ != (addr2 >> 4));
 
 #ifdef DEBUG_MODE
   Serial.println();
