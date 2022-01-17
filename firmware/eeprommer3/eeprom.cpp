@@ -79,10 +79,15 @@ void EepromCtrl::read(uint16_t addr1, uint16_t addr2, uint8_t *buf) {
 
 void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   uint16_t i = addr;
+  uint16_t first_addr_of_page = addr;
 
   do {
-    // If pair not in the same page as pair #0 then start a new operation
-    if ((0x7FC0 & ~(i ^ addr)) != 0x7FC0) delay(10);
+    // If pair not in the same page as pair #0 then
+    // start a new operation and update the working page
+    if ((0x7FC0 & ~(i ^ first_addr_of_page)) != 0x7FC0) {
+      delay(10);
+      first_addr_of_page = i;
+    }
 
     set_addr_and_oe(i | 0x8000); // ~OE is on to disable output
     set_data(buf[i - addr]);
@@ -106,13 +111,16 @@ void EepromCtrl::write(AddrDataArray *buf) {
   AddrDataArrayPair pair0;
 
   buf->get_pair(0, &pair0);
-  uint16_t addr0 = pair0.addr;
+  uint16_t first_addr_of_page = pair0.addr;
 
   uint16_t i = 0;
 
   while (buf->get_pair(i++, &pair) == true) {
     // If pair not in the same page as pair #0 then start a new operation
-    if ((0x7FC0 & ~(pair.addr ^ addr0)) != 0x7FC0) delay(10);
+    if ((0x7FC0 & ~(pair.addr ^ first_addr_of_page)) != 0x7FC0) {
+      delay(10);
+      first_addr_of_page = pair.addr;
+    }
 
     set_addr_and_oe(pair.addr | 0x8000); // ~OE is on to disable output
     set_data(pair.data);

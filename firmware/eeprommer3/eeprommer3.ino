@@ -29,7 +29,7 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("=== EEPROMMER3 ===");
-  Serial.println("Starting up...");
+  Serial.println("> Starting up... <");
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
