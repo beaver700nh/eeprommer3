@@ -76,7 +76,7 @@ public:
   void calc_chars(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc);
-  uint8_t show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc, uint8_t cur_page, uint8_t max_page, TftMenu &menu);
+  void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc, uint8_t cur_page, uint8_t max_page);
 
   uint8_t draw();
   uint8_t debug();

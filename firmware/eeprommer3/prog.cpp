@@ -315,7 +315,9 @@ void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2,
   uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
 
   while (true) {
-    uint8_t req = show_page(data, addr1, addr2, calc, cur_page, max_page, menu);
+    show_page(data, addr1, addr2, calc, cur_page, max_page);
+
+    uint8_t req = menu.wait_for_press(m_tch, m_tft);
 
     if      (req == 2) break;
     else if (req == 0) cur_page = (cur_page == 0 ? max_page : cur_page - 1);
@@ -325,13 +327,13 @@ void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2,
 
 // Helper function of show_range() that shows
 // only one page of data from a large buffer
-uint8_t ProgrammerFromSd::show_page(
-  uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc, uint8_t cur_page, uint8_t max_page, TftMenu &menu
+void ProgrammerFromSd::show_page(
+  uint8_t *data, uint16_t addr1, uint16_t addr2, ProgrammerFromSd::calc_func calc, uint8_t cur_page, uint8_t max_page
 ) {
 #ifdef DEBUG_MODE
   PRINTF_NOBUF(
     Serial,
-    "ProgrammerFromSd::show_range(): showing page #%d out of %d pages, from range {%d..%d}\n",
+    "ProgrammerFromSd::show_page(): showing page #%d out of %d pages, from range {%d..%d}\n",
     cur_page, max_page + 1, addr1, addr2
   );
 #endif
@@ -342,34 +344,31 @@ uint8_t ProgrammerFromSd::show_page(
   m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
   m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);
 
-  uint8_t x_offset;
+  uint16_t idx = (cur_page == 0 ? 0 : PAGE_ADJUSTED(0x0100 - (addr1 & 0xFF), cur_page - 1));
+
+  // Variables for formatting a byte
+  uint8_t byte_offset;
   char byte_as_text[3];
   uint16_t color;
 
-  uint8_t start_col = addr1 & 0x0F;
+  for (uint8_t row = 0x00; row < 0x10; ++row) {
+    for (uint8_t col = 0x00; col < 0x10; ++col) {
+      uint8_t pos = (row << 4) + col;
 
-  for (uint16_t idx = 0; /* condition is in loop body */; ++idx) {
-    uint8_t col = idx + start_col;
-    uint8_t row = (addr1 >> 4) & 0x0F;
+      if (cur_page == 0 && pos < (addr1 & 0xFF)) continue;      // Skip if before start of data
+      if (cur_page == max_page && pos > (addr2 & 0xFF)) return; // Stop if after end of data
 
-    PRINTF_NOBUF(Serial, "ROW = %02X; COL = %02X\n", row, col);
+      // Now we have verified that the position is valid
 
-    (this->*calc)(&x_offset, byte_as_text, &color, data[idx]);
+      (this->*calc)(&byte_offset, byte_as_text, &color, data[idx++]);
 
-    uint16_t block_x = m_tft.width() / 2 + (col < 8 ? -141 : 5);
-    uint16_t byte_x = block_x + (16 * col) + x_offset;
-    uint16_t byte_y = 55 + (10 * row);
+      uint8_t split_offset = (col < 8 ? 0 : 3);
+      uint16_t byte_x = m_tft.width() / 2 - 141 + 18 * col + byte_offset + split_offset;
+      uint16_t byte_y = m_tft.height() / 2 - 105 + 10 * row;
 
-    m_tft.drawText(byte_x, byte_y, byte_as_text, color, 1);
-
-    if (idx == 0xFF || idx == PAGE_ADJUSTED(addr2, cur_page)) break;
+      m_tft.drawText(byte_x, byte_y, byte_as_text, color, 1);
+    }
   }
-
-#ifdef DEBUG_MODE
-  Serial.println();
-#endif
-
-  return menu.wait_for_press(m_tch, m_tft);
 }
 
 // calc_hex() and calc_chars() are helper functions

@@ -2,8 +2,7 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - IMPORTANT - fix read_range bug in high pages
-    - discovered that the bug is in the rendering step, not the reading step
+  - make write_multi recalculate the page after every new page
   - make ProgrammerFromSd::calc_hex and calc_chars static
   - add TftMenu derivative to handle key-value pair list inputting (mess around with scrolling too)
   - add ProgrammerFromSd's write_multi functions (REMEMBER TO TEST WITH EEPROM NOT PLUGGED IN)
