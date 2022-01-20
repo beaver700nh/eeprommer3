@@ -413,19 +413,40 @@ uint8_t ProgrammerFromSd::write_multi() {
    * to EEPROM and exits, cancel just exits
    */
 
-  // AddrDataArray buf;
-  // buf.append((AddrDataArrayPair) {0xFFFA, 0x01});
-  // buf.append((AddrDataArrayPair) {0xFFFB, 0x12});
-  // buf.append((AddrDataArrayPair) {0xFFFC, 0x23});
-  // buf.append((AddrDataArrayPair) {0xFFFD, 0x34});
-  // buf.append((AddrDataArrayPair) {0xFFFE, 0x45});
-  // buf.append((AddrDataArrayPair) {0xFFFF, 0x56});
+  AddrDataArray buf;
 
-  // m_ee.write(&buf);
+  TftBtn add_btn(
+    10, 50, m_tft.width() - 20, 24, m_tft.width() / 2 - 47, 16,
+    "Add Pair", TftColor::BLUE, TftColor::YELLOW
+  );
 
-  uint8_t buf[] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  TftBtn apply_btn(
+    10, m_tft.height() - 34, m_tft.width() / 2 - 15, 24, m_tft.width() / 4 - 36, 16,
+    "Apply", TftColor::RED, TftColor::PINKK
+  );
 
-  m_ee.write(0xFFFA, buf, 100);
+  TftBtn cancel_btn(
+    m_tft.width() / 2 + 5, m_tft.height() - 34, m_tft.width() / 2 - 15, 24, m_tft.width() / 4 - 42, 16,
+    "Cancel", TftColor::CYAN, TftColor::BLUE
+  );
+
+  while (true) {
+    m_tft.drawText(10, 10, "Write Multiple Bytes", TftColor::CYAN, 3);
+
+    add_btn.draw(m_tft);
+    apply_btn.draw(m_tft);
+    cancel_btn.draw(m_tft);
+
+    // stuff
+
+    if (apply_btn.is_pressed(m_tch, m_tft) || cancel_btn.is_pressed(m_tch, m_tft)) {
+      if (apply_btn.is_pressed(m_tch, m_tft)) {
+        // apply
+      }
+
+      break;
+    }
+  }
 
   return nop();
 }
