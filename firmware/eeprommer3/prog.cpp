@@ -266,7 +266,7 @@ uint8_t ProgrammerFromSd::read_range() {
 
 #ifdef DEBUG_MODE
   PRINTF_NOBUF(Serial, "ProgrammerFromSd::read_range(): reading range {%d..%d}\n", addr1, addr2);
-  //debug_print_addr_range(addr1, addr2, data); // commented out because bugging
+  debug_print_addr_range(addr1, addr2, data);
 #endif
 
   m_tft.fillScreen(TftColor::BLACK);

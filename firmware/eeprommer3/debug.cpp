@@ -6,7 +6,7 @@
 #include "debug.hpp"
 
 void debug_print_addr_range(uint16_t addr1, uint16_t addr2, uint8_t *data) {
-  uint8_t j = (addr1 >> 4);
+  uint16_t j = (addr1 >> 4);
   uint16_t k = 0;
 
   do {
