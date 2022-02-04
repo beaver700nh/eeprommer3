@@ -80,8 +80,9 @@ public:
 
   void draw_pairs(
     uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray buf
+    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf
   );
+  void add_pair_from_user(AddrDataArray *buf);
 
   uint8_t draw();
   uint8_t debug();

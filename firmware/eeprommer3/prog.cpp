@@ -393,26 +393,6 @@ void ProgrammerFromSd::calc_chars(uint8_t *offset, char *text, uint16_t *color, 
 }
 
 uint8_t ProgrammerFromSd::write_multi() {
-  /*
-   * Interface:
-   *
-   * Button to add spanning width of screen at top,
-   * just below title text
-   * Below that is a scrollable list of menus in this format
-   *  ____________________________
-   * I                            I
-   * I  AAAA     BB     [Delete]  I
-   * I____________________________I
-   *
-   * Where AAAA is the address, in 4 hexadecimal digits
-   * and BB is the data, in 2 hexadecimal digits
-   *
-   * The DELETE button deletes the pair from the list
-   * Spanning each half of the bottom is an apply button
-   * and a cancel button, respectively; Apply writes pairs
-   * to EEPROM and exits, cancel just exits
-   */
-
   AddrDataArray buf;
 
   uint16_t _y = TftCalc::bottom(m_tft, 24, 10);
@@ -425,8 +405,9 @@ uint8_t ProgrammerFromSd::write_multi() {
   menu.add_btn(new TftBtn(m_tft.width() / 2 + 5,         _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Cancel",   TftColor::CYAN,   TftColor::BLUE));
 
   uint16_t scroll = 0;
+  bool done = false;
 
-  while (true) {
+  while (!done) {
     m_tft.drawText(10, 10, "Write Multiple Bytes", TftColor::CYAN, 3);
 
     menu.draw(m_tft);
@@ -435,21 +416,12 @@ uint8_t ProgrammerFromSd::write_multi() {
 
     uint8_t pressed = menu.wait_for_press(m_tch, m_tft);
 
-    if (pressed == 0) {
-      if (scroll > 0) --scroll;
-    }
-    else if (pressed == 1) {
-      if (scroll < buf.get_len() - 1) ++scroll;
-    }
-    else if (pressed == 2) {
-      Serial.println("Add Pair");
-    }
-    else {
-      if (pressed == 3) {
-        Serial.println("Apply");
-      }
-
-      break;
+    switch (pressed) {
+    case 0:  if (scroll > 0)                 --scroll; break;
+    case 1:  if (scroll < buf.get_len() - 1) ++scroll; break;
+    case 2:  add_pair_from_user(&buf);                 break;
+    case 3:  m_ee.write(&buf);                         // fall through
+    default: done = true;                              break;
     }
   }
 
@@ -460,9 +432,28 @@ uint8_t ProgrammerFromSd::write_multi() {
 
 void ProgrammerFromSd::draw_pairs(
   uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray buf
+  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf
 ) {
-  // TODO;
+  Serial.println("{");
+
+  for (uint16_t i = 0; i < buf.get_len(); ++i) {
+    AddrDataArrayPair pair;
+    buf.get_pair(i, &pair);
+
+    PRINTF_NOBUF(Serial, "\t{%04X, %02X},\n", pair.addr, pair.data);
+  }
+
+  Serial.println("}");
+}
+
+void ProgrammerFromSd::add_pair_from_user(AddrDataArray *buf) {
+  m_tft.fillScreen(TftColor::BLACK);
+  auto addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
+  m_tft.fillScreen(TftColor::BLACK);
+  auto data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
+  m_tft.fillScreen(TftColor::BLACK);
+
+  buf->append((AddrDataArrayPair) {addr, data});
 }
 
 uint8_t ProgrammerFromSd::verify_multi(uint16_t addr, uint16_t length, uint8_t *data) {
