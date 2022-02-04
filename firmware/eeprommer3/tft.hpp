@@ -75,6 +75,24 @@ public:
   );
 };
 
+namespace TftCalc {
+  uint16_t t_centerx(uint16_t box, const char *text, uint8_t size);
+  uint16_t t_centerx(TftCtrl &tft, const char *text, uint8_t size);
+
+  uint16_t t_centery(uint16_t box, uint8_t size);
+  uint16_t t_centery(TftCtrl &tft, uint8_t size);
+
+  uint16_t fraction(uint16_t box, uint16_t margin, uint8_t denom);
+  uint16_t fraction_x(TftCtrl &tft, uint16_t margin, uint8_t denom);
+  uint16_t fraction_y(TftCtrl &tft, uint16_t margin, uint8_t denom);
+
+  uint16_t bottom(uint16_t box, uint16_t height, uint16_t margin);
+  uint16_t bottom(TftCtrl &tft, uint16_t height, uint16_t margin);
+
+  uint16_t right(uint16_t box, uint16_t width, uint16_t margin);
+  uint16_t right(TftCtrl &tft, uint16_t width, uint16_t margin);
+};
+
 // Classes from here on are for GUI
 
 /*
@@ -95,6 +113,11 @@ public:
   TftBtn(
     uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty,
     const char *text, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
+  );
+
+  TftBtn(
+    uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text,
+    uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
   uint16_t get_x();

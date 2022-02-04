@@ -302,8 +302,8 @@ void ProgrammerFromSd::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2,
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
   TftMenu menu;
-  menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "<"));
-  menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, ">"));
+  menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "\x11"));
+  menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, "\x10"));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Continue")));
   menu.draw(m_tft);
 
@@ -415,40 +415,54 @@ uint8_t ProgrammerFromSd::write_multi() {
 
   AddrDataArray buf;
 
-  TftBtn add_btn(
-    10, 50, m_tft.width() - 20, 24, m_tft.width() / 2 - 47, 16,
-    "Add Pair", TftColor::BLUE, TftColor::YELLOW
-  );
+  uint16_t _y = TftCalc::bottom(m_tft, 24, 10);
 
-  TftBtn apply_btn(
-    10, m_tft.height() - 34, m_tft.width() / 2 - 15, 24, m_tft.width() / 4 - 36, 16,
-    "Apply", TftColor::RED, TftColor::PINKK
-  );
+  TftMenu menu;
+  menu.add_btn(new TftBtn(10,                            74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1e",     TftColor::WHITE,  TftColor::DGRAY));
+  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10), 74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1f",     TftColor::WHITE,  TftColor::DGRAY));
+  menu.add_btn(new TftBtn(10,                            40, TftCalc::fraction_x(m_tft, 10, 1), 24, "Add Pair", TftColor::PURPLE, TftColor::YELLOW));
+  menu.add_btn(new TftBtn(10,                            _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Apply",    TftColor::RED,    TftColor::PINKK));
+  menu.add_btn(new TftBtn(m_tft.width() / 2 + 5,         _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Cancel",   TftColor::CYAN,   TftColor::BLUE));
 
-  TftBtn cancel_btn(
-    m_tft.width() / 2 + 5, m_tft.height() - 34, m_tft.width() / 2 - 15, 24, m_tft.width() / 4 - 42, 16,
-    "Cancel", TftColor::CYAN, TftColor::BLUE
-  );
+  uint16_t scroll = 0;
 
   while (true) {
     m_tft.drawText(10, 10, "Write Multiple Bytes", TftColor::CYAN, 3);
 
-    add_btn.draw(m_tft);
-    apply_btn.draw(m_tft);
-    cancel_btn.draw(m_tft);
+    menu.draw(m_tft);
 
-    // stuff
+    draw_pairs(44, 44, 74, 44, 20, 6, 6, scroll, buf);
 
-    if (apply_btn.is_pressed(m_tch, m_tft) || cancel_btn.is_pressed(m_tch, m_tft)) {
-      if (apply_btn.is_pressed(m_tch, m_tft)) {
-        // apply
+    uint8_t pressed = menu.wait_for_press(m_tch, m_tft);
+
+    if (pressed == 0) {
+      if (scroll > 0) --scroll;
+    }
+    else if (pressed == 1) {
+      if (scroll < buf.get_len() - 1) ++scroll;
+    }
+    else if (pressed == 2) {
+      Serial.println("Add Pair");
+    }
+    else {
+      if (pressed == 3) {
+        Serial.println("Apply");
       }
 
       break;
     }
   }
 
+  m_tft.fillScreen(TftColor::BLACK);
+
   return nop();
+}
+
+void ProgrammerFromSd::draw_pairs(
+  uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
+  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray buf
+) {
+  // TODO;
 }
 
 uint8_t ProgrammerFromSd::verify_multi(uint16_t addr, uint16_t length, uint8_t *data) {

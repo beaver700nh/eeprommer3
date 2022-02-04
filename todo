@@ -2,10 +2,6 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - write macros to eliminate magic numbers and cryptic calculations such as
-    - CENTER_X(box, text, size)
-    - CENTER_Y(box, size)
-    - BOTTOM_ALIGN(height)
   - make ProgrammerFromSd::calc_hex and calc_chars static
   - add TftMenu derivative to handle key-value pair list inputting (mess around with scrolling too)
   - add ProgrammerFromSd's write_multi functions (REMEMBER TO TEST WITH EEPROM NOT PLUGGED IN)

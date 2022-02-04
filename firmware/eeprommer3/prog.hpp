@@ -78,6 +78,11 @@ public:
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc);
   void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc, uint8_t cur_page, uint8_t max_page);
 
+  void draw_pairs(
+    uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
+    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray buf
+  );
+
   uint8_t draw();
   uint8_t debug();
 

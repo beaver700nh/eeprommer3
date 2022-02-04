@@ -68,9 +68,63 @@ bool TftCtrl::drawRGBBitmapFromFile(
   return success;
 }
 
+namespace TftCalc {
+  uint16_t t_centerx(uint16_t box, const char *text, uint8_t size) {
+    return (box + size - strlen(text) * 6 * size) / 2;
+  }
+
+  uint16_t t_centerx(TftCtrl &tft, const char *text, uint8_t size) {
+    return t_centerx(tft.width(), text, size);
+  }
+
+  uint16_t t_centery(uint16_t box, uint8_t size) {
+    return (box - size * 8) / 2;
+  }
+
+  uint16_t t_centery(TftCtrl &tft, uint8_t size) {
+    return t_centery(tft.height(), size);
+  }
+
+  uint16_t fraction(uint16_t box, uint16_t margin, uint8_t denom) {
+    return (box - (denom + 1) * margin) / denom;
+  }
+
+  uint16_t fraction_x(TftCtrl &tft, uint16_t margin, uint8_t denom) {
+    return fraction(tft.width(), margin, denom);
+  }
+
+  uint16_t fraction_y(TftCtrl &tft, uint16_t margin, uint8_t denom) {
+    return fraction(tft.height(), margin, denom);
+  }
+
+  uint16_t right(uint16_t box, uint16_t width, uint16_t margin) {
+    return box - margin - width;
+  }
+
+  uint16_t right(TftCtrl &tft, uint16_t width, uint16_t margin) {
+    return right(tft.width(), margin, width);
+  }
+
+  uint16_t bottom(uint16_t box, uint16_t height, uint16_t margin) {
+    return box - margin - height;
+  }
+
+  uint16_t bottom(TftCtrl &tft, uint16_t height, uint16_t margin) {
+    return bottom(tft.height(), height, margin);
+  }
+};
+
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)
   : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg) {
   strncpy(m_text, text, 20);
+}
+
+TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
+  : m_x(x), m_y(y), m_w(w), m_h(h), m_fg(fg), m_bg(bg) {
+  strncpy(m_text, text, 20);
+
+  m_tx = TftCalc::t_centerx(m_w, m_text, 2);
+  m_ty = TftCalc::t_centery(m_h, 2);
 }
 
 uint16_t TftBtn::get_x()           { return m_x; }

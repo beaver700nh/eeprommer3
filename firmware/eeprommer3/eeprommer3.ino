@@ -42,7 +42,7 @@ void setup() {
 
   tft.drawRGBBitmapFromFile(
     80, 23, "startup.bin", 320, 240, true,
-    [&skip_btn, &tch, &tft]() -> bool {
+    []() -> bool {
       return skip_btn->is_pressed(tch, tft);
     }
   );
