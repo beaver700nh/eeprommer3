@@ -1,7 +1,29 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
+#include <mega/pins_arduino.h>
+
 #include "strfmt.hpp"
+
+// These are to silence VSCode IntelliSense errors
+// due to a glitch in the `#inclu`sion of pins_arduino.h
+
+const uint8_t A0 =  54;
+const uint8_t A1 =  55;
+const uint8_t A2 =  56;
+const uint8_t A3 =  57;
+const uint8_t A4 =  58;
+const uint8_t A5 =  59;
+const uint8_t A6 =  60;
+const uint8_t A7 =  61;
+const uint8_t A8 =  62;
+const uint8_t A9 =  63;
+const uint8_t A10 = 64;
+const uint8_t A11 = 65;
+const uint8_t A12 = 66;
+const uint8_t A13 = 67;
+const uint8_t A14 = 68;
+const uint8_t A15 = 69;
 
 /*****************************************/
 /** Macros *******************************/
