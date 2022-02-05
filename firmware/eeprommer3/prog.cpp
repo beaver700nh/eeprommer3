@@ -398,11 +398,11 @@ uint8_t ProgrammerFromSd::write_multi() {
   uint16_t _y = TftCalc::bottom(m_tft, 24, 10);
 
   TftMenu menu;
-  menu.add_btn(new TftBtn(10,                            74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1e",     TftColor::WHITE,  TftColor::DGRAY));
-  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10), 74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1f",     TftColor::WHITE,  TftColor::DGRAY));
-  menu.add_btn(new TftBtn(10,                            40, TftCalc::fraction_x(m_tft, 10, 1), 24, "Add Pair", TftColor::PURPLE, TftColor::YELLOW));
-  menu.add_btn(new TftBtn(10,                            _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Apply",    TftColor::RED,    TftColor::PINKK));
-  menu.add_btn(new TftBtn(m_tft.width() / 2 + 5,         _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Cancel",   TftColor::CYAN,   TftColor::BLUE));
+  menu.add_btn(new TftBtn(10,                            74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1e",     TftColor::WHITE, TftColor::DGRAY));
+  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10), 74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1f",     TftColor::WHITE, TftColor::DGRAY));
+  menu.add_btn(new TftBtn(10,                            40, TftCalc::fraction_x(m_tft, 10, 1), 24, "Add Pair", TftColor::WHITE, TftColor::PURPLE));
+  menu.add_btn(new TftBtn(10,                            _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Done",     TftColor::RED,   TftColor::PINKK));
+  menu.add_btn(new TftBtn(m_tft.width() / 2 + 5,         _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Cancel",   TftColor::CYAN,  TftColor::BLUE));
 
   uint16_t scroll = 0;
   bool done = false;
@@ -412,7 +412,7 @@ uint8_t ProgrammerFromSd::write_multi() {
 
     menu.draw(m_tft);
 
-    draw_pairs(44, 44, 74, 44, 20, 6, 6, scroll, buf);
+    draw_pairs(44, 44, 74, 44, 22, 8, 7, scroll, buf);
 
     uint8_t pressed = menu.wait_for_press(m_tch, m_tft);
 
@@ -434,16 +434,32 @@ void ProgrammerFromSd::draw_pairs(
   uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
   uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf
 ) {
-  Serial.println("{");
+  // Clear the pairs area
+  m_tft.fillRect(margin_l, margin_u, TftCalc::right(m_tft, margin_l, margin_r), TftCalc::bottom(m_tft, margin_u, margin_d), TftColor::BLACK);
 
-  for (uint16_t i = 0; i < buf.get_len(); ++i) {
-    AddrDataArrayPair pair;
-    buf.get_pair(i, &pair);
-
-    PRINTF_NOBUF(Serial, "\t{%04X, %02X},\n", pair.addr, pair.data);
+  if (buf.get_len() == 0) {
+    m_tft.drawText(margin_l, margin_u,      "No pairs yet!",                     TftColor::LGRAY);
+    m_tft.drawText(margin_l, margin_u + 30, "Click \"Add Pair\" to add a pair!", TftColor::LGRAY);
+    return;
   }
 
-  Serial.println("}");
+  uint16_t last_pair = MIN(offset + n - 1, buf.get_len() - 1);
+  uint16_t this_pair = offset;
+
+  do {
+    uint16_t x = margin_l;
+    uint16_t y = margin_u + (this_pair - offset) * (height + padding);
+    uint16_t w = TftCalc::right(m_tft, margin_l, margin_r);
+    uint16_t h = height;
+    uint16_t ty = TftCalc::t_centery(h, 2) + y;
+
+    AddrDataArrayPair pair;
+    buf.get_pair(this_pair, &pair);
+
+    m_tft.fillRect(x, y, w, h, TftColor::ORANGE);
+    m_tft.drawText(3, ty, STRFMT_NOBUF("#%05d: %04X, %02X", this_pair - offset, pair.addr, pair.data), TftColor::BLACK, 2);
+  }
+  while (this_pair++ != last_pair);
 }
 
 void ProgrammerFromSd::add_pair_from_user(AddrDataArray *buf) {

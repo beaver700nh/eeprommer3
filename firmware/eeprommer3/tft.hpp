@@ -79,6 +79,9 @@ namespace TftCalc {
   uint16_t t_centerx(uint16_t box, const char *text, uint8_t size);
   uint16_t t_centerx(TftCtrl &tft, const char *text, uint8_t size);
 
+  uint16_t t_centerx_l(uint16_t box, uint8_t len, uint8_t size);
+  uint16_t t_centerx_l(TftCtrl &tft, uint8_t len, uint8_t size);
+
   uint16_t t_centery(uint16_t box, uint8_t size);
   uint16_t t_centery(TftCtrl &tft, uint8_t size);
 

@@ -77,6 +77,14 @@ namespace TftCalc {
     return t_centerx(tft.width(), text, size);
   }
 
+  uint16_t t_centerx_l(uint16_t box, uint8_t len, uint8_t size) {
+    return (box + size - len * 6 * size) / 2;
+  }
+
+  uint16_t t_centerx_l(TftCtrl &tft, uint8_t len, uint8_t size) {
+    return t_centerx_l(tft.width(), len, size);
+  }
+
   uint16_t t_centery(uint16_t box, uint8_t size) {
     return (box - size * 8) / 2;
   }

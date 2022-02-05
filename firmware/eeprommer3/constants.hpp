@@ -28,6 +28,9 @@
 #define ARR_LEN(a) (sizeof((a)) / sizeof((a)[0]))
 #define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 #define TO_565(r, g, b) (((r) >> 3 << 11) | ((g) >> 2 << 5) | ((b) >> 3))
 
 #define BOTTOM_BTN(tft, text) 10, (tft).height() - 34, (tft).width() - 20, 24, ((tft).width() + 2 - strlen((text)) * 12) / 2, 5, (text)
