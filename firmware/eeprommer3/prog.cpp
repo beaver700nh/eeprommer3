@@ -404,24 +404,36 @@ uint8_t ProgrammerFromSd::write_multi() {
   menu.add_btn(new TftBtn(10,                            _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Done",     TftColor::RED,   TftColor::PINKK));
   menu.add_btn(new TftBtn(m_tft.width() / 2 + 5,         _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Cancel",   TftColor::CYAN,  TftColor::BLUE));
 
+  TftMenu del_btns;
+
+  const uint8_t num_pairs = 7;
+
+  for (uint8_t i = 0; i < num_pairs; ++i) {
+    del_btns.add_btn(new TftBtn(TftCalc::right(m_tft, 18, 44), 76 + 30 * i, 18, 18, "x", TftColor::YELLOW, TftColor::RED));
+  }
+
   uint16_t scroll = 0;
+
   bool done = false;
 
   while (!done) {
     m_tft.drawText(10, 10, "Write Multiple Bytes", TftColor::CYAN, 3);
 
     menu.draw(m_tft);
+    draw_pairs(44, 44, 74, 44, 22, 8, num_pairs, scroll, buf, del_btns);
+    del_btns.draw(m_tft);
 
-    draw_pairs(44, 44, 74, 44, 22, 8, 7, scroll, buf);
+    uint16_t max_scroll = MAX(0, buf.get_len() - num_pairs);// sus line
+    PRINTF_NOBUF(Serial, "s %d, ms %d", scroll, max_scroll);
 
     uint8_t pressed = menu.wait_for_press(m_tch, m_tft);
 
     switch (pressed) {
-    case 0:  if (scroll > 0)                 --scroll; break;
-    case 1:  if (scroll < buf.get_len() - 1) ++scroll; break;
-    case 2:  add_pair_from_user(&buf);                 break;
-    case 3:  m_ee.write(&buf);                         // fall through
-    default: done = true;                              break;
+    case 0:  if (scroll > 0)           --scroll; break;
+    case 1:  if (scroll < max_scroll)  ++scroll; break;
+    case 2:  add_pair_from_user(&buf);           break;
+    case 3:  m_ee.write(&buf);                   // fall through
+    default: done = true;                        break;
     }
   }
 
@@ -432,10 +444,17 @@ uint8_t ProgrammerFromSd::write_multi() {
 
 void ProgrammerFromSd::draw_pairs(
   uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf
+  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
 ) {
   // Clear the pairs area
   m_tft.fillRect(margin_l, margin_u, TftCalc::right(m_tft, margin_l, margin_r), TftCalc::bottom(m_tft, margin_u, margin_d), TftColor::BLACK);
+
+  for (uint8_t i = 0; i < n; ++i) {
+    // Hide all the delete buttons here, later show the ones that are needed
+    auto cur_btn = del_btns.get_btn(i - offset);
+    cur_btn->visibility(false);
+    cur_btn->operation(false);
+  }
 
   if (buf.get_len() == 0) {
     m_tft.drawText(margin_l, margin_u,      "No pairs yet!",                     TftColor::LGRAY);
@@ -443,8 +462,8 @@ void ProgrammerFromSd::draw_pairs(
     return;
   }
 
-  uint16_t last_pair = MIN(offset + n - 1, buf.get_len() - 1);
   uint16_t this_pair = offset;
+  uint16_t last_pair = MIN(offset + n - 1, buf.get_len() - 1);
 
   do {
     uint16_t x = margin_l;
@@ -457,7 +476,12 @@ void ProgrammerFromSd::draw_pairs(
     buf.get_pair(this_pair, &pair);
 
     m_tft.fillRect(x, y, w, h, TftColor::ORANGE);
-    m_tft.drawText(3, ty, STRFMT_NOBUF("#%05d: %04X, %02X", this_pair - offset, pair.addr, pair.data), TftColor::BLACK, 2);
+    m_tft.drawText(margin_l + 3, ty, STRFMT_NOBUF("#%05d: %04X, %02X", this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
+
+    // Show all buttons that have pairs
+    auto cur_btn = del_btns.get_btn(this_pair - offset);
+    cur_btn->visibility(true);
+    cur_btn->operation(true);
   }
   while (this_pair++ != last_pair);
 }
@@ -470,6 +494,7 @@ void ProgrammerFromSd::add_pair_from_user(AddrDataArray *buf) {
   m_tft.fillScreen(TftColor::BLACK);
 
   buf->append((AddrDataArrayPair) {addr, data});
+  PRINTF_NOBUF(Serial, "added %04X %02X, now len %d", addr, data, buf->get_len());
 }
 
 uint8_t ProgrammerFromSd::verify_multi(uint16_t addr, uint16_t length, uint8_t *data) {

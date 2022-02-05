@@ -44,7 +44,6 @@ void wait_continue(TftCtrl &tft, TouchCtrl &tch);
  * for programming the EEPROM from the
  * on-board SD card.
  */
-
 class ProgrammerFromSd {
 public:
   ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft);
@@ -80,7 +79,7 @@ public:
 
   void draw_pairs(
     uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf
+    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
   );
   void add_pair_from_user(AddrDataArray *buf);
 
@@ -99,6 +98,10 @@ public:
     &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,
   };
 
+  /*
+   * Enum of status codes returned from functions of
+   * the type `ProgrammerFromSd::*calc_func`
+   */
   enum { STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY };
 
 private:

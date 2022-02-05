@@ -162,6 +162,9 @@ void        TftBtn::set_text(const char *text) {
 
 void TftBtn::draw(TftCtrl &tft) {
   m_was_highlighted = m_is_highlighted;
+  m_was_visible = m_is_visible;
+
+  if (!m_is_visible) return; // If it is invisible, there is nothing to draw.
 
   tft.fillRect(m_x, m_y, m_w, m_h, m_bg);
   tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg);
@@ -170,6 +173,8 @@ void TftBtn::draw(TftCtrl &tft) {
 }
 
 void TftBtn::erase(TftCtrl &tft) {
+  if (!m_was_visible) return; // If it was invisible, there is nothing to erase.
+
   if (m_was_highlighted) {
     tft.fillRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, TftColor::BLACK);
   }
@@ -194,6 +199,22 @@ bool TftBtn::is_highlighted() {
   return m_is_highlighted;
 }
 
+void TftBtn::visibility(bool visibility) {
+  m_is_visible = visibility;
+}
+
+bool TftBtn::is_visible() {
+  return m_is_visible;
+}
+
+void TftBtn::operation(bool operation) {
+  m_is_operational = operation;
+}
+
+bool TftBtn::is_operational() {
+  return m_is_operational;
+}
+
 void TftBtn::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
   while (!is_pressed(tch, tft)) {
     /* wait for press */;
@@ -201,6 +222,8 @@ void TftBtn::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
 }
 
 bool TftBtn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
+  if (!m_is_operational) return; // Ignore presses if non-operational.
+
   TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
 
   return (

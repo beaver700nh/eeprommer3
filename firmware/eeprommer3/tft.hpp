@@ -75,6 +75,10 @@ public:
   );
 };
 
+/*
+ * A set of functions to help calculate the
+ * positions of elements on a TFT screen
+ */
 namespace TftCalc {
   uint16_t t_centerx(uint16_t box, const char *text, uint8_t size);
   uint16_t t_centerx(TftCtrl &tft, const char *text, uint8_t size);
@@ -150,8 +154,20 @@ public:
   void erase(TftCtrl &tft);
   void draw_highlight(TftCtrl &tft);
 
+  // Controls whether a yellow outline appears around the button.
   void highlight(bool highlight);
+  // Default is unhighlighted.
   bool is_highlighted();
+
+  // Controls whether the button is visible.
+  void visibility(bool invisibility);
+  // Default is true.
+  bool is_visible();
+
+  // Controls whether the button responds to presses.
+  void operation(bool operation);
+  // Default is true.
+  bool is_operational();
 
   void wait_for_press(TouchCtrl &tch, TftCtrl &tft);
   bool is_pressed(TouchCtrl &tch, TftCtrl &tft);
@@ -165,12 +181,18 @@ private:
   bool m_is_highlighted = false;
   bool m_was_highlighted = false;
 
+  bool m_is_visible = true;
+  bool m_was_visible = true;
+
+  bool m_is_operational = true;
+
   char m_text[21];
 };
 
 /*
  * TftMenu makes creating menus easier;
- * it's basically just a group of buttons.
+ * it's basically just a group of buttons
+ * with some helpful functions included
  */
 class TftMenu {
 public:
@@ -292,7 +314,10 @@ public:
   );
 };
 
-// Function to ask the user for an arbitrarily-sized integer
+/*
+ * Helper function to ask the user for
+ * an arbitrarily-sized integer
+ */
 template<typename T>
 T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
   tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
@@ -314,14 +339,24 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
   return menu.get_val();
 }
 
-// Function to ask the user to pick from one of `num` choices
+/*
+ * Function to ask the user to pick
+ * from one of `num` choices
+ * 
+ * This function is variadic, so be
+ * careful to provide a valid `num`
+ */
 uint8_t ask_choice(
   TftCtrl &tft, TouchCtrl &tch, const char *prompt,
   int8_t cols, int32_t btn_height, int16_t initial_choice,
   uint8_t num, ...
 );
 
-// Debug function for testing touchscreen and TFT screen.
+/*
+ * Debug function for testing touchscreen and TFT screen.
+ * This function contains an infinite loop, and will never
+ * finish executing.
+ */
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
 
 #endif
