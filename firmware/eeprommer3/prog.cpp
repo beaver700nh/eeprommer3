@@ -537,7 +537,20 @@ void ProgrammerFromSd::add_pair_from_user(AddrDataArray *buf) {
 }
 
 uint8_t ProgrammerFromSd::verify_multi(AddrDataArray &buf) {
-  return STATUS_ERR_VERIFY;
+  for (uint16_t i = 0; i < buf.get_len(); ++i) {
+    AddrDataArrayPair pair;
+    buf.get_pair(i, &pair);
+
+    uint8_t real_data = m_ee.read(pair.addr);
+
+#ifdef DEBUG_MODE
+    PRINTF_NOBUF(Serial, "ProgrammerFromSd::verify_multi: addr %04X; expectation %02X, reality %02X.\n", pair.addr, pair.data, real_data);
+#endif
+
+    if (pair.data != real_data) return STATUS_ERR_VERIFY;
+  }
+
+  return STATUS_OK;
 }
 
 uint8_t ProgrammerFromSd::draw() {
