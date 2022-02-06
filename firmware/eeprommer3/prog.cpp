@@ -430,14 +430,28 @@ uint8_t ProgrammerFromSd::write_multi() {
     PRINTF_NOBUF(Serial, "Scroll: %d out of maximum %d\n", scroll, max_scroll);
 #endif
 
-    uint8_t pressed = menu.wait_for_press(m_tch, m_tft);
+    int16_t pressed;
+    int16_t deleted;
 
-    switch (pressed) {
-    case 0:  if (scroll > 0)           --scroll; break;
-    case 1:  if (scroll < max_scroll)  ++scroll; break;
-    case 2:  add_pair_from_user(&buf);           break;
-    case 3:  m_ee.write(&buf);                   // fall through
-    default: done = true;                        break;
+    while (true) {
+      pressed = menu.get_pressed(m_tch, m_tft);
+      deleted = del_btns.get_pressed(m_tch, m_tft);
+
+      if (deleted >= 0) {
+        buf.remove(deleted);
+        break;
+      }
+      else if (pressed >= 0) {
+        switch (pressed) {
+        case 0:  if (scroll > 0)           --scroll; break;
+        case 1:  if (scroll < max_scroll)  ++scroll; break;
+        case 2:  add_pair_from_user(&buf);           break;
+        case 3:  m_ee.write(&buf);                   // fall through
+        default: done = true;                        break;
+        }
+
+        break;
+      }
     }
   }
 
