@@ -1,0 +1,17 @@
+#!/bin/bash
+
+prgm="$1"
+shift
+args="$@"
+args2=""
+
+for arg in $args; do
+  args2="$args2\"$arg\" "
+done
+
+if [[ "$args2" == "" ]]; then
+  args2="[none]"
+fi
+
+echo -e "\x1b[1;96mCompiling sketch \"$prgm\" for Arduino Mega...\nFlags/arguments: $args2\x1b[0m\n"
+arduino-cli compile --fqbn arduino:avr:mega $args "$prgm"
