@@ -435,6 +435,18 @@ uint8_t ProgrammerFromSd::write_multi() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
+  // Done writing, ask to verify
+  m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
+
+  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true, 0);
+  uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if (should_verify == 0) {
+    return verify_multi(buf);
+  }
+
   return STATUS_OK;
 }
 
@@ -466,7 +478,7 @@ void ProgrammerFromSd::draw_pairs(
     uint16_t y = margin_u + (this_pair - offset) * (height + padding);
     uint16_t w = TftCalc::right(m_tft, margin_l, margin_r);
     uint16_t h = height;
-    uint16_t ty = TftCalc::t_centery(h, 2) + y;
+    uint16_t ty = TftCalc::t_center_y(h, 2) + y;
 
     AddrDataArrayPair pair;
     buf.get_pair(this_pair, &pair);
@@ -499,7 +511,11 @@ bool ProgrammerFromSd::poll_menus_and_react(TftMenu &menu, TftMenu &del_btns, Ad
       case 0:  if (*scroll > 0)          --*scroll; break;
       case 1:  if (*scroll < max_scroll) ++*scroll; break;
       case 2:  add_pair_from_user(buf);             break;
-      case 3:  m_ee.write(buf);                     // fall through
+      case 3:
+        m_tft.fillRect(10, 10, TftCalc::fraction_x(m_tft, 10, 1), 24, TftColor::BLACK);
+        m_tft.drawText(10, 12, "Please wait - accessing EEPROM...", TftColor::CYAN, 2);
+        m_ee.write(buf);
+        // fall through to next case
       default: return true;
       }
 
@@ -520,7 +536,7 @@ void ProgrammerFromSd::add_pair_from_user(AddrDataArray *buf) {
   buf->append((AddrDataArrayPair) {addr, data});
 }
 
-uint8_t ProgrammerFromSd::verify_multi(uint16_t addr, uint16_t length, uint8_t *data) {
+uint8_t ProgrammerFromSd::verify_multi(AddrDataArray &buf) {
   return STATUS_ERR_VERIFY;
 }
 
@@ -532,12 +548,15 @@ uint8_t ProgrammerFromSd::draw() {
 }
 
 uint8_t ProgrammerFromSd::debug() {
+  auto w1 = TftCalc::fraction_x(m_tft, 10, 1);
+  auto w2 = TftCalc::fraction_x(m_tft, 10, 2);
+
   TftMenu menu;
-  menu.add_btn(new TftBtn( 10,  50, 225, 30,  23, 8, "WE HI (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
-  menu.add_btn(new TftBtn(245,  50, 225, 30,  29, 8, "WE LO (Enable)",  TftColor::PINKK,          TftColor::RED));
-  menu.add_btn(new TftBtn( 10,  90, 460, 30, 147, 8, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
-  menu.add_btn(new TftBtn( 10, 130, 225, 30,  37, 8, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN));
-  menu.add_btn(new TftBtn(245, 130, 225, 30,  29, 8, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE));
+  menu.add_btn(new TftBtn(     10,  50, w2, 30, "WE HI (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
+  menu.add_btn(new TftBtn(w2 + 20,  50, w2, 30, "WE LO (Enable)",  TftColor::PINKK,          TftColor::RED));
+  menu.add_btn(new TftBtn(     10,  90, w1, 30, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
+  menu.add_btn(new TftBtn(     10, 130, w2, 30, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN));
+  menu.add_btn(new TftBtn(w2 + 20, 130, w2, 30, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
 
   m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);

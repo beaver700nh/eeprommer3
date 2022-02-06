@@ -72,7 +72,7 @@ public:
 
   uint8_t read_range();
   uint8_t write_multi();
-  uint8_t verify_multi(uint16_t addr, uint16_t length, uint8_t *data);
+  uint8_t verify_multi(AddrDataArray &buf);
 
   // read_range() helpers
 
@@ -116,9 +116,9 @@ public:
 
   /*
    * Enum of status codes returned from functions of
-   * the type `ProgrammerFromSd::*calc_func`
+   * the type `ProgrammerFromSd::*action_func`
    */
-  enum { STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY };
+  enum ActionFuncStatus { STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY };
 
 private:
   EepromCtrl &m_ee;

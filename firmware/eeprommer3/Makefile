@@ -13,6 +13,10 @@ else
 	debug_arg=""
 endif
 
+ifeq ($(CLEAN), 1)
+	debug_arg="$$debug_arg --clean"
+endif
+
 	arduino-cli-mega-compile . --warnings pedantic --build-property=compiler.cpp.extra_flags="-std=c++1z" "$$debug_arg"
 
 upload:
