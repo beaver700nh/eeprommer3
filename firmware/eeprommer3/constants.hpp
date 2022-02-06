@@ -1,29 +1,7 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-#include <mega/pins_arduino.h>
-
 #include "strfmt.hpp"
-
-// These are to silence VSCode IntelliSense errors
-// due to a glitch in the `#inclu`sion of pins_arduino.h
-
-const uint8_t A0 =  54;
-const uint8_t A1 =  55;
-const uint8_t A2 =  56;
-const uint8_t A3 =  57;
-const uint8_t A4 =  58;
-const uint8_t A5 =  59;
-const uint8_t A6 =  60;
-const uint8_t A7 =  61;
-const uint8_t A8 =  62;
-const uint8_t A9 =  63;
-const uint8_t A10 = 64;
-const uint8_t A11 = 65;
-const uint8_t A12 = 66;
-const uint8_t A13 = 67;
-const uint8_t A14 = 68;
-const uint8_t A15 = 69;
 
 /*****************************************/
 /** Macros *******************************/
@@ -50,8 +28,8 @@ const uint8_t A15 = 69;
 #define ARR_LEN(a) (sizeof((a)) / sizeof((a)[0]))
 #define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 #define TO_565(r, g, b) (((r) >> 3 << 11) | ((g) >> 2 << 5) | ((b) >> 3))
 

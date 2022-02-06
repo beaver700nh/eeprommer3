@@ -222,7 +222,7 @@ void TftBtn::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
 }
 
 bool TftBtn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
-  if (!m_is_operational) return; // Ignore presses if non-operational.
+  if (!m_is_operational) return false; // Ignore presses if non-operational.
 
   TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
 

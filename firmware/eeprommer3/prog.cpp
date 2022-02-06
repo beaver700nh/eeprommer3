@@ -423,8 +423,12 @@ uint8_t ProgrammerFromSd::write_multi() {
     draw_pairs(44, 44, 74, 44, 22, 8, num_pairs, scroll, buf, del_btns);
     del_btns.draw(m_tft);
 
-    uint16_t max_scroll = MAX(0, buf.get_len() - num_pairs);// sus line
-    PRINTF_NOBUF(Serial, "s %d, ms %d", scroll, max_scroll);
+    int32_t diff = (int32_t) buf.get_len() - num_pairs;
+    uint16_t max_scroll = MAX(0, diff);
+
+#ifdef DEBUG_MODE
+    PRINTF_NOBUF(Serial, "Scroll: %d out of maximum %d\n", scroll, max_scroll);
+#endif
 
     uint8_t pressed = menu.wait_for_press(m_tch, m_tft);
 
@@ -494,7 +498,6 @@ void ProgrammerFromSd::add_pair_from_user(AddrDataArray *buf) {
   m_tft.fillScreen(TftColor::BLACK);
 
   buf->append((AddrDataArrayPair) {addr, data});
-  PRINTF_NOBUF(Serial, "added %04X %02X, now len %d", addr, data, buf->get_len());
 }
 
 uint8_t ProgrammerFromSd::verify_multi(uint16_t addr, uint16_t length, uint8_t *data) {
