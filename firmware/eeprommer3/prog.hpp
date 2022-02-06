@@ -53,9 +53,13 @@ public:
 
   typedef uint8_t (ProgrammerFromSd::*action_func)();
 
+  /*** BYTE IO ***/
+
   uint8_t read_byte();
   uint8_t write_byte();
   uint8_t verify_byte(uint16_t addr, uint8_t data);
+
+  /*** VECTOR IO ***/
 
   uint8_t read_vector();
   uint8_t write_vector();
@@ -64,9 +68,13 @@ public:
   // Function to ask the user to select a 6502 jump vector
   Vector ask_vector();
 
+  /*** MULTIPLE IO ***/
+
   uint8_t read_range();
   uint8_t write_multi();
   uint8_t verify_multi(uint16_t addr, uint16_t length, uint8_t *data);
+
+  // read_range() helpers
 
   typedef void (ProgrammerFromSd::*calc_func)(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
@@ -77,16 +85,24 @@ public:
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc);
   void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc, uint8_t cur_page, uint8_t max_page);
 
+  // write_multi() helpers
+
   void draw_pairs(
     uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
     uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
   );
+
+  bool poll_menus_and_react(TftMenu &menu, TftMenu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll);
   void add_pair_from_user(AddrDataArray *buf);
+
+  /*** MISC ***/
 
   uint8_t draw();
   uint8_t debug();
 
   uint8_t nop();
+
+  /*** END OF USER INTERACTION FUNCS ***/
 
   static constexpr uint8_t NUM_ACTIONS = 10;
 

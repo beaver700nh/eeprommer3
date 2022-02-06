@@ -430,34 +430,12 @@ uint8_t ProgrammerFromSd::write_multi() {
     PRINTF_NOBUF(Serial, "Scroll: %d out of maximum %d\n", scroll, max_scroll);
 #endif
 
-    int16_t pressed;
-    int16_t deleted;
-
-    while (true) {
-      pressed = menu.get_pressed(m_tch, m_tft);
-      deleted = del_btns.get_pressed(m_tch, m_tft);
-
-      if (deleted >= 0) {
-        buf.remove(deleted);
-        break;
-      }
-      else if (pressed >= 0) {
-        switch (pressed) {
-        case 0:  if (scroll > 0)           --scroll; break;
-        case 1:  if (scroll < max_scroll)  ++scroll; break;
-        case 2:  add_pair_from_user(&buf);           break;
-        case 3:  m_ee.write(&buf);                   // fall through
-        default: done = true;                        break;
-        }
-
-        break;
-      }
-    }
+    done = poll_menus_and_react(menu, del_btns, &buf, &scroll, max_scroll);
   }
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return nop();
+  return STATUS_OK;
 }
 
 void ProgrammerFromSd::draw_pairs(
@@ -502,6 +480,34 @@ void ProgrammerFromSd::draw_pairs(
     cur_btn->operation(true);
   }
   while (this_pair++ != last_pair);
+}
+
+bool ProgrammerFromSd::poll_menus_and_react(TftMenu &menu, TftMenu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll) {
+  int16_t pressed;
+  int16_t deleted;
+
+  while (true) {
+    pressed = menu.get_pressed(m_tch, m_tft);
+    deleted = del_btns.get_pressed(m_tch, m_tft);
+
+    if (deleted >= 0) {
+      buf->remove(deleted);
+      break;
+    }
+    else if (pressed >= 0) {
+      switch (pressed) {
+      case 0:  if (*scroll > 0)          --*scroll; break;
+      case 1:  if (*scroll < max_scroll) ++*scroll; break;
+      case 2:  add_pair_from_user(buf);             break;
+      case 3:  m_ee.write(buf);                     // fall through
+      default: return true;
+      }
+
+      break;
+    }
+  }
+
+  return false;
 }
 
 void ProgrammerFromSd::add_pair_from_user(AddrDataArray *buf) {
