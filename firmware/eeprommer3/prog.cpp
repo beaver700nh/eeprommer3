@@ -158,6 +158,15 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
   return STATUS_OK;
 }
 
+uint8_t ProgrammerFromSd::read_file() {
+  char buf[100];
+  ask_str(m_tft, m_tch, "Testing:", buf, 100);
+  Serial.println(buf);
+  m_tft.fillScreen(TftColor::BLACK);
+
+  return STATUS_OK;
+}
+
 Vector ProgrammerFromSd::ask_vector() {
   return Vector(
     ask_choice(

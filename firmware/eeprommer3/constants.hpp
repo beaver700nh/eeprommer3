@@ -33,7 +33,10 @@
 
 #define TO_565(r, g, b) (((r) >> 3 << 11) | ((g) >> 2 << 5) | ((b) >> 3))
 
-#define BOTTOM_BTN(tft, text) 10, (tft).height() - 34, (tft).width() - 20, 24, ((tft).width() + 2 - strlen((text)) * 12) / 2, 5, (text)
+#define BOTTOM_BTN(tft, text) \
+  10, TftCalc::bottom((tft), 24, 10), \
+  TftCalc::fraction_x((tft), 10, 1), 24, \
+  (text)
 
 /*****************************************/
 /** Constants ****************************/

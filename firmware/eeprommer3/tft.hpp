@@ -66,7 +66,7 @@ public:
 
   void init(uint16_t driver_id, uint8_t orientation);
 
-  void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size = 2);
+  void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint8_t size = 2);
   void drawText(const char *text);
 
   bool drawRGBBitmapFromFile(
@@ -231,7 +231,7 @@ class TftHexSelMenu : public TftMenu {
 public:
   TftHexSelMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin) {
     const uint16_t cell_margin = 10;
-    const uint16_t cell_size = (tft.width() - 7*cell_margin - 2*side_margin) / 8;
+    const uint16_t cell_size = (tft.width() - 7 * cell_margin - 2 * side_margin) / 8;
     const uint16_t cell_dist = cell_size + cell_margin;
     const uint16_t text_margin = (cell_size - 10) / 2;
 
@@ -248,7 +248,7 @@ public:
   }
 
   void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t font_size, uint16_t fg, uint16_t bg) {
-    tft.fillRect(x, y, tft.width() - x, 7 * font_size, bg);
+    tft.fillRect(x, y, tft.width() - x, 8 * font_size, bg);
 
     char strfmt_buf[50];
     sprintf(strfmt_buf, "Val: [%%0%dX]", BIT_WIDTH(T) / 4);
@@ -261,6 +261,31 @@ public:
 
 private:
   T m_val = 0;
+};
+
+/*
+ * TftStringMenu is a TftMenu but specialized
+ * for inputting strings.
+ */
+class TftStringMenu : public TftMenu {
+public:
+  TftStringMenu(TftCtrl &tft, uint16_t top_margin, uint8_t side_margin, uint8_t padding);
+
+  void update_val(char k);
+  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t font_size, uint16_t fg, uint16_t bg);
+
+  void get_val(char *buf, uint8_t len);
+  void set_val(const char *buf);
+
+  inline static const uint8_t LEN = 255;
+  inline static const char LAYOUT[3][10] = {
+    {'Q',    'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O',    'P'},
+    {'A',    'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',    '_'},
+    {'\x7f', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '\xb0', '.'},
+  };
+
+private:
+  char m_val[LEN + 1];
 };
 
 /*
@@ -289,13 +314,17 @@ public:
   uint8_t wait_for_value(TouchCtrl &tch, TftCtrl &tft);
 
 protected:
-  uint8_t m_cur_choice = 0;
-  uint8_t m_old_choice = 0;
   uint8_t m_v_margin, m_h_margin, m_v_padding, m_h_padding;
   uint8_t m_num_cols, m_btn_height;
   uint8_t m_confirm_btn = 0;
+  uint8_t m_cur_choice = 0;
+  uint8_t m_old_choice = 0;
 
-  Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {};
+  Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {
+    (void) tft; // Silence unused parameter
+    (void) btn_id; // Silence unused parameter
+    (void) is_confirm; // Silence unused parameter
+  };
 };
 
 /*
@@ -315,15 +344,18 @@ public:
 };
 
 /*
- * Helper function to ask the user for
- * an arbitrarily-sized integer
+ * This is a helper function to ask the user for
+ * an arbitrarily-sized integer.
+ * 
+ * Type T is the integer type that determines
+ * the kind of integer for which the user is asked.
  */
 template<typename T>
 T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
   tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
 
   TftHexSelMenu<T> menu(tft, 50, 17);
-  menu.add_btn(new TftBtn(10, 286, 460, 24, 184, 5, "Continue"));
+  menu.add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue")));
   menu.draw(tft);
 
   while (true) { // Loop to get a val
@@ -340,11 +372,11 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
 }
 
 /*
- * Function to ask the user to pick
- * from one of `num` choices
+ * This is a function to ask the user to pick
+ * from one of `num` choices.
  * 
- * This function is variadic, so be
- * careful to provide a valid `num`
+ * This function is variadic, so be careful
+ * that you provide a valid `num`.
  */
 uint8_t ask_choice(
   TftCtrl &tft, TouchCtrl &tch, const char *prompt,
@@ -353,10 +385,26 @@ uint8_t ask_choice(
 );
 
 /*
+ * This is a helper function to ask the user
+ * for an arbitrarily-sized string
+ */
+void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len);
+
+/*
  * Debug function for testing touchscreen and TFT screen.
  * This function contains an infinite loop, and will never
  * finish executing.
  */
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
+
+#ifdef DEBUG_MODE
+
+/*
+ * Quick little function to print the character set of the
+ * TFT, to help identify special characters.
+ */
+void tft_print_chars(TftCtrl &tft);
+
+#endif
 
 #endif

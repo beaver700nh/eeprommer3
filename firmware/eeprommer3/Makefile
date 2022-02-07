@@ -17,7 +17,7 @@ ifeq ($(CLEAN), 1)
 	debug_arg="$$debug_arg --clean"
 endif
 
-	arduino-cli-mega-compile . --warnings pedantic --build-property=compiler.cpp.extra_flags="-std=c++1z" "$$debug_arg"
+	arduino-cli-mega-compile . --warnings=more --build-property=compiler.cpp.extra_flags="-std=c++1z" "$$debug_arg"
 
 upload:
 	arduino-cli-mega-upload . /dev/ttyACM0 --verbose

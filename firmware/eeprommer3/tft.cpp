@@ -340,6 +340,42 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
   return -1;
 }
 
+TftStringMenu::TftStringMenu(TftCtrl &tft, uint16_t top_margin, uint8_t side_margin, uint8_t padding) {
+  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * (side_margin - padding), padding, 10);
+  uint16_t cell_height = (float) cell_width * 1.2;
+
+  for (uint8_t row = 0; row < ARR_LEN(LAYOUT); ++row) {
+    for (uint8_t col = 0; col < ARR_LEN(LAYOUT[row]); ++col) {
+      uint16_t x = side_margin + col * (cell_width  + padding);
+      uint16_t y = top_margin  + row * (cell_height + padding);
+
+      add_btn(new TftBtn(x, y, cell_width, cell_height, STRFMT_NOBUF("%c", LAYOUT[row][col]), TftColor::WHITE, TftColor::BLUE));
+    }
+  }
+}
+
+void TftStringMenu::update_val(char k) {
+  uint8_t len = strlen(m_val);
+
+  if (len >= LEN) return;
+
+  m_val[len]     = k;
+  m_val[len + 1] = '\0';
+}
+
+void TftStringMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t font_size, uint16_t fg, uint16_t bg) {
+  tft.fillRect(x, y, tft.width() - x, 8 * font_size, bg);
+  tft.drawText(x, y, STRFMT_NOBUF("%.*s", len, m_val), fg, font_size);
+}
+
+void TftStringMenu::get_val(char *buf, uint8_t len) {
+  strncpy(buf, m_val, len);
+}
+
+void TftStringMenu::set_val(const char *buf) {
+  strncpy(m_val, buf, LEN);
+}
+
 TftChoiceMenu::TftChoiceMenu(
   uint8_t v_margin, uint8_t h_margin,
   uint8_t v_padding, uint8_t h_padding,
@@ -456,7 +492,7 @@ uint8_t ask_choice(
   else               _cols = 1;
 
   TftChoiceMenu menu(
-    50, 10, 10, 10, cols,
+    50, 10, 10, 10, _cols,
     (btn_height > 0 ? btn_height : 24),
     (initial_choice < 0 ? 0 : initial_choice)
   );
@@ -478,6 +514,28 @@ uint8_t ask_choice(
   return val;
 }
 
+void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len) {
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+
+  TftStringMenu menu(tft, 50, 10, 10);
+  menu.add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue")));
+  menu.draw(tft);
+
+  while (true) { // Loop to get a val
+    menu.show_val(tft, 10, 210, 12, 3, TftColor::ORANGE, TftColor::BLACK);
+
+    uint8_t btn_pressed = menu.wait_for_press(tch, tft);
+
+    if (btn_pressed == 30) break;
+
+    menu.update_val(
+      TftStringMenu::LAYOUT[btn_pressed / 10][btn_pressed % 10]
+    );
+  }
+
+  menu.get_val(buf, len);
+}
+
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
   while (true) {
     TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
@@ -487,3 +545,16 @@ void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
     }
   }
 }
+
+#ifdef DEBUG_MODE
+
+void tft_print_chars(TftCtrl &tft) {
+  uint8_t i = 0;
+
+  do {
+    tft.drawText(10 + 7 * (i & 0x0F), 10 + 10 * (i >> 4), STRFMT_NOBUF("%c", i), TftColor::WHITE, 1);
+  }
+  while (i++ != 0xFF);
+}
+
+#endif

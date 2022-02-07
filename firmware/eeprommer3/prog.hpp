@@ -59,6 +59,12 @@ public:
   uint8_t write_byte();
   uint8_t verify_byte(uint16_t addr, uint8_t data);
 
+  /*** FILE IO ***/
+
+  uint8_t read_file();
+  uint8_t write_file();
+  uint8_t verify_file(const char *fname, uint16_t addr);
+
   /*** VECTOR IO ***/
 
   uint8_t read_vector();
@@ -108,7 +114,7 @@ public:
 
   action_func action_map[NUM_ACTIONS] = {
     &ProgrammerFromSd::read_byte,   &ProgrammerFromSd::write_byte,
-    &ProgrammerFromSd::nop,         &ProgrammerFromSd::nop,
+    &ProgrammerFromSd::read_file,   &ProgrammerFromSd::nop,
     &ProgrammerFromSd::read_vector, &ProgrammerFromSd::write_vector,
     &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_multi,
     &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,

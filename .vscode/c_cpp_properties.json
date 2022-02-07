@@ -17,7 +17,8 @@
                 "~/.arduino15/packages/arduino/hardware/avr/1.8.4/variants/mega/pins_arduino.h"
             ],
             "defines": [
-                "USBCON"
+                "USBCON",
+                "DEBUG_MODE"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
