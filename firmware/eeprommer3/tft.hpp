@@ -186,7 +186,8 @@ private:
 
   bool m_is_operational = true;
 
-  char m_text[21];
+  //char m_text[21];
+  char *m_text;
 };
 
 /*
@@ -275,17 +276,30 @@ public:
   void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t font_size, uint16_t fg, uint16_t bg);
 
   void get_val(char *buf, uint8_t len);
+  char *get_ptr_val();
   void set_val(const char *buf);
 
+  uint8_t get_width();
+  uint8_t get_height();
+
   inline static const uint8_t LEN = 255;
-  inline static const char LAYOUT[3][10] = {
-    {'Q',    'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O',    'P'},
-    {'A',    'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',    '_'},
-    {'\x7f', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '\xb0', '.'},
+
+  enum SPECIAL_CHARS {
+    BSP = '\x11', SHF = '\x7f', SPC = '\xb0'
+  };
+
+  inline static const char LAYOUT[4][11] = {
+    {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '~'},
+    {'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', BSP},
+    {'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '_', '-'},
+    {SHF, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', SPC, ',', '.'},
   };
 
 private:
-  char m_val[LEN + 1];
+  char m_val[LEN + 1] = {'\0'};
+
+  bool m_capitalize = false;
+  unsigned long long m_t_press;
 };
 
 /*

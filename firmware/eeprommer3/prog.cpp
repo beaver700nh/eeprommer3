@@ -579,6 +579,7 @@ uint8_t ProgrammerFromSd::debug() {
   menu.add_btn(new TftBtn(     10,  90, w1, 30, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
   menu.add_btn(new TftBtn(     10, 130, w2, 30, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN));
   menu.add_btn(new TftBtn(w2 + 20, 130, w2, 30, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE));
+  menu.add_btn(new TftBtn(     10, 170, w1, 30, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
 
   m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
@@ -611,6 +612,12 @@ uint8_t ProgrammerFromSd::debug() {
       m_tft.fillScreen(TftColor::BLACK); 
       val8 = ask_val<uint8_t>(m_tft, m_tch, "Type the value:");
       m_ee.set_data(val8);
+      break;
+    case 5:
+      m_tft.fillScreen(TftColor::BLACK);
+      tft_print_chars(m_tft);
+      // Wait for press
+      while (!m_tch.is_touching());
       break;
     }
 

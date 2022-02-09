@@ -124,15 +124,13 @@ namespace TftCalc {
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)
   : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg) {
-  strncpy(m_text, text, 20);
+  //strncpy(m_text, text, 20);
+  m_text = text;
 }
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
-  : m_x(x), m_y(y), m_w(w), m_h(h), m_fg(fg), m_bg(bg) {
-  strncpy(m_text, text, 20);
-
-  m_tx = TftCalc::t_center_x(m_w, m_text, 2);
-  m_ty = TftCalc::t_center_y(m_h, 2);
+  : TftBtn(x, y, w, h, TftCalc::t_center_x(w, text, 2), TftCalc::t_center_y(h, 2), text, fg, bg) {
+  // Empty because all work delegated to other ctor
 }
 
 uint16_t TftBtn::get_x()           { return m_x; }
@@ -341,26 +339,56 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
 }
 
 TftStringMenu::TftStringMenu(TftCtrl &tft, uint16_t top_margin, uint8_t side_margin, uint8_t padding) {
-  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * (side_margin - padding), padding, 10);
+  uint8_t layout_rows = get_height();
+  uint8_t layout_cols = get_width();
+
+  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * (side_margin - padding), padding, layout_cols);
   uint16_t cell_height = (float) cell_width * 1.2;
 
-  for (uint8_t row = 0; row < ARR_LEN(LAYOUT); ++row) {
-    for (uint8_t col = 0; col < ARR_LEN(LAYOUT[row]); ++col) {
+  for (uint8_t row = 0; row < layout_rows; ++row) {
+    for (uint8_t col = 0; col < layout_cols; ++col) {
       uint16_t x = side_margin + col * (cell_width  + padding);
       uint16_t y = top_margin  + row * (cell_height + padding);
 
-      add_btn(new TftBtn(x, y, cell_width, cell_height, STRFMT_NOBUF("%c", LAYOUT[row][col]), TftColor::WHITE, TftColor::BLUE));
+      Serial.println(add_btn(new TftBtn(x, y, cell_width, cell_height, STRFMT_NOBUF("%c", LAYOUT[row][col]), TftColor::WHITE, TftColor::BLUE)), DEC);
     }
   }
+  Serial.println(add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue"))), DEC);
+
+  Serial.println("ADDING CONTINUE BTN");
+  Serial.println(add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue"))), DEC);
+  Serial.println(get_btn(get_num_btns() - 1)->get_text());
 }
 
 void TftStringMenu::update_val(char k) {
   uint8_t len = strlen(m_val);
 
-  if (len >= LEN) return;
+  switch (k) {
+  case SHF:
+    m_capitalize = true;
+    break;
 
-  m_val[len]     = k;
-  m_val[len + 1] = '\0';
+  case BSP:
+    if (len == 0) return;
+
+    m_val[len - 1] = '\0';
+
+    break;
+
+  case SPC:
+    update_val(' ');
+    break;
+
+  default:
+    if (len >= LEN) return;
+
+    m_val[len]     = k;
+    m_val[len + 1] = '\0';
+
+    m_capitalize = false;
+
+    break;
+  }
 }
 
 void TftStringMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t font_size, uint16_t fg, uint16_t bg) {
@@ -372,8 +400,20 @@ void TftStringMenu::get_val(char *buf, uint8_t len) {
   strncpy(buf, m_val, len);
 }
 
+char *TftStringMenu::get_ptr_val() {
+  return m_val;
+}
+
 void TftStringMenu::set_val(const char *buf) {
   strncpy(m_val, buf, LEN);
+}
+
+uint8_t TftStringMenu::get_width() {
+  return ARR_LEN(LAYOUT[0]);
+}
+
+uint8_t TftStringMenu::get_height() {
+  return ARR_LEN(LAYOUT);
 }
 
 TftChoiceMenu::TftChoiceMenu(
@@ -518,18 +558,22 @@ void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_
   tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
 
   TftStringMenu menu(tft, 50, 10, 10);
-  menu.add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue")));
   menu.draw(tft);
 
+  uint8_t w = menu.get_width();
+
   while (true) { // Loop to get a val
-    menu.show_val(tft, 10, 210, 12, 3, TftColor::ORANGE, TftColor::BLACK);
+    menu.show_val(tft, 10, 240, 12, 3, TftColor::ORANGE, TftColor::BLACK);
+    Serial.println(menu.get_ptr_val());
 
     uint8_t btn_pressed = menu.wait_for_press(tch, tft);
 
-    if (btn_pressed == 30) break;
+    if (btn_pressed == menu.get_num_btns() - 1) break;
+
+    PRINTF_NOBUF(Serial, "added char %c\n", TftStringMenu::LAYOUT[btn_pressed / w][btn_pressed % w]);
 
     menu.update_val(
-      TftStringMenu::LAYOUT[btn_pressed / 10][btn_pressed % 10]
+      TftStringMenu::LAYOUT[btn_pressed / w][btn_pressed % w]
     );
   }
 

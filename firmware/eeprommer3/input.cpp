@@ -37,3 +37,11 @@ TSPoint TouchCtrl::get_raw_point() {
 
   return p;
 }
+
+bool TouchCtrl::isTouching(void) {
+  return is_valid_pressure(get_raw_point().z);
+}
+
+bool TouchCtrl::is_touching() {
+  return isTouching();
+}
