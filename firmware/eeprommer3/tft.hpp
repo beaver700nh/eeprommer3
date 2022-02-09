@@ -186,8 +186,7 @@ private:
 
   bool m_is_operational = true;
 
-  //char m_text[21];
-  char *m_text;
+  const char *m_text;
 };
 
 /*
@@ -279,21 +278,20 @@ public:
   char *get_ptr_val();
   void set_val(const char *buf);
 
-  uint8_t get_width();
-  uint8_t get_height();
+  static const char *const get_ptr_char(uint8_t x, uint8_t y);
+  static char get_char(uint8_t x, uint8_t y);
 
   inline static const uint8_t LEN = 255;
 
-  enum SPECIAL_CHARS {
-    BSP = '\x11', SHF = '\x7f', SPC = '\xb0'
-  };
+  inline static const uint8_t LAYOUT_WIDTH = 11;
+  inline static const uint8_t LAYOUT_HEIGHT = 4;
 
-  inline static const char LAYOUT[4][11] = {
-    {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '~'},
-    {'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', BSP},
-    {'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '_', '-'},
-    {SHF, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', SPC, ',', '.'},
-  };
+  inline static const char *const LAYOUT = (
+    "\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\x00\x30\x00\x7e\x00"
+    "\x51\x00\x57\x00\x45\x00\x52\x00\x54\x00\x59\x00\x55\x00\x49\x00\x4f\x00\x50\x00\x11\x00"
+    "\x41\x00\x53\x00\x44\x00\x46\x00\x47\x00\x48\x00\x4a\x00\x4b\x00\x4c\x00\x5f\x00\x2d\x00"
+    "\x7f\x00\x5a\x00\x58\x00\x43\x00\x56\x00\x42\x00\x4e\x00\x4d\x00\xb0\x00\x2c\x00\x2e\x00"
+  );
 
 private:
   char m_val[LEN + 1] = {'\0'};
