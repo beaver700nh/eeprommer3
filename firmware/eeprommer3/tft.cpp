@@ -153,11 +153,8 @@ void     TftBtn::set_fg(uint16_t fg) { m_fg = fg;   }
 uint16_t TftBtn::get_bg()            { return m_bg; }
 void     TftBtn::set_bg(uint16_t bg) { m_bg = bg;   }
 
-const char *TftBtn::get_text() { return m_text; }
-void        TftBtn::set_text(const char *text) {
-  //strncpy(m_text, text, 20);
-  m_text = text;
-}
+const char *TftBtn::get_text()                 { return m_text; }
+void        TftBtn::set_text(const char *text) { m_text = text; }
 
 void TftBtn::draw(TftCtrl &tft) {
   m_was_highlighted = m_is_highlighted;
