@@ -220,6 +220,48 @@ protected:
 };
 
 /*
+ * TftKeyboardMenu is a TftMenu but specialized
+ * for getting aggregate values from the user
+ * such as strings and numbers via the use of a
+ * keyboard.
+ * 
+ * This is a basecClass and is designed to be
+ * inherited from, not used directly
+ */
+class TftKeyboardMenu : public TftMenu {
+public:
+  // height of button = width of button * param btn_height
+  TftKeyboardMenu(
+    TftCtrl &tft, uint8_t t_debounce,
+    uint16_t pad_v, uint16_t pad_h,
+    uint16_t marg_v, uint16_t marg_h,
+    uint8_t num_cols, float btn_height = 1.2
+  );
+
+  void update_val(char c);
+  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg);
+
+  void get_val(char *buf, uint8_t len);
+  char *get_ptr_val();
+  void set_val(const char *buf);
+
+  // REMEMBER TO OVERRIDE IN CHILD CLASS!
+  inline static const uint8_t BUF_LEN = 0;
+  // REMEMBER TO OVERRIDE IN CHILD CLASS!
+  inline static const uint8_t KBD_WIDTH = 0;
+  // REMEMBER TO OVERRIDE IN CHILD CLASS!
+  inline static const uint8_t KBD_HEIGHT = 0;
+  // REMEMBER TO OVERRIDE IN CHILD CLASS!
+  inline static const uint8_t *KBD_LAYOUT;
+
+private:
+  char val[BUF_LEN + 1] = {'\0'};
+
+  unsigned long long t_last_press = 0;
+  uint8_t t_debounce;
+};
+
+/*
  * TftHexSelMenu is a TftMenu but specialized
  * for inputting numbers in hexadecimal.
  *
