@@ -336,6 +336,106 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
   return -1;
 }
 
+TftKeyboardLayout::TftKeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width)
+  : m_layout(layout), m_length(length), m_width(width) {
+  // Empty
+}
+
+const uint8_t *TftKeyboardLayout::get_layout() {
+  return m_layout;
+}
+
+uint8_t TftKeyboardLayout::get_width() {
+  return m_width;
+}
+
+uint8_t TftKeyboardLayout::get_height() {
+  return ceil((float) m_length / (float) m_width);
+}
+
+const char *const TftKeyboardLayout::get_ptr_char(uint8_t x, uint8_t y) {
+  return (char *) m_layout + 2 * (y * m_width + x);
+}
+
+char TftKeyboardLayout::get_char(uint8_t x, uint8_t y) {
+  return *get_ptr_char(x, y);
+}
+
+TftKeyboardLayout &get_glob_kbd_hex_layout() {
+  static TftKeyboardLayout layout(
+    (const uint8_t *)
+    "\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00"
+    "\x38\x00\x39\x00\x41\x00\x42\x00\x43\x00\x44\x00\x45\x00\x46\x00",
+    16, 8
+  );
+
+  return layout;
+}
+
+TftKeyboardMenu::TftKeyboardMenu(
+  TftCtrl &tft, uint8_t t_debounce,
+  uint16_t pad_v, uint16_t pad_h,
+  uint16_t marg_v, uint16_t marg_h,
+  TftKeyboardLayout &layout, float btn_height = 1.2
+)
+  : m_t_debounce(t_debounce), m_layout(layout) {
+  m_val = (char *) malloc(BUF_LEN() * sizeof(char));
+  m_val[0] = '\0';
+
+  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * marg_h, pad_h, layout.get_width());
+  uint16_t cell_height = (float) cell_width * btn_height;
+
+  for (uint8_t row = 0; row < layout.get_height(); ++row) {
+    for (uint8_t col = 0; col < layout.get_width(); ++col) {
+      uint16_t x = marg_h + col * (cell_width  + pad_h);
+      uint16_t y = marg_v + row * (cell_height + pad_v);
+
+      add_btn(new TftBtn(x, y, cell_width, cell_height, layout.get_ptr_char(col, row), TftColor::WHITE, TftColor::BLUE));
+    }
+  }
+
+  add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue")));
+}
+
+TftKeyboardMenu::~TftKeyboardMenu() {
+  free(m_val);
+};
+
+void TftKeyboardMenu::update_val(char c) {
+  uint8_t len = strlen(m_val);
+
+  SER_DEBUG_PRINT(len, 'd');
+  SER_DEBUG_PRINT(BUF_LEN(), 'd');
+
+  if (len >= BUF_LEN()) return;
+
+  m_val[len]     = c;
+  m_val[len + 1] = '\0';
+}
+
+void TftKeyboardMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg) {
+  tft.fillRect(x, y, tft.width() - x, 8 * size, bg);
+  tft.drawText(x, y, STRFMT_NOBUF("[%s]", /*len,*/ m_val), fg, size);
+}
+
+void TftKeyboardMenu::get_val(char *buf, uint8_t len) {
+  strncpy(buf, m_val, len);
+}
+
+char *TftKeyboardMenu::get_ptr_val() {
+  return m_val;
+}
+
+void TftKeyboardMenu::set_val(const char *buf) {
+  strncpy(m_val, buf, BUF_LEN());
+}
+
+const TftKeyboardLayout &TftKeyboardMenu::get_layout() {
+  return m_layout;
+}
+
+////////////////////////////////////////////////////
+
 TftStringMenu::TftStringMenu(TftCtrl &tft, uint16_t top_margin, uint8_t side_margin, uint8_t padding) {
   uint8_t layout_rows = LAYOUT_HEIGHT;
   uint8_t layout_cols = LAYOUT_WIDTH;
@@ -410,6 +510,8 @@ const char *const TftStringMenu::get_ptr_char(uint8_t x, uint8_t y) {
 char TftStringMenu::get_char(uint8_t x, uint8_t y) {
   return *get_ptr_char(x, y);
 }
+
+//////////////////////////////////////
 
 TftChoiceMenu::TftChoiceMenu(
   uint8_t v_margin, uint8_t h_margin,

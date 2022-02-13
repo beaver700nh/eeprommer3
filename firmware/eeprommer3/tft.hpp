@@ -219,46 +219,69 @@ protected:
   uint8_t m_num_btns = 0;
 };
 
+class TftKeyboardLayout {
+public:
+  TftKeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width);
+
+  const uint8_t *get_layout();
+
+  uint8_t get_width();
+  uint8_t get_height();
+
+  const char *const get_ptr_char(uint8_t x, uint8_t y);
+  char get_char(uint8_t x, uint8_t y);
+
+private:
+  const uint8_t *m_layout;
+
+  uint8_t m_length;
+  uint8_t m_width;
+};
+
+TftKeyboardLayout &get_glob_kbd_hex_layout();
+
 /*
- * TftKeyboardMenu is a TftMenu but specialized
- * for getting aggregate values from the user
- * such as strings and numbers via the use of a
- * keyboard.
+ * TftKeyboardMenu is an ABC specialization of
+ * TftMenu for getting aggregate values such as
+ * strings and numbers from the user via the
+ * use of a keyboard.
  * 
- * This is a basecClass and is designed to be
- * inherited from, not used directly
+ * THIS IS A BASE CLASS AND CANNOT BE USED
+ * DIRECTLY -- SUBCLASS IT FIRST!
  */
 class TftKeyboardMenu : public TftMenu {
 public:
-  // height of button = width of button * param btn_height
+  // height of button = calculated width of button * param btn_height
   TftKeyboardMenu(
     TftCtrl &tft, uint8_t t_debounce,
     uint16_t pad_v, uint16_t pad_h,
     uint16_t marg_v, uint16_t marg_h,
-    uint8_t num_cols, float btn_height = 1.2
+    TftKeyboardLayout &layout, float btn_height = 1.2
   );
 
+  ~TftKeyboardMenu();
+
   void update_val(char c);
-  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg);
+  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg);
 
   void get_val(char *buf, uint8_t len);
   char *get_ptr_val();
   void set_val(const char *buf);
 
-  // REMEMBER TO OVERRIDE IN CHILD CLASS!
-  inline static const uint8_t BUF_LEN = 0;
-  // REMEMBER TO OVERRIDE IN CHILD CLASS!
-  inline static const uint8_t KBD_WIDTH = 0;
-  // REMEMBER TO OVERRIDE IN CHILD CLASS!
-  inline static const uint8_t KBD_HEIGHT = 0;
-  // REMEMBER TO OVERRIDE IN CHILD CLASS!
-  inline static const uint8_t *KBD_LAYOUT;
+  const TftKeyboardLayout &get_layout();
 
-private:
-  char val[BUF_LEN + 1] = {'\0'};
+  // REMEMBER TO OVERRIDE BUFFER LENGTH IN CHILD CLASS!
+  inline virtual const uint8_t BUF_LEN() {
+    return 0;
+  }
 
-  unsigned long long t_last_press = 0;
-  uint8_t t_debounce;
+protected:
+  char *m_val;
+
+  unsigned long long m_t_last_press = 0; // TODO
+  uint8_t m_t_debounce;
+
+  const TftKeyboardLayout &m_layout;
 };
 
 /*
@@ -268,42 +291,99 @@ private:
  * Type T is an integer type and determines what
  * numbers can be inputted.
  */
-template<typename T>
-class TftHexSelMenu : public TftMenu {
+template <typename T>
+class TftHexSelMenu : public TftKeyboardMenu {
 public:
-  TftHexSelMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin) {
-    const uint16_t cell_margin = 10;
-    const uint16_t cell_size = (tft.width() - 7 * cell_margin - 2 * side_margin) / 8;
-    const uint16_t cell_dist = cell_size + cell_margin;
-    const uint16_t text_margin = (cell_size - 10) / 2;
-
-    for (uint8_t i = 0x00; i < 0x10; ++i) {
-      uint16_t x = side_margin + cell_dist * (i % 8);
-      uint16_t y = (i < 8 ? top_margin : top_margin + cell_size + cell_margin);
-  
-      add_btn(new TftBtn(x, y, cell_size, cell_size, text_margin, text_margin, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
+  // param val_size: 1 = 8 bits, 2 = 16 bits, etc
+  TftHexSelMenu(
+    TftCtrl &tft, uint8_t t_debounce,
+    uint16_t pad_v, uint16_t pad_h,
+    uint16_t marg_v, uint16_t marg_h
+  )
+    : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
+    // Empty
+    for (uint8_t i = 0; i < 16; ++i) {
+      PRINTF_NOBUF(Serial, "%s", get_glob_kbd_hex_layout().get_ptr_char(i, 0));
     }
+
+    Serial.println();
   }
 
-  void update_val(uint8_t k) {
-    m_val = (m_val << 4) + k;
+  void update_val(char c) {
+    PRINTF_NOBUF(Serial, "inserting char %02X\n", c);
+    TftKeyboardMenu::update_val(c);
   }
 
-  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t font_size, uint16_t fg, uint16_t bg) {
-    tft.fillRect(x, y, tft.width() - x, 8 * font_size, bg);
-
-    char strfmt_buf[50];
-    sprintf(strfmt_buf, "Val: [%%0%dX]", BIT_WIDTH(T) / 4);
-
-    tft.drawText(x, y, STRFMT_NOBUF(strfmt_buf, m_val), fg, font_size);
+  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
+    TftKeyboardMenu::show_val(tft, x, y, BUF_LEN(), size, fg, bg);
   }
 
-  T    get_val()      { return m_val; }
-  void set_val(T val) { m_val = val;  }
+  T get_int_val() {
+    T result = 0;
+    uint8_t len = strlen(m_val);
 
-private:
-  T m_val = 0;
+    for (uint8_t i = len - BUF_LEN(); i < len; ++i) {
+      result = (result << 4);
+
+      if (m_val[i] > '9') {
+        result += m_val[i] - 'A' + 0xA;
+      }
+      else {
+        result += m_val[i] - '0';
+      }
+    }
+
+    return result;
+  }
+
+  inline virtual const uint8_t BUF_LEN() {
+    return BIT_WIDTH(T) / 4;
+  }
 };
+
+// /*
+//  * TftHexSelMenu is a TftMenu but specialized
+//  * for inputting numbers in hexadecimal.
+//  *
+//  * Type T is an integer type and determines what
+//  * numbers can be inputted.
+//  */
+// template<typename T>
+// class TftHexSelMenu : public TftMenu {
+// public:
+//   TftHexSelMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin) {
+//     const uint16_t cell_margin = 10;
+//     const uint16_t cell_size = (tft.width() - 7 * cell_margin - 2 * side_margin) / 8;
+//     const uint16_t cell_dist = cell_size + cell_margin;
+//     const uint16_t text_margin = (cell_size - 10) / 2;
+
+//     for (uint8_t i = 0x00; i < 0x10; ++i) {
+//       uint16_t x = side_margin + cell_dist * (i % 8);
+//       uint16_t y = (i < 8 ? top_margin : top_margin + cell_size + cell_margin);
+  
+//       add_btn(new TftBtn(x, y, cell_size, cell_size, text_margin, text_margin, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
+//     }
+//   }
+
+//   void update_val(uint8_t k) {
+//     m_val = (m_val << 4) + k;
+//   }
+
+//   void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t font_size, uint16_t fg, uint16_t bg) {
+//     tft.fillRect(x, y, tft.width() - x, 8 * font_size, bg);
+
+//     char strfmt_buf[50];
+//     sprintf(strfmt_buf, "Val: [%%0%dX]", BIT_WIDTH(T) / 4);
+
+//     tft.drawText(x, y, STRFMT_NOBUF(strfmt_buf, m_val), fg, font_size);
+//   }
+
+//   T    get_val()      { return m_val; }
+//   void set_val(T val) { m_val = val;  }
+
+// private:
+//   T m_val = 0;
+// };
 
 /*
  * TftStringMenu is a TftMenu but specialized
@@ -408,8 +488,7 @@ template<typename T>
 T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
   tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
 
-  TftHexSelMenu<T> menu(tft, 50, 17);
-  menu.add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue")));
+  TftHexSelMenu<T> menu(tft, T_DEBOUNCE, 10, 10, 50, 17);
   menu.draw(tft);
 
   while (true) { // Loop to get a val
@@ -419,10 +498,19 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
 
     if (btn_pressed == 16) break;
 
-    menu.update_val(btn_pressed);
+    menu.update_val(
+      ([=]() {
+        if (IN_RANGE(btn_pressed, 0, 10)) {
+          return btn_pressed + '0';
+        }
+        else {
+          return btn_pressed + 'A' - 10;
+        }
+      })()
+    );
   }
 
-  return menu.get_val();
+  return menu.get_int_val();
 }
 
 /*

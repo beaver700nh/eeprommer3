@@ -18,25 +18,39 @@
   (n & 0x02 ? '1' : '0'), \
   (n & 0x01 ? '1' : '0')
 
+// Returns size of `t` but in bits instead of bytes
 #define BIT_WIDTH(t) sizeof(t) * 8
 
+// Returns `addr` but with 2nd and above most significant bytes equal to `page`
+// - PAGE_ADJUSTED(0x123456FF, 0x00654321) => 0x654321FF
 #define PAGE_ADJUSTED(addr, page) (((page) << 8) + ((addr) & 0xFF))
 
-#define STRINGIFY(s) XSTRINGIFY(s)
-#define XSTRINGIFY(s) #s
-
+// Returns number of elements in array `a`
 #define ARR_LEN(a) (sizeof((a)) / sizeof((a)[0]))
+
+// Checks if `n` is in range [`a`, `b`)
 #define IN_RANGE(n, a, b) ((a) <= (n) && (n) < (b))
 
+// Returns the smaller of `a` and `b`, or `b` if they are equal
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
+// Returns the larger of `a` and `b`, or `b` if they are equal
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
+// Returns a 565-color representation of 24-bit color (`r`, `g`, `b`)
 #define TO_565(r, g, b) (((r) >> 3 << 11) | ((g) >> 2 << 5) | ((b) >> 3))
 
+// Shorthand for bottom button in TftBtn ctor
+// `tft`: TftCtrl object to get dimensions
+// `text`: text of button
 #define BOTTOM_BTN(tft, text) \
   10, TftCalc::bottom((tft), 24, 10), \
   TftCalc::fraction_x((tft), 10, 1), 24, \
   (text)
+
+// Prints value of `var` over Serial
+// - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
+#define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
 
 /*****************************************/
 /** Constants ****************************/
@@ -57,6 +71,8 @@
 #define TS_MAXX 131
 #define TS_MINY 944
 #define TS_MAXY 90
+
+#define T_DEBOUNCE 160
 
 #define MCP_GPA(n) (n)
 #define MCP_GPB(n) (8 + (n))
