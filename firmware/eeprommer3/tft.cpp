@@ -414,7 +414,10 @@ void TftKeyboardMenu::update_val(char c) {
 
 void TftKeyboardMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg) {
   tft.fillRect(x, y, tft.width() - x, 8 * size, bg);
-  tft.drawText(x, y, STRFMT_NOBUF("[%s]", /*len,*/ m_val), fg, size);
+
+  char fmt_str[16];
+  sprintf(fmt_str, "[%%%ds]", len);
+  tft.drawText(x, y, STRFMT_NOBUF(fmt_str, m_val), fg, size);
 }
 
 void TftKeyboardMenu::get_val(char *buf, uint8_t len) {
