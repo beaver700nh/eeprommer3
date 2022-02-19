@@ -16,7 +16,6 @@ void check_packet();
 
 TftCtrl tft;
 TouchCtrl tch(TS_XP, TS_XM, TS_YP, TS_YM, TS_RESIST);
-
 SdCtrl sd(SD_CS, SD_EN);
 
 EepromCtrl ee;
@@ -28,8 +27,8 @@ void setup() {
   delay(1000);
 
   Serial.begin(115200);
-  Serial.println("=== EEPROMMER3 ===");
-  Serial.println("> Starting up... <");
+  Serial.println(F("=== EEPROMMER3 ==="));
+  Serial.println(F("> Starting up... <"));
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
@@ -62,7 +61,7 @@ void setup() {
 
   delete skip_btn;
 
-  Serial.println("Hello, world!");
+  Serial.println(F("Hello, world!"));
   Serial.println();
 
   mainprog();

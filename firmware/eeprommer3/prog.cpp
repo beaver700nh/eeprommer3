@@ -59,10 +59,12 @@ void ProgrammerFromSd::run() {
   uint8_t cur_choice = 0;
 
   while (true) { // Main loop
+    PRINTF_NOBUF(Serial, "Memory: %d\n", Util::get_free_memory());
+
     m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
     show_help(m_tft, cur_choice, false);
     cur_choice = menu.wait_for_value(m_tch, m_tft);
-  
+
     m_tft.fillScreen(TftColor::BLACK);
 
     uint8_t status_code = (cur_choice < NUM_ACTIONS ? (this->*(action_map[cur_choice]))() : 1);

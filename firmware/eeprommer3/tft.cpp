@@ -165,8 +165,6 @@ void TftBtn::draw(TftCtrl &tft) {
   tft.fillRect(m_x, m_y, m_w, m_h, m_bg);
   tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg);
 
-  PRINTF_NOBUF(Serial, "drawing btn at %d, %d\n", m_x, m_y);
-
   draw_highlight(tft);
 }
 
@@ -555,8 +553,6 @@ bool TftChoiceMenu::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, ui
   uint16_t x = m_marg_h + col * (w + m_pad_h);
   uint16_t y = m_marg_v + row * (h + m_pad_v);
 
-  PRINTF_NOBUF(Serial, "add_btn_calc: x %d, y %d, w %d, h %d\n", x, y, w, h);
-
   return add_btn(new TftBtn(x, y, w, h, text, fg, bg));
 }
 
@@ -624,8 +620,8 @@ uint8_t ask_choice(
   else               _cols = 1;
 
   TftChoiceMenu menu(
-    50, 10, 10, 10, _cols,
-    (btn_height > 0 ? btn_height : 24),
+    10, 10, 50, 10, _cols,
+    (btn_height < 0 ? 24 : btn_height), true,
     (initial_choice < 0 ? 0 : initial_choice)
   );
 

@@ -301,7 +301,11 @@ public:
     uint16_t marg_v, uint16_t marg_h
   )
     : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
-    // Empty
+    for (uint8_t i = 0; i < BUF_LEN(); ++i) {
+      m_val[i] = '0';
+    }
+
+    m_val[BUF_LEN()] = '\0';
   }
 
   void update_val(char c) {
