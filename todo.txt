@@ -3,6 +3,7 @@
 
 - FIRMWARE
   - fix misaligned Write Byte button bug
+  - fix return of the read_range() bug
   - make TftStringMenu based off of TftKeyboardMenu
   - make ProgrammerFromSd::calc_hex and calc_chars static
   - rewrite TftHexSelMenu, TftChoiceMenu, TftYesNoMenu to use TftCalc functions
