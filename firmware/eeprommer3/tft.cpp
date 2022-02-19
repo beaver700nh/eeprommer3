@@ -165,6 +165,8 @@ void TftBtn::draw(TftCtrl &tft) {
   tft.fillRect(m_x, m_y, m_w, m_h, m_bg);
   tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg);
 
+  PRINTF_NOBUF(Serial, "drawing btn at %d, %d\n", m_x, m_y);
+
   draw_highlight(tft);
 }
 
@@ -382,7 +384,7 @@ TftKeyboardMenu::TftKeyboardMenu(
   m_val = (char *) malloc(BUF_LEN() * sizeof(char));
   m_val[0] = '\0';
 
-  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * marg_h, pad_h, layout.get_width());
+  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * marg_h + 2 * pad_h, pad_h, layout.get_width());
   uint16_t cell_height = (float) cell_width * btn_height;
 
   for (uint8_t row = 0; row < layout.get_height(); ++row) {
@@ -403,9 +405,6 @@ TftKeyboardMenu::~TftKeyboardMenu() {
 
 void TftKeyboardMenu::update_val(char c) {
   uint8_t len = strlen(m_val);
-
-  SER_DEBUG_PRINT(len, 'd');
-  SER_DEBUG_PRINT(BUF_LEN(), 'd');
 
   if (len >= BUF_LEN()) return;
 
@@ -514,15 +513,14 @@ char TftStringMenu::get_char(uint8_t x, uint8_t y) {
 //////////////////////////////////////
 
 TftChoiceMenu::TftChoiceMenu(
-  uint8_t v_margin, uint8_t h_margin,
-  uint8_t v_padding, uint8_t h_padding,
-  uint8_t num_cols, uint16_t btn_height,
-  uint8_t initial_choice
+  uint8_t pad_v, uint8_t pad_h,
+  uint8_t marg_v, uint8_t marg_h,
+  uint8_t num_cols, float btn_height,
+  bool btn_height_px, uint8_t initial_choice
 )
-  : m_v_margin(v_margin), m_h_margin(h_margin),
-  m_v_padding(v_padding), m_h_padding(h_padding),
-  m_num_cols(num_cols), m_btn_height(btn_height),
-  m_cur_choice(initial_choice) {
+  :
+  m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
+  m_btn_height(btn_height), m_btn_height_px(btn_height_px), m_cur_choice(initial_choice) {
   // Empty
 }
 
@@ -536,6 +534,7 @@ TftChoiceMenu::Callback TftChoiceMenu::get_callback() {
 
 bool TftChoiceMenu::add_btn(TftBtn *btn) {
   bool retval = TftMenu::add_btn(btn);
+
   if (m_num_btns - 1 == m_cur_choice) {
     get_btn(m_num_btns - 1)->highlight(true);
   }
@@ -544,33 +543,27 @@ bool TftChoiceMenu::add_btn(TftBtn *btn) {
 }
 
 bool TftChoiceMenu::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg) {
-  uint16_t x, y, w, h, tx, ty;
-
   uint8_t col = m_num_btns % m_num_cols;
   uint8_t row = m_num_btns / m_num_cols;
 
-  h = m_btn_height;
-  w = (tft.width() - (2 * m_h_margin) - ((m_num_cols - 1) * m_h_padding)) / m_num_cols;
+  uint16_t w = TftCalc::fraction(tft.width() - 2 * m_marg_h + 2 * m_pad_h, m_pad_h, m_num_cols);
+  uint16_t h = (m_btn_height_px ? (uint16_t) m_btn_height : (float) w * m_btn_height);
 
-  x = m_h_margin + col * (w + m_h_padding);
-  y = m_v_margin + row * (h + m_v_padding);
+  uint16_t x = m_marg_h + col * (w + m_pad_h);
+  uint16_t y = m_marg_v + row * (h + m_pad_v);
 
-  tx = (w / 2) - (6 * strlen(text) - 1);
-  ty = (h / 2) - 7;
+  PRINTF_NOBUF(Serial, "add_btn_calc: x %d, y %d, w %d, h %d\n", x, y, w, h);
 
-  return add_btn(new TftBtn(x, y, w, h, tx, ty, text, fg, bg));
+  return add_btn(new TftBtn(x, y, w, h, text, fg, bg));
 }
 
 bool TftChoiceMenu::add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg, uint16_t bg) {
   m_confirm_btn = m_num_btns;
 
-  uint16_t y, w, tx;
+  uint16_t y = TftCalc::bottom(tft, 24, (force_bottom ? 10 : m_marg_v));
+  uint16_t w = TftCalc::fraction_x(tft, m_marg_h, 1);
 
-  y = tft.height() - (force_bottom ? 10 : m_v_margin) - 24;
-  w = tft.width() - (2 * m_h_margin);
-  tx = (w / 2) - 41;
-
-  return add_btn(new TftBtn(m_h_margin, y, w, 24, tx, 5, "Confirm", fg, bg));
+  return add_btn(new TftBtn(m_marg_h, y, w, 24, "Confirm", fg, bg));
 }
 
 uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
@@ -600,11 +593,10 @@ void TftChoiceMenu::update(TftCtrl &tft) {
 
 TftYesNoMenu::TftYesNoMenu(
   TftCtrl &tft,
-  uint8_t v_margin, uint8_t h_margin,
-  uint8_t v_padding, uint8_t h_padding,
+  uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h,
   bool force_bottom, uint8_t initial_choice
 )
-  : TftChoiceMenu(v_margin, h_margin, v_padding, h_padding, 2, 120, initial_choice) {
+  : TftChoiceMenu(pad_v, pad_h, marg_v, marg_h, 2, 0.7, false, initial_choice) {
   add_btn_calc(tft, "Yes", TftColor::BLACK, TftColor::GREEN);
   add_btn_calc(tft, "No",  TftColor::WHITE, TftColor::RED);
   add_btn_confirm(tft, force_bottom);
@@ -672,6 +664,15 @@ void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_
   }
 
   menu.get_val(buf, len);
+}
+
+bool ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t initial_choice) {
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+
+  TftYesNoMenu menu(tft, 10, 10, 50, 10, true, (initial_choice < 0 ? 0 : initial_choice));
+  uint8_t btn_pressed = menu.wait_for_value(tch, tft);
+
+  return btn_pressed == 0;
 }
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {

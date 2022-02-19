@@ -41,7 +41,7 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
 }
 
 void ProgrammerFromSd::run() {
-  TftChoiceMenu menu(50, 10, 10, 10, 2, 30);
+  TftChoiceMenu menu(10, 10, 50, 10, 2, 30, true);
   menu.add_btn_calc(m_tft, "Read Byte",      TftColor::BLUE,           TftColor::CYAN);
   menu.add_btn_calc(m_tft, "Write Byte",     TftColor::RED,            TftColor::PINKK);
   menu.add_btn_calc(m_tft, "Read to File",   TftColor::CYAN,           TftColor::BLUE);
@@ -126,14 +126,10 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_tft.fillScreen(TftColor::BLACK);
 
   // Done writing, ask to verify
-  m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
-
-  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true, 0);
-  uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
-
+  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?");
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (should_verify == 0) {
+  if (should_verify) {
     return verify_byte(addr, data);
   }
 
@@ -219,14 +215,10 @@ uint8_t ProgrammerFromSd::write_vector() {
   m_tft.fillScreen(TftColor::BLACK);
 
   // Done writing, ask to verify
-  m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
-
-  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true, 0);
-  uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
-
+  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?");
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (should_verify == 0) {
+  if (should_verify) {
     return verify_vector(vec.m_addr, new_val);
   }
 
@@ -261,7 +253,7 @@ uint8_t ProgrammerFromSd::read_range() {
   addr2 &= ~0x8000;
 
   // Make sure addr1 <= addr2
-  if (addr2 < addr1) swap<uint16_t>(&addr1, &addr2);
+  if (addr2 < addr1) Util::swap<uint16_t>(&addr1, &addr2);
 
   m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
@@ -445,14 +437,10 @@ uint8_t ProgrammerFromSd::write_multi() {
   m_tft.fillScreen(TftColor::BLACK);
 
   // Done writing, ask to verify
-  m_tft.drawText(10, 10, "Verify data?", TftColor::CYAN, 4);
-
-  TftYesNoMenu vrf_menu(m_tft, 50, 10, 10, 10, true, 0);
-  uint8_t should_verify = vrf_menu.wait_for_value(m_tch, m_tft);
-
+  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?");
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (should_verify == 0) {
+  if (should_verify) {
     return verify_multi(buf);
   }
 

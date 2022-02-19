@@ -3,7 +3,6 @@
 
 - FIRMWARE
   - fix misaligned Write Byte button bug
-  - fix VSCode IntelliC++ bug with A15
   - make TftStringMenu based off of TftKeyboardMenu
   - make ProgrammerFromSd::calc_hex and calc_chars static
   - rewrite TftHexSelMenu, TftChoiceMenu, TftYesNoMenu to use TftCalc functions

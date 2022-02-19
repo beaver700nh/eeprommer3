@@ -302,15 +302,21 @@ public:
   )
     : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
     // Empty
-    for (uint8_t i = 0; i < 16; ++i) {
-      PRINTF_NOBUF(Serial, "%s", get_glob_kbd_hex_layout().get_ptr_char(i, 0));
-    }
-
-    Serial.println();
   }
 
   void update_val(char c) {
-    PRINTF_NOBUF(Serial, "inserting char %02X\n", c);
+    uint8_t len = strlen(m_val);
+
+    if (len >= BUF_LEN()) {
+      for (uint8_t i = 1; i < BUF_LEN(); ++i) {
+        m_val[i - 1] = m_val[i];
+      }
+
+      m_val[BUF_LEN() - 1] = c;
+
+      return;
+    }
+
     TftKeyboardMenu::update_val(c);
   }
 
@@ -340,50 +346,6 @@ public:
     return BIT_WIDTH(T) / 4;
   }
 };
-
-// /*
-//  * TftHexSelMenu is a TftMenu but specialized
-//  * for inputting numbers in hexadecimal.
-//  *
-//  * Type T is an integer type and determines what
-//  * numbers can be inputted.
-//  */
-// template<typename T>
-// class TftHexSelMenu : public TftMenu {
-// public:
-//   TftHexSelMenu(TftCtrl &tft, uint16_t top_margin, uint16_t side_margin) {
-//     const uint16_t cell_margin = 10;
-//     const uint16_t cell_size = (tft.width() - 7 * cell_margin - 2 * side_margin) / 8;
-//     const uint16_t cell_dist = cell_size + cell_margin;
-//     const uint16_t text_margin = (cell_size - 10) / 2;
-
-//     for (uint8_t i = 0x00; i < 0x10; ++i) {
-//       uint16_t x = side_margin + cell_dist * (i % 8);
-//       uint16_t y = (i < 8 ? top_margin : top_margin + cell_size + cell_margin);
-  
-//       add_btn(new TftBtn(x, y, cell_size, cell_size, text_margin, text_margin, STRFMT_NOBUF("%1X", i), TftColor::WHITE, TftColor::BLUE));
-//     }
-//   }
-
-//   void update_val(uint8_t k) {
-//     m_val = (m_val << 4) + k;
-//   }
-
-//   void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t font_size, uint16_t fg, uint16_t bg) {
-//     tft.fillRect(x, y, tft.width() - x, 8 * font_size, bg);
-
-//     char strfmt_buf[50];
-//     sprintf(strfmt_buf, "Val: [%%0%dX]", BIT_WIDTH(T) / 4);
-
-//     tft.drawText(x, y, STRFMT_NOBUF(strfmt_buf, m_val), fg, font_size);
-//   }
-
-//   T    get_val()      { return m_val; }
-//   void set_val(T val) { m_val = val;  }
-
-// private:
-//   T m_val = 0;
-// };
 
 /*
  * TftStringMenu is a TftMenu but specialized
@@ -428,11 +390,10 @@ private:
  */
 class TftChoiceMenu : public TftMenu {
 public:
+  // btn_height_px: true = btn_height uses px, false = multiplied with btn width
   TftChoiceMenu(
-    uint8_t v_margin, uint8_t h_margin,
-    uint8_t v_padding, uint8_t h_padding,
-    uint8_t num_cols, uint16_t btn_height,
-    uint8_t initial_choice = 0
+    uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t num_cols,
+    float btn_height, bool btn_height_px, uint8_t initial_choice = 0
   );
 
   typedef void (*Callback)(TftCtrl &tft, uint8_t btn_id, bool is_confirm);
@@ -448,15 +409,20 @@ public:
   uint8_t wait_for_value(TouchCtrl &tch, TftCtrl &tft);
 
 protected:
-  uint8_t m_v_margin, m_h_margin, m_v_padding, m_h_padding;
-  uint8_t m_num_cols, m_btn_height;
+  uint8_t m_pad_v, m_pad_h;
+  uint8_t m_marg_v, m_marg_h;
+  uint8_t m_num_cols;
+
+  float m_btn_height;
+  bool m_btn_height_px;
+
   uint8_t m_confirm_btn = 0;
   uint8_t m_cur_choice = 0;
   uint8_t m_old_choice = 0;
 
   Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {
-    (void) tft; // Silence unused parameter
-    (void) btn_id; // Silence unused parameter
+    (void) tft;        // Silence unused parameter
+    (void) btn_id;     // Silence unused parameter
     (void) is_confirm; // Silence unused parameter
   };
 };
@@ -471,8 +437,7 @@ class TftYesNoMenu : public TftChoiceMenu {
 public:
   TftYesNoMenu(
     TftCtrl &tft,
-    uint8_t v_margin, uint8_t h_margin,
-    uint8_t v_padding, uint8_t h_padding,
+    uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h,
     bool force_bottom, uint8_t initial_choice = 0
   );
 };
@@ -525,6 +490,12 @@ uint8_t ask_choice(
   int8_t cols, int32_t btn_height, int16_t initial_choice,
   uint8_t num, ...
 );
+
+/*
+ * This is a function to ask the user a
+ * yes or no question.
+ */
+bool ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t initial_choice = -1);
 
 /*
  * This is a helper function to ask the user
