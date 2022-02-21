@@ -126,6 +126,7 @@ TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint
   : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg) {
   //strncpy(m_text, text, 20);
   m_text = text;
+  PRINTF_NOBUF(Serial, "Addr of btn x: %p\n", (void *) &m_x);
 }
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
@@ -379,9 +380,6 @@ TftKeyboardMenu::TftKeyboardMenu(
   TftKeyboardLayout &layout, float btn_height = 1.2
 )
   : m_t_debounce(t_debounce), m_layout(layout) {
-  m_val = (char *) malloc(BUF_LEN() * sizeof(char));
-  m_val[0] = '\0';
-
   uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * marg_h + 2 * pad_h, pad_h, layout.get_width());
   uint16_t cell_height = (float) cell_width * btn_height;
 

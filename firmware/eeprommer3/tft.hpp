@@ -247,10 +247,11 @@ TftKeyboardLayout &get_glob_kbd_hex_layout();
  * use of a keyboard.
  * 
  * THIS IS A BASE CLASS AND CANNOT BE USED
- * DIRECTLY -- SUBCLASS IT FIRST!
+ * DIRECTLY -- USE A SUBCLASS INSTEAD!
  */
 class TftKeyboardMenu : public TftMenu {
 public:
+  // IMPORTANT - Does not initialize internal value string, do not forget to do so
   // height of button = calculated width of button * param btn_height
   TftKeyboardMenu(
     TftCtrl &tft, uint8_t t_debounce,
@@ -301,6 +302,8 @@ public:
     uint16_t marg_v, uint16_t marg_h
   )
     : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
+    m_val = (char *) malloc(BUF_LEN() * sizeof(char));
+
     for (uint8_t i = 0; i < BUF_LEN(); ++i) {
       m_val[i] = '0';
     }
@@ -346,7 +349,7 @@ public:
     return result;
   }
 
-  inline virtual const uint8_t BUF_LEN() {
+  inline virtual const uint8_t BUF_LEN() override {
     return BIT_WIDTH(T) / 4;
   }
 };
