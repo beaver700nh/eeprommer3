@@ -124,9 +124,7 @@ namespace TftCalc {
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)
   : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg) {
-  //strncpy(m_text, text, 20);
   m_text = text;
-  PRINTF_NOBUF(Serial, "Addr of btn x: %p\n", (void *) &m_x);
 }
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
