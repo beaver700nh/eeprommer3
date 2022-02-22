@@ -396,6 +396,9 @@ private:
 /*
  * TftChoiceMenu is a specialized TftMenu to
  * choose one option from a selection of choices.
+ * It also supports having button layouts be
+ * automatically calculated based on the parameters
+ * of padding and margin passed in the constructor.
  */
 class TftChoiceMenu : public TftMenu {
 public:
@@ -418,8 +421,7 @@ public:
   uint8_t wait_for_value(TouchCtrl &tch, TftCtrl &tft);
 
 protected:
-  uint8_t m_pad_v, m_pad_h;
-  uint8_t m_marg_v, m_marg_h;
+  uint8_t m_pad_v, m_pad_h, m_marg_v, m_marg_h;
   uint8_t m_num_cols;
 
   float m_btn_height;

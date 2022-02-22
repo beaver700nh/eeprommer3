@@ -4,7 +4,7 @@
 - FIRMWARE
   - check out sussy malloc thingy in TftStringMenu ctor
   - tweak debug message stuff
-  - rewrite TftHexSelMenu, TftChoiceMenu, TftYesNoMenu to use TftCalc functions
+  - rewrite TftHexSelMenu, TftChoiceMenu, TftYesNoMenu to use TftCalc functions - IN PROGRESS
   - start work on from_serial programmer
 
 - HARDWARE

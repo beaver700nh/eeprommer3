@@ -519,8 +519,7 @@ TftChoiceMenu::TftChoiceMenu(
   uint8_t num_cols, float btn_height,
   bool btn_height_px, uint8_t initial_choice
 )
-  :
-  m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
+  : m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
   m_btn_height(btn_height), m_btn_height_px(btn_height_px), m_cur_choice(initial_choice) {
   // Empty
 }
