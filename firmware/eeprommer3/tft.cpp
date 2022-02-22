@@ -371,13 +371,27 @@ TftKeyboardLayout &get_glob_kbd_hex_layout() {
   return layout;
 }
 
+TftKeyboardLayout &get_glob_kbd_str_layout() {
+  static TftKeyboardLayout layout(
+    (const uint8_t *)
+    "\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\x00\x30\x00\x7e\x00"
+    "\x51\x00\x57\x00\x45\x00\x52\x00\x54\x00\x59\x00\x55\x00\x49\x00\x4f\x00\x50\x00\x11\x00"
+    "\x41\x00\x53\x00\x44\x00\x46\x00\x47\x00\x48\x00\x4a\x00\x4b\x00\x4c\x00\x5f\x00\x2d\x00"
+    "\x7f\x00\x5a\x00\x58\x00\x43\x00\x56\x00\x42\x00\x4e\x00\x4d\x00\xb0\x00\x2c\x00\x2e\x00",
+    44, 11
+  );
+
+  return layout;
+}
+
 TftKeyboardMenu::TftKeyboardMenu(
   TftCtrl &tft, uint8_t t_debounce,
   uint16_t pad_v, uint16_t pad_h,
   uint16_t marg_v, uint16_t marg_h,
   TftKeyboardLayout &layout, float btn_height = 1.2
 )
-  : m_t_debounce(t_debounce), m_layout(layout) {
+  : m_t_debounce(t_debounce), m_layout(layout),
+  m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h) {
   uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * marg_h + 2 * pad_h, pad_h, layout.get_width());
   uint16_t cell_height = (float) cell_width * btn_height;
 
@@ -410,7 +424,7 @@ void TftKeyboardMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len
   tft.fillRect(x, y, tft.width() - x, 8 * size, bg);
 
   char fmt_str[16];
-  sprintf(fmt_str, "[%%%ds]", len);
+  sprintf(fmt_str, "[%%-%d.%ds]", len, len);
   tft.drawText(x, y, STRFMT_NOBUF(fmt_str, m_val), fg, size);
 }
 
@@ -422,39 +436,46 @@ char *TftKeyboardMenu::get_ptr_val() {
   return m_val;
 }
 
-void TftKeyboardMenu::set_val(const char *buf) {
-  strncpy(m_val, buf, BUF_LEN());
+void TftKeyboardMenu::set_val(const char *buf, uint8_t len) {
+  strncpy(m_val, buf, len);
 }
 
-const TftKeyboardLayout &TftKeyboardMenu::get_layout() {
+TftKeyboardLayout &TftKeyboardMenu::get_layout() {
   return m_layout;
 }
 
-////////////////////////////////////////////////////
+TftStringMenu::TftStringMenu(
+  TftCtrl &tft, uint8_t debounce,
+  uint16_t pad_v, uint16_t pad_h,
+  uint16_t marg_v, uint16_t marg_h,
+  uint8_t buf_len
+)
+  : TftKeyboardMenu(tft, debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_str_layout()), m_buf_len(buf_len) {
+  m_val = (char *) malloc((BUF_LEN() + 2) * sizeof(char));
+  m_val[0] = '\0';
+}
 
-TftStringMenu::TftStringMenu(TftCtrl &tft, uint16_t top_margin, uint8_t side_margin, uint8_t padding) {
-  uint8_t layout_rows = LAYOUT_HEIGHT;
-  uint8_t layout_cols = LAYOUT_WIDTH;
+int16_t TftStringMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
+  auto retval = TftMenu::get_pressed(tch, tft);
 
-  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * (side_margin - padding), padding, layout_cols);
-  uint16_t cell_height = (float) cell_width * 1.2;
+  if (retval > 0) {
+    unsigned long t_since_last_press = millis() - m_t_last_press;
 
-  for (uint8_t row = 0; row < layout_rows; ++row) {
-    for (uint8_t col = 0; col < layout_cols; ++col) {
-      uint16_t x = side_margin + col * (cell_width  + padding);
-      uint16_t y = top_margin  + row * (cell_height + padding);
-
-      add_btn(new TftBtn(x, y, cell_width, cell_height, get_ptr_char(col, row), TftColor::WHITE, TftColor::BLUE));
+    if (t_since_last_press > m_t_debounce) {
+      m_t_last_press = millis();
+    }
+    else {
+      return -1; // Ignore press because insufficient elapsed time
     }
   }
 
-  add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue")));
+  return retval;
 }
 
-void TftStringMenu::update_val(char k) {
+void TftStringMenu::update_val(char c) {
   uint8_t len = strlen(m_val);
 
-  switch (k) {
+  switch (c) {
   case '\x7f':
     m_capitalize = true;
     break;
@@ -471,9 +492,10 @@ void TftStringMenu::update_val(char k) {
     break;
 
   default:
-    if (len >= LEN) return;
+    PRINTF_NOBUF(Serial, "len %d", len);
+    if (len >= BUF_LEN()) return;
 
-    m_val[len]     = k;
+    m_val[len]     = capitalize(c);
     m_val[len + 1] = '\0';
 
     m_capitalize = false;
@@ -482,32 +504,14 @@ void TftStringMenu::update_val(char k) {
   }
 }
 
-void TftStringMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t font_size, uint16_t fg, uint16_t bg) {
-  tft.fillRect(x, y, tft.width() - x, 8 * font_size, bg);
-  tft.drawText(x, y, STRFMT_NOBUF("%.*s", len, m_val), fg, font_size);
+char TftStringMenu::capitalize(char c) {
+  if (m_capitalize) {
+    return toupper(c);
+  }
+  else {
+    return tolower(c);
+  }
 }
-
-void TftStringMenu::get_val(char *buf, uint8_t len) {
-  strncpy(buf, m_val, len);
-}
-
-char *TftStringMenu::get_ptr_val() {
-  return m_val;
-}
-
-void TftStringMenu::set_val(const char *buf) {
-  strncpy(m_val, buf, LEN);
-}
-
-const char *const TftStringMenu::get_ptr_char(uint8_t x, uint8_t y) {
-  return LAYOUT + 2 * (y * LAYOUT_WIDTH + x);
-}
-
-char TftStringMenu::get_char(uint8_t x, uint8_t y) {
-  return *get_ptr_char(x, y);
-}
-
-//////////////////////////////////////
 
 TftChoiceMenu::TftChoiceMenu(
   uint8_t pad_v, uint8_t pad_h,
@@ -641,21 +645,20 @@ uint8_t ask_choice(
 void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len) {
   tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
 
-  TftStringMenu menu(tft, 50, 10, 10);
+  TftStringMenu menu(tft, T_DEBOUNCE, 10, 10, 50, 10, len);
   menu.draw(tft);
 
   while (true) { // Loop to get a val
-    menu.show_val(tft, 10, 240, 12, 3, TftColor::ORANGE, TftColor::BLACK);
-    Serial.println(menu.get_ptr_val());
+    menu.show_val(tft, 10, 240, 3, TftColor::ORANGE, TftColor::BLACK);
 
     uint8_t btn_pressed = menu.wait_for_press(tch, tft);
 
     if (btn_pressed == menu.get_num_btns() - 1) break;
 
-    uint8_t cx = btn_pressed % TftStringMenu::LAYOUT_WIDTH;
-    uint8_t cy = btn_pressed / TftStringMenu::LAYOUT_WIDTH;
+    auto w = menu.get_layout().get_width();
+    char ch = menu.get_layout().get_char(btn_pressed % w, btn_pressed / w);
 
-    menu.update_val(TftStringMenu::get_char(cx, cy));
+    menu.update_val(ch);
   }
 
   menu.get_val(buf, len);

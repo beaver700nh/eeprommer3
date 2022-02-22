@@ -239,6 +239,7 @@ private:
 };
 
 TftKeyboardLayout &get_glob_kbd_hex_layout();
+TftKeyboardLayout &get_glob_kbd_str_layout();
 
 /*
  * TftKeyboardMenu is an ABC specialization of
@@ -267,9 +268,9 @@ public:
 
   void get_val(char *buf, uint8_t len);
   char *get_ptr_val();
-  void set_val(const char *buf);
+  void set_val(const char *buf, uint8_t len);
 
-  const TftKeyboardLayout &get_layout();
+  TftKeyboardLayout &get_layout();
 
   // REMEMBER TO OVERRIDE BUFFER LENGTH IN CHILD CLASS!
   inline virtual const uint8_t BUF_LEN() {
@@ -279,10 +280,12 @@ public:
 protected:
   char *m_val;
 
-  unsigned long long m_t_last_press = 0; // TODO
+  unsigned long m_t_last_press = 0;
   uint8_t m_t_debounce;
 
-  const TftKeyboardLayout &m_layout;
+  TftKeyboardLayout &m_layout;
+
+  uint16_t m_pad_v, m_pad_h, m_marg_v, m_marg_h;
 };
 
 /*
@@ -355,40 +358,39 @@ public:
 };
 
 /*
- * TftStringMenu is a TftMenu but specialized
+ * TftStringMenu is a TftKeyboardMenu but specialized
  * for inputting strings.
  */
-class TftStringMenu : public TftMenu {
+class TftStringMenu : public TftKeyboardMenu {
 public:
-  TftStringMenu(TftCtrl &tft, uint16_t top_margin, uint8_t side_margin, uint8_t padding);
-
-  void update_val(char k);
-  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t font_size, uint16_t fg, uint16_t bg);
-
-  void get_val(char *buf, uint8_t len);
-  char *get_ptr_val();
-  void set_val(const char *buf);
-
-  static const char *const get_ptr_char(uint8_t x, uint8_t y);
-  static char get_char(uint8_t x, uint8_t y);
-
-  inline static const uint8_t LEN = 255;
-
-  inline static const uint8_t LAYOUT_WIDTH = 11;
-  inline static const uint8_t LAYOUT_HEIGHT = 4;
-
-  inline static const char *const LAYOUT = (
-    "\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\x00\x30\x00\x7e\x00"
-    "\x51\x00\x57\x00\x45\x00\x52\x00\x54\x00\x59\x00\x55\x00\x49\x00\x4f\x00\x50\x00\x11\x00"
-    "\x41\x00\x53\x00\x44\x00\x46\x00\x47\x00\x48\x00\x4a\x00\x4b\x00\x4c\x00\x5f\x00\x2d\x00"
-    "\x7f\x00\x5a\x00\x58\x00\x43\x00\x56\x00\x42\x00\x4e\x00\x4d\x00\xb0\x00\x2c\x00\x2e\x00"
+  TftStringMenu(
+    TftCtrl &tft, uint8_t debounce,
+    uint16_t pad_v, uint16_t pad_h,
+    uint16_t marg_v, uint16_t marg_h,
+    uint8_t buf_len
   );
 
+  int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
+
+  void update_val(char c);
+
+  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
+    uint8_t char_width = 6 * (size == 0 ? 1 : size); // Prevent divide-by-zero
+    uint8_t maxfit_len = (tft.width() - size - 2 * m_marg_h) / char_width - 2;
+
+    TftKeyboardMenu::show_val(tft, x, y, MIN(maxfit_len, m_buf_len), size, fg, bg);
+  }
+
+  char capitalize(char c);
+
+  inline virtual const uint8_t BUF_LEN() override {
+    return m_buf_len;
+  }
+
 private:
-  char m_val[LEN + 1] = {'\0'};
+  uint8_t m_buf_len;
 
   bool m_capitalize = false;
-  unsigned long long m_t_press;
 };
 
 /*
