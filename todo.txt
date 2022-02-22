@@ -3,7 +3,7 @@
 
 - FIRMWARE
   - check out sussy malloc thingy in TftStringMenu ctor
-  - make ProgrammerFromSd::calc_hex and calc_chars static
+  - tweak debug message stuff
   - rewrite TftHexSelMenu, TftChoiceMenu, TftYesNoMenu to use TftCalc functions
   - start work on from_serial programmer
 

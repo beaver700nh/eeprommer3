@@ -361,7 +361,7 @@ void ProgrammerFromSd::show_page(
 
       // Now we have verified that the position is valid
 
-      (this->*calc)(&byte_offset, byte_as_text, &color, data[idx++]);
+      (*calc)(&byte_offset, byte_as_text, &color, data[idx++]);
 
       uint8_t split_offset = (col < 8 ? 0 : 3);
       uint16_t byte_x = m_tft.width() / 2 - 141 + 18 * col + byte_offset + split_offset;
