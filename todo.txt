@@ -2,9 +2,9 @@
   - add more pictures/icons for window
 
 - FIRMWARE
+  - finish file r/w
   - check out sussy malloc thingy in TftStringMenu ctor
   - tweak debug message stuff
-  - rewrite TftHexSelMenu, TftChoiceMenu, TftYesNoMenu to use TftCalc functions - IN PROGRESS
   - start work on from_serial programmer
 
 - HARDWARE

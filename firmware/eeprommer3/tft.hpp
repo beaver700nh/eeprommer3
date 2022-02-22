@@ -475,14 +475,7 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
     if (btn_pressed == 16) break;
 
     menu.update_val(
-      ([=]() {
-        if (IN_RANGE(btn_pressed, 0, 10)) {
-          return btn_pressed + '0';
-        }
-        else {
-          return btn_pressed + 'A' - 10;
-        }
-      })()
+      (IN_RANGE(btn_pressed, 0, 10) ? btn_pressed + '0' : btn_pressed + 'A' - 10)
     );
   }
 
@@ -504,13 +497,14 @@ uint8_t ask_choice(
 
 /*
  * This is a function to ask the user a
- * yes or no question.
+ * yes or no question, using a TftYesNoMenu.
  */
 bool ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t initial_choice = -1);
 
 /*
  * This is a helper function to ask the user
- * for an arbitrarily-sized string
+ * for an arbitrarily-sized string, using
+ * a TftStringMenu.
  */
 void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len);
 
@@ -525,7 +519,8 @@ void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
 
 /*
  * Quick little function to print the character set of the
- * TFT, to help identify special characters.
+ * TFT, to help identify special characters like arrows for
+ * use in the GUI.
  */
 void tft_print_chars(TftCtrl &tft);
 
