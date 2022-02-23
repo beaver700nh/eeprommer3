@@ -46,10 +46,10 @@ void setup() {
     }
   );
 
-  if      (res == 0) tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
-  else if (res == 1) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
-  else if (res == 2) tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
-  else               tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
+  if      (res == SdCtrl::STATUS_OK)       tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
+  else if (res == SdCtrl::STATUS_DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
+  else if (res == SdCtrl::STATUS_FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
+  else                                     tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
 
   auto t1 = millis();
 

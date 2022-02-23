@@ -155,10 +155,17 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_file() {
-  char buf[100];
-  ask_str(m_tft, m_tch, "Testing:", buf, 12);
-  Serial.println(buf);
-  m_tft.fillScreen(TftColor::BLACK);
+  // char buf[100];
+  // ask_str(m_tft, m_tch, "Testing:", buf, 12);
+  // Serial.println(buf);
+  // m_tft.fillScreen(TftColor::BLACK);
+
+  char buf[25][13];
+  uint8_t num = m_sd.get_files("/", buf, 10);
+
+  for (uint8_t i = 0; i < num; ++i) {
+    PRINTF_NOBUF(Serial, "File #%d: %s\n", i, buf[i]);
+  }
 
   return STATUS_OK;
 }

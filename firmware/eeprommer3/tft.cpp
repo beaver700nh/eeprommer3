@@ -492,7 +492,6 @@ void TftStringMenu::update_val(char c) {
     break;
 
   default:
-    PRINTF_NOBUF(Serial, "len %d", len);
     if (len >= BUF_LEN()) return;
 
     m_val[len]     = capitalize(c);
