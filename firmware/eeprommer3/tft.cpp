@@ -609,29 +609,15 @@ uint8_t ask_choice(
 
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
-  // if      (cols > 0) _cols = cols;
-  // else if (num > 11) _cols = 4;
-  // else if (num >  8) _cols = 3;
-  // else if (num >  5) _cols = 2;
-  // else               _cols = 1;
-
   if (cols < 0) {
     cols = (int8_t) floor(sqrt(num));
 
-    /*
-     * Assuming cols < 0:
-     *
-     * param num...   |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | etc...
-     * ---------------+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+------~
-     * calc'd cols... |  1 |  1 |  1 |  2 |  2 |  2 |  2 |  2 |  3 |  3 |  3 |  3 |  3 |  3 |  3 |  4 | etc...
-     */
+    // param num...   |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | etc...
+    // ---------------+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+------~
+    // calc'd cols... |  1 |  1 |  1 |  2 |  2 |  2 |  2 |  2 |  3 |  3 |  3 |  3 |  3 |  3 |  3 |  4 | etc...
   }
 
-  TftChoiceMenu menu(
-    10, 10, 50, 10, cols,
-    (btn_height < 0 ? 24 : btn_height), true,
-    (initial_choice < 0 ? 0 : initial_choice)
-  );
+  TftChoiceMenu menu(10, 10, 50, 10, cols, (btn_height < 0 ? 24 : btn_height), true, (initial_choice < 0 ? 0 : initial_choice));
 
   while (num --> 0) {
     const char *text  = va_arg(args, const char *);
@@ -643,10 +629,9 @@ uint8_t ask_choice(
 
   menu.add_btn_confirm(tft, true);
 
-  uint8_t val = menu.wait_for_value(tch, tft);
-
   va_end(args);
 
+  uint8_t val = menu.wait_for_value(tch, tft);
   return val;
 }
 
