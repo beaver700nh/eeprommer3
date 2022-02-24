@@ -155,19 +155,42 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_file() {
-  char buf[100];
-  ask_str(m_tft, m_tch, "Testing:", buf, 12);
-  Serial.println(buf);
+  char buf[25][13];
+  uint8_t num = m_sd.get_files("/", buf, 25);
+
+  for (uint8_t i = 0; i < num; ++i) {
+    PRINTF_NOBUF(Serial, "File #%d: %s\n", i, buf[i]);
+  }
+
+  m_tft.drawText(10, 10, "Files:", TftColor::CYAN, 4);
+
+  show_files(buf, num, 50, TftColor::RED, 1);
+
+  wait_continue(m_tft, m_tch);
+
   m_tft.fillScreen(TftColor::BLACK);
 
-  // char buf[25][13];
-  // uint8_t num = m_sd.get_files("/", buf, 10);
-
-  // for (uint8_t i = 0; i < num; ++i) {
-  //   PRINTF_NOBUF(Serial, "File #%d: %s\n", i, buf[i]);
-  // }
-
   return STATUS_OK;
+}
+
+void ProgrammerFromSd::show_files(char (*files)[13], uint8_t num, uint16_t y, uint16_t color, uint8_t size) {
+  uint8_t row_h = 8 * size + 4;
+  uint16_t col_w = 71 * size;
+
+  uint8_t cols = MAX((m_tft.width() - 10) / (col_w + 10), 1);
+
+  PRINTF_NOBUF(Serial, "rh: %d, cw: %d, cols: %d\n", row_h, col_w, cols);
+
+  for (uint8_t i = 0; i < num; ++i) {
+    char *fname = files[i];
+
+    uint16_t _x = (i % cols) * (col_w + 10) + 10;
+    uint16_t _y = (i / cols) * row_h + y;
+
+    PRINTF_NOBUF(Serial, "x: %d, y: %d\n", _x, _y);
+
+    m_tft.drawText(_x, _y, fname, color, size);
+  }
 }
 
 Vector ProgrammerFromSd::ask_vector() {

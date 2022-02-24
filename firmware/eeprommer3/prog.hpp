@@ -65,6 +65,10 @@ public:
   uint8_t write_file();
   uint8_t verify_file(const char *fname, uint16_t addr);
 
+private:
+  void show_files(char (*files)[13], uint8_t num, uint16_t y, uint16_t color, uint8_t size);
+
+public:
   /*** VECTOR IO ***/
 
   uint8_t read_vector();
@@ -80,6 +84,7 @@ public:
   uint8_t write_multi();
   uint8_t verify_multi(AddrDataArray &buf);
 
+private:
   // read_range() helpers
 
   typedef void (*calc_func)(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
@@ -101,6 +106,7 @@ public:
   bool poll_menus_and_react(TftMenu &menu, TftMenu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll);
   void add_pair_from_user(AddrDataArray *buf);
 
+public:
   /*** MISC ***/
 
   uint8_t draw();
