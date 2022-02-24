@@ -255,10 +255,7 @@ public:
   // IMPORTANT - Does not initialize internal value string, do not forget to do so
   // height of button = calculated width of button * param btn_height
   TftKeyboardMenu(
-    TftCtrl &tft, uint8_t t_debounce,
-    uint16_t pad_v, uint16_t pad_h,
-    uint16_t marg_v, uint16_t marg_h,
-    TftKeyboardLayout &layout, float btn_height = 1.2
+    TftCtrl &tft, uint8_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, TftKeyboardLayout &layout, float btn_height = 1.2
   );
 
   ~TftKeyboardMenu();
@@ -299,11 +296,7 @@ template <typename T>
 class TftHexSelMenu : public TftKeyboardMenu {
 public:
   // param val_size: 1 = 8 bits, 2 = 16 bits, etc
-  TftHexSelMenu(
-    TftCtrl &tft, uint8_t t_debounce,
-    uint16_t pad_v, uint16_t pad_h,
-    uint16_t marg_v, uint16_t marg_h
-  )
+  TftHexSelMenu(TftCtrl &tft, uint8_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
     : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
     m_val = (char *) malloc(BUF_LEN() * sizeof(char));
 
@@ -363,12 +356,7 @@ public:
  */
 class TftStringMenu : public TftKeyboardMenu {
 public:
-  TftStringMenu(
-    TftCtrl &tft, uint8_t debounce,
-    uint16_t pad_v, uint16_t pad_h,
-    uint16_t marg_v, uint16_t marg_h,
-    uint8_t buf_len
-  );
+  TftStringMenu(TftCtrl &tft, uint8_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
 
   int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
 
@@ -447,9 +435,7 @@ protected:
 class TftYesNoMenu : public TftChoiceMenu {
 public:
   TftYesNoMenu(
-    TftCtrl &tft,
-    uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h,
-    bool force_bottom, uint8_t initial_choice = 0
+    TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice = 0
   );
 };
 
@@ -490,9 +476,7 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
  * that you provide a valid `num`.
  */
 uint8_t ask_choice(
-  TftCtrl &tft, TouchCtrl &tch, const char *prompt,
-  int8_t cols, int32_t btn_height, int16_t initial_choice,
-  uint8_t num, ...
+  TftCtrl &tft, TouchCtrl &tch, const char *prompt, int8_t cols, int32_t btn_height, int16_t initial_choice, uint8_t num, ...
 );
 
 /*

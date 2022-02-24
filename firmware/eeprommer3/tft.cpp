@@ -600,9 +600,7 @@ TftYesNoMenu::TftYesNoMenu(
 }
 
 uint8_t ask_choice(
-  TftCtrl &tft, TouchCtrl &tch, const char *prompt,
-  int8_t cols, int32_t btn_height, int16_t initial_choice,
-  uint8_t num, ...
+  TftCtrl &tft, TouchCtrl &tch, const char *prompt, int8_t cols, int32_t btn_height, int16_t initial_choice, uint8_t num, ...
 ) {
   va_list args;
   va_start(args, num);
