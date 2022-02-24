@@ -3,7 +3,6 @@
 
 - FIRMWARE
   - finish file r/w
-  - check out sussy malloc thingy in TftStringMenu ctor
   - tweak debug message stuff
   - start work on from_serial programmer
 

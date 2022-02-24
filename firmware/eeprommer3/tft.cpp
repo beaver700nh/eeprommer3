@@ -429,7 +429,7 @@ void TftKeyboardMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len
 }
 
 void TftKeyboardMenu::get_val(char *buf, uint8_t len) {
-  strncpy(buf, m_val, len);
+  strncpy(buf, m_val, len + 1);
 }
 
 char *TftKeyboardMenu::get_ptr_val() {
@@ -451,7 +451,7 @@ TftStringMenu::TftStringMenu(
   uint8_t buf_len
 )
   : TftKeyboardMenu(tft, debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_str_layout()), m_buf_len(buf_len) {
-  m_val = (char *) malloc((BUF_LEN() + 2) * sizeof(char));
+  m_val = (char *) malloc((BUF_LEN() + 1) * sizeof(char));
   m_val[0] = '\0';
 }
 
@@ -496,6 +496,8 @@ void TftStringMenu::update_val(char c) {
 
     m_val[len]     = capitalize(c);
     m_val[len + 1] = '\0';
+
+    Serial.println(m_val);
 
     m_capitalize = false;
 
