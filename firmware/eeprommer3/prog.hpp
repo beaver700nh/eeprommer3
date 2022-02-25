@@ -66,7 +66,14 @@ public:
   uint8_t verify_file(const char *fname, uint16_t addr);
 
 private:
+  // read_file() helpers
+
+  TftChoiceMenu *create_fname_menu(TftCtrl &tft, uint8_t *rows, uint8_t *cols);
+  void update_fname_menu(TftMenu *menu, char (*files)[13], uint8_t num);
+
+#ifdef DEBUG_MODE
   void show_files(char (*files)[13], uint8_t num, uint16_t y, uint16_t color, uint8_t size);
+#endif
 
 public:
   /*** VECTOR IO ***/

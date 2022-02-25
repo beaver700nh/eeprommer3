@@ -35,6 +35,7 @@
 #undef TFT_PINK
 
 // Makes specifying TFT colors easier
+// Note: adjusted for my personal TFT - might need tweaking to work with others
 namespace TftColor {
   enum : uint16_t {
     RED     = 0xF800,
@@ -116,67 +117,101 @@ class TouchCtrl;
  */
 class TftBtn {
 public:
+  // Default constructor; does nothing.
   TftBtn() {};
+
+  // Full constructor.
   TftBtn(
     uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty,
     const char *text, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
+  // Partial constructor, enables auto centering eliminating need for tx and ty.
   TftBtn(
     uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text,
     uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
-  uint16_t get_x();
-  void     set_x(uint16_t x);
-  uint16_t get_y();
-  void     set_y(uint16_t y);
+  inline uint8_t calc_center_x() { return TftCalc::t_center_x(m_w, m_text, m_font_size); }
+  inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size);         }
 
-  uint16_t get_w();
-  void     set_w(uint16_t w);
-  uint16_t get_h();
-  void     set_h(uint16_t h);
+  inline uint16_t get_x()           { return m_x; }
+  inline void     set_x(uint16_t x) { m_x = x;    }
+  inline uint16_t get_y()           { return m_y; }
+  inline void     set_y(uint16_t y) { m_y = y;    }
 
-  uint16_t get_tx();
-  void     set_tx(uint16_t tx);
-  uint16_t get_ty();
-  void     set_ty(uint16_t ty);
+  inline uint16_t get_w()           { return m_w; }
+  inline void     set_w(uint16_t w) { m_w = w;    }
+  inline uint16_t get_h()           { return m_h; }
+  inline void     set_h(uint16_t h) { m_h = h;    }
 
-  uint16_t get_fg();
-  void     set_fg(uint16_t fg);
-  uint16_t get_bg();
-  void     set_bg(uint16_t bg);
+  inline uint16_t get_tx()            { return m_tx;                      }
+  inline void     set_tx(uint16_t tx) { m_tx = tx; m_auto_center = false; }
+  inline uint16_t get_ty()            { return m_ty;                      }
+  inline void     set_ty(uint16_t ty) { m_ty = ty; m_auto_center = false; }
 
-  const char *get_text();
-  void        set_text(const char *text);
+  inline uint16_t get_fg()            { return m_fg; }
+  inline void     set_fg(uint16_t fg) { m_fg = fg;   }
+  inline uint16_t get_bg()            { return m_bg; }
+  inline void     set_bg(uint16_t bg) { m_bg = bg;   }
+
+  inline uint8_t get_font_size()                  { return m_font_size; }
+  inline void    set_font_size(uint8_t font_size) {
+    m_font_size = font_size;
+    auto_center();
+  }
+
+  inline const char *get_text()                 { return m_text; }
+  inline void        set_text(const char *text) {
+    m_text = text;
+    auto_center();
+  }
 
   void draw(TftCtrl &tft);
   void erase(TftCtrl &tft);
   void draw_highlight(TftCtrl &tft);
 
   // Controls whether a yellow outline appears around the button.
-  void highlight(bool highlight);
-  // Default is unhighlighted.
-  bool is_highlighted();
+  inline void highlight(bool highlight) { m_is_highlighted = highlight; }
+  // Default is false/unhighlighted.
+  inline bool is_highlighted() { return m_is_highlighted; }
 
   // Controls whether the button is visible.
-  void visibility(bool invisibility);
-  // Default is true.
-  bool is_visible();
+  inline void visibility(bool visibility) { m_is_visible = visibility; }
+  // Default is true/visible.
+  inline bool is_visible() { return m_is_visible; }
 
   // Controls whether the button responds to presses.
-  void operation(bool operation);
-  // Default is true.
-  bool is_operational();
+  inline void operation(bool operation) { m_is_operational = operation; }
+  // Default is true/operational.
+  inline bool is_operational() { return m_is_operational; }
 
+  // Controls whether the button automatically centers text. Only call this to override auto detection.
+  inline void auto_centering(bool auto_center) { m_auto_center = auto_center; }
+  // Default is false / manual centering; if constructed without tx/ty parameters, default is true / auto centering.
+  inline bool is_auto_centering() { return m_auto_center; }
+
+  // Sets tx and ty to position text at center of button, but only if in auto_center mode.
+  inline void auto_center() {
+    if (!m_auto_center) return;
+
+    m_tx = calc_center_x();
+    m_ty = calc_center_y();
+  }
+
+  // Wait for a press within the boundaries of the button (x to x+w, y to y+h).
   void wait_for_press(TouchCtrl &tch, TftCtrl &tft);
+  // Test if button is being pressed (x to x+w, y to y+h).
   bool is_pressed(TouchCtrl &tch, TftCtrl &tft);
 
 private:
+  uint8_t m_font_size = 2;
   uint16_t m_x, m_y;
   uint16_t m_w, m_h;
   uint16_t m_tx, m_ty;
   uint16_t m_fg, m_bg;
+
+  bool m_auto_center = false;
 
   bool m_is_highlighted = false;
   bool m_was_highlighted = false;

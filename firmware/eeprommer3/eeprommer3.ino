@@ -21,7 +21,7 @@ SdCtrl sd(SD_CS, SD_EN);
 EepromCtrl ee;
 
 // Made global to allow capturing by lambdas; is destroyed inside setup()
-TftBtn *skip_btn = new TftBtn(80, 273, 320, 24, 137, 5, "Skip", TftColor::WHITE, TftColor::DGREEN);
+TftBtn *skip_btn = new TftBtn(80, 273, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
 
 void setup() {
   delay(1000);

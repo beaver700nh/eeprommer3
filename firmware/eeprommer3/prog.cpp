@@ -164,15 +164,56 @@ uint8_t ProgrammerFromSd::read_file() {
 
   m_tft.drawText(10, 10, "Files:", TftColor::CYAN, 4);
 
-  show_files(buf, num, 50, TftColor::RED, 1);
+  uint8_t rows, cols;
+  TftChoiceMenu *menu = create_fname_menu(m_tft, &rows, &cols);
 
-  wait_continue(m_tft, m_tch);
+  update_fname_menu(menu, buf, num);
+
+  Serial.println(buf[menu->wait_for_value(m_tch, m_tft)]);
 
   m_tft.fillScreen(TftColor::BLACK);
+
+  delete menu;
 
   return STATUS_OK;
 }
 
+TftChoiceMenu *ProgrammerFromSd::create_fname_menu(TftCtrl &tft, uint8_t *rows, uint8_t *cols) {
+  *rows = 8;
+  *cols = MAX((m_tft.width() - 10) / (73 + 10), 1);
+
+  auto *menu = new TftChoiceMenu(10, 10, 50, 10, *cols, 18, true);
+
+  for (uint8_t j = 0; j < *rows; ++j) {
+    for (uint8_t i = 0; i < *cols; ++i) {
+      menu->add_btn_calc(m_tft, "", TftColor::BLACK, TftColor::WHITE);
+      menu->get_btn(menu->get_num_btns() - 1)->set_font_size(1);
+    }
+  }
+
+  menu->add_btn_confirm(m_tft, true);
+
+  return menu;
+}
+
+void ProgrammerFromSd::update_fname_menu(TftMenu *menu, char (*files)[13], uint8_t num) {
+  uint8_t i;
+
+  // Update and enable all the needed buttons.
+  for (i = 0; i < num; ++i) {
+    menu->get_btn(i)->visibility(true);
+    menu->get_btn(i)->operation(true);
+    menu->get_btn(i)->set_text(files[i]);
+  }
+
+  // Disable everything else except `Confirm` button.
+  for (/* no init clause */; i < menu->get_num_btns() - 1; ++i) {
+    menu->get_btn(i)->visibility(false);
+    menu->get_btn(i)->operation(false);
+  }
+}
+
+#ifdef DEBUG_MODE
 void ProgrammerFromSd::show_files(char (*files)[13], uint8_t num, uint16_t y, uint16_t color, uint8_t size) {
   uint8_t row_h = 8 * size + 4;
   uint16_t col_w = 71 * size;
@@ -192,6 +233,7 @@ void ProgrammerFromSd::show_files(char (*files)[13], uint8_t num, uint16_t y, ui
     m_tft.drawText(_x, _y, fname, color, size);
   }
 }
+#endif
 
 Vector ProgrammerFromSd::ask_vector() {
   return Vector(

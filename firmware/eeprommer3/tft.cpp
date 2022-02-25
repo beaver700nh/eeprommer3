@@ -128,32 +128,10 @@ TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint
 }
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
-  : TftBtn(x, y, w, h, TftCalc::t_center_x(w, text, 2), TftCalc::t_center_y(h, 2), text, fg, bg) {
-  // Empty because all work delegated to other ctor
+  : TftBtn(x, y, w, h, 0, 0, text, fg, bg) { // Passes tx/ty as (0, 0) temporarily
+  m_auto_center = true;
+  auto_center(); // Overwrites dummy ((0, 0) tx/ty with real center
 }
-
-uint16_t TftBtn::get_x()           { return m_x; }
-void     TftBtn::set_x(uint16_t x) { m_x = x;    }
-uint16_t TftBtn::get_y()           { return m_y; }
-void     TftBtn::set_y(uint16_t y) { m_y = y;    }
-
-uint16_t TftBtn::get_w()           { return m_w; }
-void     TftBtn::set_w(uint16_t w) { m_w = w;    }
-uint16_t TftBtn::get_h()           { return m_h; }
-void     TftBtn::set_h(uint16_t h) { m_h = h;    }
-
-uint16_t TftBtn::get_tx()            { return m_tx; }
-void     TftBtn::set_tx(uint16_t tx) { m_tx = tx;   }
-uint16_t TftBtn::get_ty()            { return m_ty; }
-void     TftBtn::set_ty(uint16_t ty) { m_ty = ty;   }
-
-uint16_t TftBtn::get_fg()            { return m_fg; }
-void     TftBtn::set_fg(uint16_t fg) { m_fg = fg;   }
-uint16_t TftBtn::get_bg()            { return m_bg; }
-void     TftBtn::set_bg(uint16_t bg) { m_bg = bg;   }
-
-const char *TftBtn::get_text()                 { return m_text; }
-void        TftBtn::set_text(const char *text) { m_text = text; }
 
 void TftBtn::draw(TftCtrl &tft) {
   m_was_highlighted = m_is_highlighted;
@@ -162,7 +140,7 @@ void TftBtn::draw(TftCtrl &tft) {
   if (!m_is_visible) return; // If it is invisible, there is nothing to draw.
 
   tft.fillRect(m_x, m_y, m_w, m_h, m_bg);
-  tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg);
+  tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg, m_font_size);
 
   draw_highlight(tft);
 }
@@ -184,30 +162,6 @@ void TftBtn::draw_highlight(TftCtrl &tft) {
   tft.drawRect(m_x - 1, m_y - 1, m_w + 2, m_h + 2, color);
   tft.drawRect(m_x - 2, m_y - 2, m_w + 4, m_h + 4, color);
   tft.drawRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, color);
-}
-
-void TftBtn::highlight(bool highlight) {
-  m_is_highlighted = highlight;
-}
-
-bool TftBtn::is_highlighted() {
-  return m_is_highlighted;
-}
-
-void TftBtn::visibility(bool visibility) {
-  m_is_visible = visibility;
-}
-
-bool TftBtn::is_visible() {
-  return m_is_visible;
-}
-
-void TftBtn::operation(bool operation) {
-  m_is_operational = operation;
-}
-
-bool TftBtn::is_operational() {
-  return m_is_operational;
 }
 
 void TftBtn::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
