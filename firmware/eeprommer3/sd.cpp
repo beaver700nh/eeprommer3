@@ -60,3 +60,11 @@ uint8_t SdCtrl::get_files(const char *dir, char (*out)[13], uint8_t num) {
 
   return file_num;
 }
+
+bool SdCtrl::is_directory(const char *file) {
+  File f = SD.open(file);
+  bool is_dir = f.isDirectory();
+  f.close();
+
+  return is_dir;
+}

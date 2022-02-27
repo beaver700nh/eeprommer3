@@ -68,12 +68,23 @@ public:
 private:
   // read_file() helpers
 
-  TftChoiceMenu *create_fname_menu(TftCtrl &tft, uint8_t *rows, uint8_t *cols);
-  void update_fname_menu(TftMenu *menu, char (*files)[13], uint8_t num);
+  // Status type returned by ask_file()
+  enum AskFileStatus {FILE_STATUS_OK, FILE_STATUS_CANCELED, FILE_STATUS_FNAME_TOO_LONG};
 
-#ifdef DEBUG_MODE
-  void show_files(char (*files)[13], uint8_t num, uint16_t y, uint16_t color, uint8_t size);
-#endif
+  AskFileStatus ask_file(char *out, uint8_t len);
+
+  // Changes `path` to the path `path`/.., assumes `path` ends in '/'.
+  // Returns false if `path` is the root directory or is empty, true otherwise.
+  bool go_up_dir(char *path);
+  // Changes `path` to the path `path`/`file` where `file` is not a directory; resulting path not checked for existence.
+  // Returns false if resulting path is `len` characters or longer, true otherwise.
+  bool go_down_file(char *path, const char *file, uint8_t len);
+  // Changes `path` to the path `path`/`dir` where `dir` is a directory; resulting path not checked for existence.
+  // Returns false if resulting path is `len` characters or longer, true otherwise.
+  bool go_down_dir(char *path, const char *dir, uint8_t len);
+
+  TftChoiceMenu *create_fname_menu(TftCtrl &tft, uint8_t rows, uint8_t cols);
+  void update_fname_menu(TftMenu *menu, char (*files)[13], uint8_t num);
 
 public:
   /*** VECTOR IO ***/
@@ -82,9 +93,13 @@ public:
   uint8_t write_vector();
   uint8_t verify_vector(uint16_t addr, uint16_t data);
 
+private:
+  // read/write_vector() helper
+
   // Function to ask the user to select a 6502 jump vector
   Vector ask_vector();
 
+public:
   /*** MULTIPLE IO ***/
 
   uint8_t read_range();
@@ -137,7 +152,7 @@ public:
    * Enum of status codes returned from functions of
    * the type `ProgrammerFromSd::*action_func`
    */
-  enum ActionFuncStatus { STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY };
+  enum ActionFuncStatus {STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY};
 
 private:
   EepromCtrl &m_ee;
