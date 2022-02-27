@@ -155,8 +155,8 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_file() {
-  char fname[13];
-  auto status = ask_file(fname, 12);
+  char fname[101];
+  auto status = ask_file(m_tft, m_tch, m_sd, fname, 100);
 
   switch (status) {
   case FILE_STATUS_OK:
@@ -175,138 +175,6 @@ uint8_t ProgrammerFromSd::read_file() {
   m_tft.fillScreen(TftColor::BLACK);
 
   return STATUS_OK;
-}
-
-ProgrammerFromSd::AskFileStatus ProgrammerFromSd::ask_file(char *out, uint8_t len) {
-  AskFileStatus status = FILE_STATUS_OK;
-
-  const uint8_t rows = 8, cols = MAX((m_tft.width() - 10) / (73 + 10), 1), max_files = rows * cols;
-  char cur_dir[len + 1] = "/";
-  char files[max_files][13];
-
-  m_tft.drawText(10, 10, "Files:", TftColor::CYAN, 4);
-  TftChoiceMenu *menu = create_fname_menu(m_tft, rows, cols);
-
-  while (true) {
-    uint8_t num = m_sd.get_files(cur_dir, files, max_files);
-    update_fname_menu(menu, files, num);
-
-    auto val = menu->wait_for_value(m_tch, m_tft);
-
-    if (val == menu->get_num_btns() - 2) {
-      status = FILE_STATUS_CANCELED;
-      break;
-    }
-    else if (val == menu->get_num_btns() - 3) {
-      go_up_dir(cur_dir);
-      continue;
-    }
-
-    // User selected a file, not a control button
-
-    char *fname = files[val];
-
-    if (m_sd.is_directory(fname)) {
-      if (go_down_dir(cur_dir, fname, len)) {
-        continue;
-      }
-
-      status = FILE_STATUS_FNAME_TOO_LONG;
-      break;
-    }
-
-    if (!go_down_file(out, fname, len)) {
-      status = FILE_STATUS_FNAME_TOO_LONG;
-    }
-
-    break;
-  }
-
-  delete menu;
-  return status;
-}
-
-bool ProgrammerFromSd::go_up_dir(char *path) {
-  if (strlen(path) == 0) return false;
-
-  char *_path = strdup(path);
-  char *end = _path + strlen(_path);
-
-  // Remove trailing '/' from copy of `path`
-  *(end - 1) = '\0';
-
-  char *new_end = strrchr(_path, '/');
-
-  if (new_end == nullptr) {
-    // `path` was nothing but a slash, there is nothing to go up into
-    return false;
-  }
-
-  memset(_path, '\0', end - new_end - 2);
-  strcpy(path, _path);
-  free(_path);
-
-  // Success
-  return true;
-}
-
-bool ProgrammerFromSd::go_down_file(char *path, const char *file, uint8_t len) {
-  if (strlen(path) + strlen(file) >= len) {
-    // Doesn't fit, fail
-    return false;
-  }
-
-  strcat(path, file);
-  return true;
-}
-
-bool ProgrammerFromSd::go_down_dir(char *path, const char *dir, uint8_t len) {
-  auto *temp = (char *) malloc((strlen(dir) + 1) * sizeof(char));
-  strcpy(temp, dir);
-  strcat(temp, "/");
-
-  // Delegates to go_down_file but passes `dir` with a trailing slash
-  bool result = go_down_file(path, temp, len);
-
-  free(temp);
-
-  return result;
-}
-
-TftChoiceMenu *ProgrammerFromSd::create_fname_menu(TftCtrl &tft, uint8_t rows, uint8_t cols) {
-  auto *menu = new TftChoiceMenu(6, 6, 50, 10, cols, 18, true);
-
-  for (uint8_t j = 0; j < rows; ++j) {
-    for (uint8_t i = 0; i < cols; ++i) {
-      menu->add_btn_calc(m_tft, "", TftColor::BLACK, TftColor::WHITE);
-      menu->get_btn(menu->get_num_btns() - 1)->set_font_size(1);
-    }
-  }
-
-  uint16_t _y = TftCalc::bottom(tft, 24, 44), _w = TftCalc::fraction_x(tft, 10, 2);
-
-  menu->add_btn(new TftBtn(10,      _y, _w, 24, "Parent Dir"));
-  menu->add_btn(new TftBtn(20 + _w, _y, _w, 24, "Cancel"));
-  menu->add_btn_confirm(m_tft, true);
-
-  return menu;
-}
-
-void ProgrammerFromSd::update_fname_menu(TftMenu *menu, char (*files)[13], uint8_t num) {
-  uint8_t i;
-
-  // Update and enable all the needed buttons.
-  for (i = 0; i < num; ++i) {
-    menu->get_btn(i)->visibility(true);
-    menu->get_btn(i)->operation(true);
-    menu->get_btn(i)->set_text(files[i]);
-  }
-
-  // Disable everything else except `Confirm` button.
-  for (/* no init clause */; i < menu->get_num_btns() - 3; ++i) {
-    menu->get_btn(i)->visibility(false);
-    menu->get_btn(i)->operation(false);
-  }
 }
 
 Vector ProgrammerFromSd::ask_vector() {

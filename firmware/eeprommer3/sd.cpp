@@ -3,6 +3,8 @@
 
 #include <SD.h>
 
+#include "file.hpp"
+
 #include "sd.hpp"
 
 SdCtrl::SdCtrl(uint8_t cs, int8_t en)
@@ -43,7 +45,7 @@ bool SdCtrl::is_enabled() {
   return m_enabled;
 }
 
-uint8_t SdCtrl::get_files(const char *dir, char (*out)[13], uint8_t num) {
+uint8_t SdCtrl::get_files(const char *dir, FileInfo *out, uint8_t num) {
   File root = SD.open(dir);
   File file;
 
@@ -52,7 +54,12 @@ uint8_t SdCtrl::get_files(const char *dir, char (*out)[13], uint8_t num) {
   while ((file = root.openNextFile())) {
     if (file_num >= num) break;
 
-    strcpy(out[file_num++], file.name());
+    auto this_file = out + file_num;
+
+    strcpy(this_file->name, file.name());
+    this_file->is_dir = file.isDirectory();
+
+    ++file_num;
   }
 
   file.close();

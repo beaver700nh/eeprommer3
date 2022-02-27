@@ -1,0 +1,13 @@
+#ifndef <%upper_name%>_HPP
+#define <%upper_name%>_HPP
+
+#include <Arduino.h>
+#include "constants.hpp"
+
+// Include 3rd-party libraries here
+
+// Include other files here
+
+// Code goes here
+
+#endif

@@ -68,21 +68,6 @@ public:
 private:
   // read_file() helpers
 
-  // Status type returned by ask_file()
-  enum AskFileStatus {FILE_STATUS_OK, FILE_STATUS_CANCELED, FILE_STATUS_FNAME_TOO_LONG};
-
-  AskFileStatus ask_file(char *out, uint8_t len);
-
-  // Changes `path` to the path `path`/.., assumes `path` ends in '/'.
-  // Returns false if `path` is the root directory or is empty, true otherwise.
-  bool go_up_dir(char *path);
-  // Changes `path` to the path `path`/`file` where `file` is not a directory; resulting path not checked for existence.
-  // Returns false if resulting path is `len` characters or longer, true otherwise.
-  bool go_down_file(char *path, const char *file, uint8_t len);
-  // Changes `path` to the path `path`/`dir` where `dir` is a directory; resulting path not checked for existence.
-  // Returns false if resulting path is `len` characters or longer, true otherwise.
-  bool go_down_dir(char *path, const char *dir, uint8_t len);
-
   TftChoiceMenu *create_fname_menu(TftCtrl &tft, uint8_t rows, uint8_t cols);
   void update_fname_menu(TftMenu *menu, char (*files)[13], uint8_t num);
 

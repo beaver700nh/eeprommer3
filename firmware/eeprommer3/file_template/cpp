@@ -1,0 +1,10 @@
+#include <Arduino.h>
+#include "constants.hpp"
+
+// Include 3rd-party libraries here
+
+// Include other files here
+
+#include "<%name%>.hpp"
+
+// Code goes here
