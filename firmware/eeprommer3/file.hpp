@@ -30,18 +30,19 @@ class TftChoiceMenu;
 class TftFileSelMenu : public TftChoiceMenu {
 public:
   TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols);
-
-  void update(TftCtrl &tft);
+  ~TftFileSelMenu();
 
   void use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files);
 
   AskFileStatus wait_for_value(TouchCtrl &tch, TftCtrl &tft, char *file_path, uint8_t max_path_len);
 
 private:
+  // The smaller of the supplied `cols` and the maximum number of cols that will fit
   inline uint8_t calc_num_cols(TftCtrl &tft, uint8_t cols) {
     return MIN(cols, MAX((tft.width() - 10) / (73 + 10), 1));
   }
 
+  // 1/`rows` of the allotted vertical space, constrained to at least 16
   inline uint8_t calc_btn_height(TftCtrl &tft, uint8_t rows) {
     return MAX(16, TftCalc::fraction_y(tft, m_marg_v, rows));
   }

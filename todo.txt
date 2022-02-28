@@ -2,9 +2,9 @@
   - add more pictures/icons for window
 
 - FIRMWARE
+  - finish TftFileSelMenu, write docs
   - finish file r/w
   - better switch/case in StringMenu
-  - get rid of free memory
   - tweak debug message stuff
   - start work on from_serial programmer
 
