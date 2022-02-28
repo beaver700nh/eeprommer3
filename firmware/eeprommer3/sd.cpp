@@ -49,9 +49,12 @@ uint8_t SdCtrl::get_files(const char *dir, FileInfo *out, uint8_t num) {
   File root = SD.open(dir);
   File file;
 
+  PRINTF_NOBUF(Serial, "sd num: %d\n", num);
+
   uint8_t file_num = 0;
 
   while ((file = root.openNextFile())) {
+    PRINTF_NOBUF(Serial, "sd file_num: %d\n", file_num);
     if (file_num >= num) break;
 
     auto this_file = out + file_num;
@@ -63,6 +66,8 @@ uint8_t SdCtrl::get_files(const char *dir, FileInfo *out, uint8_t num) {
   }
 
   file.close();
+
+  root.rewindDirectory();
   root.close();
 
   return file_num;
