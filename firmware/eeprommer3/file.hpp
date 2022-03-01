@@ -7,6 +7,15 @@
 #include "tft.hpp"
 #include "sd.hpp"
 
+// Fwd decls just in case (circular dependencies)
+class TftCtrl;
+class TouchCtrl;
+class SdCtrl;
+
+/*
+ * Simple little helper struct to store name of
+ * file and whether it is a directory.
+ */
 struct FileInfo {
   char name[13];
   bool is_dir;
@@ -15,29 +24,45 @@ struct FileInfo {
 // Status type returned by ask_file()
 enum AskFileStatus {FILE_STATUS_OK, FILE_STATUS_CANCELED, FILE_STATUS_FNAME_TOO_LONG};
 
-class TftCtrl;
-class TouchCtrl;
-class SdCtrl;
-
 // Ask user to select a file on SD card. Writes path into `out`.
 // Return FILE_STATUS_FNAME_TOO_LONG if path is `len` chars or longer.
 // Return FILE_STATUS_CANCELED is user presses "Cancel" button.
 // Return FILE_STATUS_OK if everything goes smoothly.
 AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len);
 
+// Another fwd decl just in case
 class TftChoiceMenu;
 
+/*
+ * Yet another TftXXXMenu, this one to ask user
+ * to select a file from an SD card. Inherits from
+ * TftChoiceMenu.
+ */
 class TftFileSelMenu : public TftChoiceMenu {
 public:
   TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols);
   ~TftFileSelMenu();
 
+  /*
+   * Sets internal files buffer to the files in directory
+   * `path` on `sd`. Reads at most `max_files` files from
+   * directory.
+   */
   void use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files);
 
+  /* Waits for user to select a file.
+   *
+   * Returns FILE_STATUS_CANCELED if user pressed `Cancel` button.
+   * Returns FILE_STATUS_FNAME_TOO_LONG if resulting path is
+   * `max_path_len` chars or longer.
+   *
+   * If all conditions are met, return FILE_STATUS_OK and sets
+   * `file_path` to the path to the file which the user selected.
+   */
   AskFileStatus wait_for_value(TouchCtrl &tch, TftCtrl &tft, char *file_path, uint8_t max_path_len);
 
 private:
-  // The smaller of the supplied `cols` and the maximum number of cols that will fit
+  // The supplied `cols` or the maximum number of cols that will fit, whichever is smaller
   inline uint8_t calc_num_cols(TftCtrl &tft, uint8_t cols) {
     return MIN(cols, MAX((tft.width() - 10) / (73 + 10), 1));
   }

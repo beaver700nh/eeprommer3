@@ -6,52 +6,16 @@
 
 #include "file.hpp"
 
-AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len) { // NOT FINISHED BUT I HAVE TO STOP
-  // AskFileStatus status = FILE_STATUS_OK;
+AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len) {
+  const uint8_t rows = 8, cols = 6, max_files = rows * cols;
 
-  // const uint8_t rows = 8, cols = 6, max_files = rows * cols;
+  tft.drawText(10, 10, "Files:", TftColor::CYAN, 4);
 
-  // tft.drawText(10, 10, "Files:", TftColor::CYAN, 4);
+  TftFileSelMenu menu(tft, 10, 10, 50, 10, rows, cols);
 
-  // TftFileSelMenu menu(tft, 10, 10, 50, 10, rows, cols);
+  menu.use_files_in_dir(sd, "/", max_files);
 
-  // while (true) {
-  //   menu.use_files_in_dir(sd, )
-
-  //   tft.fillRect(10, 50, tft.width() - 20, tft.height() - 50, TftColor::BLACK);
-  //   auto val = menu->wait_for_value(tch, tft);
-
-  //   if (val == menu->get_num_btns() - 2) {
-  //     status = FILE_STATUS_CANCELED;
-  //     break;
-  //   }
-  //   else if (val == menu->get_num_btns() - 3) {
-  //     FileUtil::go_up_dir(cur_path);
-  //     continue;
-  //   }
-
-  //   // User selected a file, not a control button
-
-  //   PRINTF_NOBUF(Serial, "Info:\n\tcur_path: %s,\n\tfname: %s\n", cur_path, files[val].name);
-
-  //   if (!FileUtil::go_down_path(cur_path, files + val, len)) {
-  //     status = FILE_STATUS_FNAME_TOO_LONG;
-  //   }
-
-  //   // If the file was a regular file, user has selected the needed file, done
-  //   if (!files[val].is_dir) {
-  //     strncpy(out, cur_path, len);
-  //     break;
-  //   }
-  }
-
-  Serial.println("Got here!");
-  delete menu;
-  Serial.println("Got here!");
-  free(files);
-  Serial.println("Got here!");
-
-  return status;
+  return menu.wait_for_value(tch, tft, out, len);
 }
 
 TftFileSelMenu::TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
@@ -104,6 +68,12 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, char 
   char cur_path[max_path_len + 1] = "/";
 
   while (true) {
+    tft.fillRect(
+      m_marg_h, m_marg_v,
+      TftCalc::fraction_x(tft, m_marg_h, 1), TftCalc::fraction_y(tft, m_marg_v, 1),
+      TftColor::BLACK
+    );
+
     uint8_t btn_id = TftChoiceMenu::wait_for_value(tch, tft);
 
     if (strlen(cur_path) + strlen(m_files[btn_id].name) >= max_path_len) return FILE_STATUS_FNAME_TOO_LONG;
@@ -128,7 +98,7 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, char 
     // If the file was a regular file, user has selected the needed file, done
     if (!m_files[btn_id].is_dir) {
       strncpy(file_path, cur_path, max_path_len);
-      break;
+      return FILE_STATUS_OK;
     }
   }
 }
