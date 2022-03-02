@@ -63,7 +63,7 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtr
   char cur_path[max_path_len + 1] = "/";
 
   while (true) {
-    tft.fillRect(m_marg_h, m_marg_v, tft.width(), tft.height() - m_marg_v, TftColor::BLACK);
+    tft.fillRect(0, m_marg_v, tft.width(), tft.height() - m_marg_v, TftColor::BLACK);
 
     deselect_all();
     select(0);
@@ -104,8 +104,7 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtr
 }
 
 namespace FileUtil {
-  bool go_up_dir(char *path) { // Broken
-    PRINTF_NOBUF(Serial, "up_dir(): before: %s; ", path);
+  bool go_up_dir(char *path) {
     // Empty path is treated as root dir
     if (strlen(path) == 0) return false;
 
@@ -120,15 +119,12 @@ namespace FileUtil {
     char *new_end = strrchr(_path, '/');
 
     if (new_end == nullptr) {
-      // `path` was nothing but a slash, there is nothing to go up into
       success = false;
     }
     else {
-      memset(_path, '\0', end - new_end - 2);
+      memset(new_end + 1, '\0', end - new_end - 2);
       strcpy(path, _path);
     }
-
-    PRINTF_NOBUF(Serial, "up_dir(): after: %s\n", path);
 
     free(_path);
     return success;
