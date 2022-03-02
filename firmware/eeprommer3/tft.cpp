@@ -289,6 +289,12 @@ int16_t TftMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
   return -1;
 }
 
+void TftMenu::deselect_all() {
+  for (uint8_t i = 0; i < m_num_btns; ++i) {
+    m_btns[i]->highlight(false);
+  }
+}
+
 TftKeyboardLayout::TftKeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width)
   : m_layout(layout), m_length(length), m_width(width) {
   // Empty
@@ -528,15 +534,22 @@ uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
 
     if (btn_pressed == m_confirm_btn) break;
 
-    m_old_choice = m_cur_choice;
-    m_cur_choice = (uint8_t) btn_pressed;
-    get_btn(m_old_choice)->highlight(false);
-    get_btn(m_cur_choice)->highlight(true);
-
+    select(btn_pressed);
     update(tft);
   }
 
   return m_cur_choice;
+}
+
+void TftChoiceMenu::select(uint8_t choice) {
+  set_choice(choice);
+  get_btn(m_old_choice)->highlight(false);
+  get_btn(choice)->highlight(true);
+}
+
+void TftChoiceMenu::set_choice(uint8_t btn) {
+  m_old_choice = m_cur_choice;
+  m_cur_choice = btn;
 }
 
 void TftChoiceMenu::update(TftCtrl &tft) {

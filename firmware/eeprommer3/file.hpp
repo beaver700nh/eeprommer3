@@ -59,21 +59,24 @@ public:
    * If all conditions are met, return FILE_STATUS_OK and sets
    * `file_path` to the path to the file which the user selected.
    */
-  AskFileStatus wait_for_value(TouchCtrl &tch, TftCtrl &tft, char *file_path, uint8_t max_path_len);
+  AskFileStatus wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len);
 
 private:
   // The supplied `cols` or the maximum number of cols that will fit, whichever is smaller
-  inline uint8_t calc_num_cols(TftCtrl &tft, uint8_t cols) {
+  static inline uint8_t calc_num_cols(TftCtrl &tft, uint8_t cols) {
     return MIN(cols, MAX((tft.width() - 10) / (73 + 10), 1));
   }
 
-  // 1/`rows` of the allotted vertical space, constrained to at least 16
-  inline uint8_t calc_btn_height(TftCtrl &tft, uint8_t rows) {
-    return MAX(16, TftCalc::fraction_y(tft, m_marg_v, rows));
+  // A fraction 1/`rows` of the allotted vertical space (screen height
+  // with vertical margin of `marg_v`), constrained to at least 16
+  static inline uint8_t calc_btn_height(TftCtrl &tft, uint8_t rows, uint8_t marg_v, uint8_t pad_v) {
+    return MAX(16, TftCalc::fraction(tft.height() - 2 * marg_v + 2 * pad_v, pad_v, rows));
   }
 
   FileInfo *m_files = nullptr;
   uint8_t m_num_files = 0;
+
+  uint8_t m_num_rows;
 };
 
 // A namespace containing functions for manipulations of file paths

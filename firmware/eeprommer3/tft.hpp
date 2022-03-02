@@ -249,6 +249,8 @@ public:
   uint8_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
   int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
 
+  void deselect_all();
+
 protected:
   TftBtn **m_btns = nullptr;
   uint8_t m_num_btns = 0;
@@ -435,6 +437,9 @@ public:
 
   void set_callback(Callback callback);
   Callback get_callback();
+
+  void set_choice(uint8_t choice);
+  void select(uint8_t btn);
 
   void update(TftCtrl &tft);
 

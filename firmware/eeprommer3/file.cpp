@@ -7,21 +7,21 @@
 #include "file.hpp"
 
 AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len) {
-  const uint8_t rows = 8, cols = 6, max_files = rows * cols;
+  const uint8_t rows = 8, cols = 6;
 
   tft.drawText(10, 10, "Files:", TftColor::CYAN, 4);
 
   TftFileSelMenu menu(tft, 10, 10, 50, 10, rows, cols);
 
-  menu.use_files_in_dir(sd, "/", max_files);
-
-  return menu.wait_for_value(tch, tft, out, len);
+  return menu.wait_for_value(tch, tft, sd, out, len);
 }
 
 TftFileSelMenu::TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
-  : TftChoiceMenu(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows), true) {
-  for (uint8_t j = 0; j < rows; ++j) {
-    for (uint8_t i = 0; i < cols; ++i) {
+  : TftChoiceMenu(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
+  m_num_rows = rows;
+
+  for (uint8_t j = 0; j < m_num_rows; ++j) {
+    for (uint8_t i = 0; i < m_num_cols; ++i) {
       add_btn_calc(tft, "", TftColor::BLACK, TftColor::WHITE);
       get_btn(get_num_btns() - 1)->set_font_size(1);
     }
@@ -33,7 +33,7 @@ TftFileSelMenu::TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8
   add_btn(new TftBtn(20 + _w, _y, _w, 24, "Cancel"));
   add_btn_confirm(tft, true);
 
-  m_files = (FileInfo *) malloc(rows * calc_num_cols(tft, cols) * sizeof(FileInfo));
+  m_files = (FileInfo *) malloc(m_num_rows * m_num_cols * sizeof(FileInfo));
 }
 
 TftFileSelMenu::~TftFileSelMenu() {
@@ -42,7 +42,6 @@ TftFileSelMenu::~TftFileSelMenu() {
 
 void TftFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files) {
   uint8_t i;
-  PRINTF_NOBUF(Serial, "max_files: %d\n", max_files);
 
   m_num_files = sd.get_files(path, m_files, max_files);
 
@@ -51,41 +50,40 @@ void TftFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_
     get_btn(i)->visibility(true);
     get_btn(i)->operation(true);
     get_btn(i)->set_text(m_files[i].name);
-
-    PRINTF_NOBUF(Serial, "Enabled button %d.\n", i);
   }
 
   // Disable everything else except the control buttons.
   for (/* no init clause */; i < get_num_btns() - 3; ++i) {
     get_btn(i)->visibility(false);
     get_btn(i)->operation(false);
-
-    PRINTF_NOBUF(Serial, "Disabled button %d.\n", i);
   }
 }
 
-AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, char *file_path, uint8_t max_path_len) {
+AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
   char cur_path[max_path_len + 1] = "/";
 
   while (true) {
-    tft.fillRect(
-      m_marg_h, m_marg_v,
-      TftCalc::fraction_x(tft, m_marg_h, 1), TftCalc::fraction_y(tft, m_marg_v, 1),
-      TftColor::BLACK
-    );
+    tft.fillRect(m_marg_h, m_marg_v, tft.width(), tft.height() - m_marg_v, TftColor::BLACK);
 
+    deselect_all();
+    select(0);
+
+    use_files_in_dir(sd, cur_path, m_num_rows * m_num_cols);
     uint8_t btn_id = TftChoiceMenu::wait_for_value(tch, tft);
-
-    if (strlen(cur_path) + strlen(m_files[btn_id].name) >= max_path_len) return FILE_STATUS_FNAME_TOO_LONG;
 
     if (btn_id == get_num_btns() - 2) {
       return FILE_STATUS_CANCELED;
     }
 
     if (btn_id == get_num_btns() - 3) {
+      Serial.println("UP_DIR!");
+      Serial.println(cur_path);
       FileUtil::go_up_dir(cur_path);
+      Serial.println(cur_path);
       continue;
     }
+
+    if (strlen(cur_path) + strlen(m_files[btn_id].name) >= max_path_len) return FILE_STATUS_FNAME_TOO_LONG;
 
     // User selected a file, not a control button
 
@@ -94,6 +92,8 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, char 
     if (!FileUtil::go_down_path(cur_path, m_files + btn_id, max_path_len)) {
       return FILE_STATUS_FNAME_TOO_LONG;
     }
+
+    PRINTF_NOBUF(Serial, "Went down path, now is %s.\n", cur_path);
 
     // If the file was a regular file, user has selected the needed file, done
     if (!m_files[btn_id].is_dir) {
@@ -104,7 +104,8 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, char 
 }
 
 namespace FileUtil {
-  bool go_up_dir(char *path) {
+  bool go_up_dir(char *path) { // Broken
+    PRINTF_NOBUF(Serial, "up_dir(): before: %s; ", path);
     // Empty path is treated as root dir
     if (strlen(path) == 0) return false;
 
@@ -126,6 +127,8 @@ namespace FileUtil {
       memset(_path, '\0', end - new_end - 2);
       strcpy(path, _path);
     }
+
+    PRINTF_NOBUF(Serial, "up_dir(): after: %s\n", path);
 
     free(_path);
     return success;

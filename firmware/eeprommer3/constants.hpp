@@ -51,7 +51,7 @@
 
 // Prints value of `var` over Serial
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
-#define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF(F("SER_DEBUG_PRINT: %%s = %%%c\n"), type), #var, var)
+#define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
 
 /*****************************************/
 /** Constants ****************************/

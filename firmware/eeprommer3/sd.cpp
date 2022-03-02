@@ -63,9 +63,9 @@ uint8_t SdCtrl::get_files(const char *dir, FileInfo *out, uint8_t num) {
     this_file->is_dir = file.isDirectory();
 
     ++file_num;
-  }
 
-  file.close();
+    file.close();
+  }
 
   root.rewindDirectory();
   root.close();
