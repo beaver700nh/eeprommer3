@@ -70,7 +70,13 @@ private:
   // A fraction 1/`rows` of the allotted vertical space (screen height
   // with vertical margin of `marg_v`), constrained to at least 16
   static inline uint8_t calc_btn_height(TftCtrl &tft, uint8_t rows, uint8_t marg_v, uint8_t pad_v) {
-    return MAX(16, TftCalc::fraction(tft.height() - 2 * marg_v + 2 * pad_v, pad_v, rows));
+    return MAX(16, TftCalc::fraction(
+      tft.height() // take up as much space as possible
+      - marg_v     // without the top margin
+      - 78         // without the bottom margin
+      + 2 * pad_v, // but still need some amount
+      pad_v, rows
+    ));
   }
 
   FileInfo *m_files = nullptr;

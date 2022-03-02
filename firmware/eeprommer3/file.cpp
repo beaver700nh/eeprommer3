@@ -7,7 +7,7 @@
 #include "file.hpp"
 
 AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len) {
-  const uint8_t rows = 8, cols = 6;
+  const uint8_t rows = 6, cols = 6;
 
   tft.drawText(10, 10, "Files:", TftColor::CYAN, 4);
 
@@ -29,8 +29,8 @@ TftFileSelMenu::TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8
 
   uint16_t _y = TftCalc::bottom(tft, 24, 44), _w = TftCalc::fraction_x(tft, 10, 2);
 
-  add_btn(new TftBtn(10,      _y, _w, 24, "Parent Dir"));
-  add_btn(new TftBtn(20 + _w, _y, _w, 24, "Cancel"));
+  add_btn(new TftBtn(10,      _y, _w, 24, "Parent Dir", TftColor::CYAN,  TftColor::BLUE));
+  add_btn(new TftBtn(20 + _w, _y, _w, 24, "Cancel",     TftColor::PINKK, TftColor::RED ));
   add_btn_confirm(tft, true);
 
   m_files = (FileInfo *) malloc(m_num_rows * m_num_cols * sizeof(FileInfo));
@@ -50,6 +50,13 @@ void TftFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_
     get_btn(i)->visibility(true);
     get_btn(i)->operation(true);
     get_btn(i)->set_text(m_files[i].name);
+
+    if (m_files[i].is_dir) {
+      get_btn(i)->set_bg(TftColor::CYAN);
+    }
+    else {
+      get_btn(i)->set_bg(TftColor::ORANGE);
+    }
   }
 
   // Disable everything else except the control buttons.
@@ -76,10 +83,7 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtr
     }
 
     if (btn_id == get_num_btns() - 3) {
-      Serial.println("UP_DIR!");
-      Serial.println(cur_path);
       FileUtil::go_up_dir(cur_path);
-      Serial.println(cur_path);
       continue;
     }
 
@@ -87,13 +91,9 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtr
 
     // User selected a file, not a control button
 
-    PRINTF_NOBUF(Serial, "Info:\n\tcur_path: %s,\n\tfname: %s\n", cur_path, m_files[btn_id].name);
-
     if (!FileUtil::go_down_path(cur_path, m_files + btn_id, max_path_len)) {
       return FILE_STATUS_FNAME_TOO_LONG;
     }
-
-    PRINTF_NOBUF(Serial, "Went down path, now is %s.\n", cur_path);
 
     // If the file was a regular file, user has selected the needed file, done
     if (!m_files[btn_id].is_dir) {

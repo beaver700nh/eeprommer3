@@ -2,7 +2,6 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - finish TftFileSelMenu, write docs
   - finish file r/w
   - better switch/case in StringMenu
   - tweak debug message stuff
