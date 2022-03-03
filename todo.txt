@@ -2,8 +2,8 @@
   - add more pictures/icons for window
 
 - FIRMWARE
+  - turn non-blocking delays into Util function
   - finish file r/w
-  - better switch/case in StringMenu
   - tweak debug message stuff
   - start work on from_serial programmer
 

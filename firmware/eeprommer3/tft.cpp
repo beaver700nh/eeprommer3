@@ -26,6 +26,15 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
+void TftCtrl::drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t color, uint16_t bg, uint8_t size) {
+  fillRect(x, y, size * (6 * strlen(text) - 1), size * 8, bg);
+  drawText(x, y, text, color, size);
+}
+
+void TftCtrl::drawText(const char *text) {
+  print(text);
+}
+
 bool TftCtrl::drawRGBBitmapFromFile(
   uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height,
   bool swap_endian, bool (*check_skip)()
@@ -456,8 +465,6 @@ void TftStringMenu::update_val(char c) {
 
     m_val[len]     = capitalize(c);
     m_val[len + 1] = '\0';
-
-    Serial.println(m_val);
 
     m_capitalize = false;
 

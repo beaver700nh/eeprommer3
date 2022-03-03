@@ -36,8 +36,10 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
     "Write multiple bytes to EEPROM.",
   };
 
-  tft.fillRect(10, 250, 470, 16, TftColor::BLACK);
-  tft.drawText(10, 250, (btn_id < ARR_LEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
+  tft.drawTextBg(
+    10, 250, (btn_id < ARR_LEN(helps) ? helps[btn_id] : "No help text available."),
+    TftColor::PURPLE, TftColor::BLACK, 2
+  );
 }
 
 void ProgrammerFromSd::run() {
@@ -155,21 +157,40 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_file() {
-  char fname[101];
-  auto status = ask_file(m_tft, m_tch, m_sd, fname, 100);
+  char fname[64];
+  ask_str(m_tft, m_tch, "File to read to?", fname, 63);
 
-  switch (status) {
-  case FILE_STATUS_OK:
-    PRINTF_NOBUF(Serial, "Ok, '%s'.\n", fname);
-    break;
+  m_tft.fillScreen(TftColor::BLACK);
 
-  case FILE_STATUS_CANCELED:
-    Serial.println("Canceled.");
-    break;
+  uint16_t cell_size = TftCalc::fraction(m_tft.height() - 54, 2, 16);
+  uint16_t bound_box_size = cell_size * 16 + 38;
+  m_tft.drawRect(15, 40, bound_box_size,     bound_box_size,     TftColor::GREEN);
+  m_tft.drawRect(16, 41, bound_box_size - 2, bound_box_size - 2, TftColor::GREEN);
 
-  case FILE_STATUS_FNAME_TOO_LONG:
-    Serial.println("File name was too long to fit in buffer.");
-    break;
+  m_tft.drawText( 10, 10, "Reading page   /FF...", TftColor::ORANGE);
+  m_tft.drawText(276, 10, "(   %)",                TftColor::CYAN);
+
+  for (uint8_t page = 0; /* no exit condition */; ++page) {
+    m_tft.drawTextBg(166, 10, STRFMT_NOBUF("%02X", page),                           TftColor::ORANGE, TftColor::BLACK);
+    m_tft.drawTextBg(288, 10, STRFMT_NOBUF("%3d", uint8_t ((page + 1) * 0.390625)), TftColor::CYAN,   TftColor::BLACK);
+
+    m_tft.fillRect(
+      19 + (page % 16) * (cell_size + 2),
+      44 + (page / 16) * (cell_size + 2),
+      cell_size, cell_size, TftColor::DGREEN
+    );
+
+    delay(120);
+
+    if (page == 0xFF || m_tch.is_touching()) break;
+  }
+
+  m_tft.drawTextBg(10, 10, "Done reading! Quitting in 2 seconds...", TftColor::CYAN, TftColor::BLACK);
+
+  auto t1 = millis();
+
+  while (millis() - t1 < 2000) {
+    if (m_tch.is_touching()) break;
   }
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -356,8 +377,10 @@ void ProgrammerFromSd::show_page(
   m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
   m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
 
-  m_tft.fillRect(10, 224, 300, 16, TftColor::BLACK);
-  m_tft.drawText(10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page), TftColor::PURPLE, 2);
+  m_tft.drawTextBg(
+    10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page),
+    TftColor::PURPLE, TftColor::BLACK, 2
+  );
 
   uint16_t idx = (cur_page == 0 ? 0 : PAGE_ADJUSTED(0x0100 - (addr1 & 0xFF), cur_page - 1));
 

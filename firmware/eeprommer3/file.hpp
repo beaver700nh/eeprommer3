@@ -28,7 +28,7 @@ enum AskFileStatus {FILE_STATUS_OK, FILE_STATUS_CANCELED, FILE_STATUS_FNAME_TOO_
 // Return FILE_STATUS_FNAME_TOO_LONG if path is `len` chars or longer.
 // Return FILE_STATUS_CANCELED is user presses "Cancel" button.
 // Return FILE_STATUS_OK if everything goes smoothly.
-AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len);
+AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len, const char *prompt);
 
 // Another fwd decl just in case
 class TftChoiceMenu;
