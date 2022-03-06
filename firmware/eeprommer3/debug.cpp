@@ -1,9 +1,9 @@
-#ifdef DEBUG_MODE
-
 #include <Arduino.h>
 #include "constants.hpp"
 
 #include "debug.hpp"
+
+#ifdef DEBUG_MODE
 
 void debug_print_addr_range(uint16_t addr1, uint16_t addr2, uint8_t *data) {
   uint16_t j = (addr1 >> 4);

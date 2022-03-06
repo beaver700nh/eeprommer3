@@ -9,17 +9,7 @@ build: compile upload
 
 .ONESHELL:
 compile:
-ifeq ($(DEBUG_MODE), 1)
-	debug_arg="--build-property=build.extra_flags=\"-DDEBUG_MODE=1\""
-else
-	debug_arg=""
-endif
-
-ifeq ($(CLEAN), 1)
-	debug_arg="$$debug_arg --clean"
-endif
-
-	arduino-cli-mega-compile . --warnings=more --build-property=compiler.cpp.extra_flags="-std=c++1z" "$$debug_arg"
+	arduino-cli-mega-compile . --warnings=more --build-property=compiler.cpp.extra_flags=-std=c++1z $(FLAGS)
 
 upload:
 	arduino-cli-mega-upload . /dev/ttyACM0 --verbose

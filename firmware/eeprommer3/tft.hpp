@@ -38,21 +38,39 @@
 // Note: adjusted for my personal TFT - might need tweaking to work with others
 namespace TftColor {
   enum : uint16_t {
+    // Standard full-intensity colors (except gray, which is half-intensity)
     RED     = 0xF800,
-    ORANGE  = 0xFCE3,
     YELLOW  = 0xFFE0,
-    DGREEN  = 0x03E0,
     GREEN   = 0x07E0,
     CYAN    = 0x07FF,
     BLUE    = 0x001F,
-    PURPLE  = 0xE31D,
     MAGENTA = 0xF81F,
-    PINKK   = 0xFEF7,
     BLACK   = 0x0000,
-    DGRAY   = 0x39E7,
     GRAY    = 0x7BEF,
-    LGRAY   = 0xBDF7,
     WHITE   = 0xFFFF,
+
+    // Other miscellaneous colors
+    // Some of these are thanks to prenticedavid/MCUFRIEND_kbv (GitHub)
+    DRED   = 0x7800,
+    LGREEN = 0xB7E0,
+    DGREEN = 0x03E0,
+    OLIVE  = 0x7BE0,
+    DCYAN  = 0x03EF,
+    DBLUE  = 0x000F,
+    DGRAY  = 0x39E7,
+
+    // Alt colors thanks to prenticedavid/MCUFRIEND_kbv (GitHub)
+#ifdef TFT_ALT_COLORS
+    ORANGE = 0xFDA0,
+    PURPLE = 0x780F,
+    PINKK  = 0xFC9F,
+    LGRAY  = 0xC618,
+#else
+    ORANGE = 0xFCE3,
+    PURPLE = 0xE31D,
+    PINKK  = 0xFEF7,
+    LGRAY  = 0xBDF7,
+#endif
   };
 };
 

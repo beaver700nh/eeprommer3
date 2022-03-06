@@ -36,10 +36,8 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
     "Write multiple bytes to EEPROM.",
   };
 
-  tft.drawTextBg(
-    10, 250, (btn_id < ARR_LEN(helps) ? helps[btn_id] : "No help text available."),
-    TftColor::PURPLE, TftColor::BLACK, 2
-  );
+  tft.fillRect(10, 250, tft.width(), 16, TftColor::BLACK);
+  tft.drawText(10, 250, (btn_id < ARR_LEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
 }
 
 void ProgrammerFromSd::run() {
@@ -157,55 +155,81 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
 }
 
 uint8_t ProgrammerFromSd::read_file() {
+  ActionFuncStatus status = STATUS_OK;
+
   char fname[64];
   ask_str(m_tft, m_tch, "File to read to?", fname, 63);
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  uint16_t cell_size = TftCalc::fraction(m_tft.height() - 54, 2, 16);
-  uint16_t bound_box_size = cell_size * 16 + 38;
-  m_tft.drawRect(15, 40, bound_box_size,     bound_box_size,     TftColor::GREEN);
-  m_tft.drawRect(16, 41, bound_box_size - 2, bound_box_size - 2, TftColor::GREEN);
+  uint8_t this_page[256];
+  File file = SD.open(fname, O_CREAT | O_WRITE | O_TRUNC);
 
-  m_tft.drawText( 10, 10, "Reading page   /FF...", TftColor::ORANGE);
-  m_tft.drawText(276, 10, "(   %)",                TftColor::CYAN);
+  if (!file) {
+    status = STATUS_ERR_FILE;
+  }
+  else {
+    const uint16_t cell_size = init_anim_and_calc_cell_size();
 
-  for (uint8_t page = 0; /* no exit condition */; ++page) {
-    m_tft.drawTextBg(166, 10, STRFMT_NOBUF("%02X", page),                           TftColor::ORANGE, TftColor::BLACK);
-    m_tft.drawTextBg(288, 10, STRFMT_NOBUF("%3d", uint8_t ((page + 1) * 0.390625)), TftColor::CYAN,   TftColor::BLACK);
+    for (uint8_t page = 0; page < 0x80; ++page) {
+      update_anim_to_show_progress(cell_size, page);
 
-    m_tft.fillRect(
-      19 + (page % 16) * (cell_size + 2),
-      44 + (page / 16) * (cell_size + 2),
-      cell_size, cell_size, TftColor::DGREEN
-    );
+      uint16_t addr1 = page * 0x0100;
 
-    delay(120);
+#ifdef DEBUG_MODE
+      PRINTF_NOBUF(Serial, "ProgrammerFromSd::read_file(): Reading bytes %d to %d...\n", addr1, addr1 + 0xFF);
+#endif
 
-    if (page == 0xFF || m_tch.is_touching()) break;
+      m_ee.read(addr1, addr1 + 0xFF, this_page);
+      file.write(this_page, 256);
+
+      if (m_tch.is_touching()) break;
+    }
+
+#ifdef DEBUG_MODE
+    Serial.println();
+#endif
+
+    delay(1000);
+
+    m_tft.drawTextBg(10, 10, "Done reading! Quitting in 2 seconds...", TftColor::CYAN, TftColor::BLACK);
+    Util::skippable_delay(2000, [this]() -> bool { return this->m_tch.is_touching(); });
   }
 
-  m_tft.drawTextBg(10, 10, "Done reading! Quitting in 2 seconds...", TftColor::CYAN, TftColor::BLACK);
-
-  auto t1 = millis();
-
-  while (millis() - t1 < 2000) {
-    if (m_tch.is_touching()) break;
-  }
+  file.flush();
+  file.close();
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return STATUS_OK;
+  return status;
 }
 
-Vector ProgrammerFromSd::ask_vector() {
-  return Vector(
-    ask_choice(
-      m_tft, m_tch, "Which vector?", 3, 54, 1, 3,
-      Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE,
-      Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN,
-      Vector::NAMES[2], TftColor::PINKK,          TftColor::RED
-    )
+uint16_t ProgrammerFromSd::init_anim_and_calc_cell_size() {
+  const uint16_t cell_size = MIN(
+    TftCalc::fraction(m_tft.height() - 54, 2, 8),
+    TftCalc::fraction(m_tft.width()  - 24, 2, 16)
+  );
+
+  const uint16_t bound_w = cell_size * 16 + 38;
+  const uint16_t bound_h = bound_w / 2;
+
+  m_tft.drawRect(13, 40, bound_w,     bound_h,     TftColor::GREEN);
+  m_tft.drawRect(14, 41, bound_w - 2, bound_h - 2, TftColor::GREEN);
+
+  m_tft.drawText( 10, 10, "Reading page   /7F...", TftColor::ORANGE);
+  m_tft.drawText(276, 10, "(   %)",                TftColor::CYAN);
+
+  return cell_size;
+}
+
+void ProgrammerFromSd::update_anim_to_show_progress(uint16_t cell_size, uint8_t progress) {
+  m_tft.drawTextBg(166, 10, STRFMT_NOBUF("%02X", progress),                           TftColor::ORANGE, TftColor::BLACK);
+  m_tft.drawTextBg(288, 10, STRFMT_NOBUF("%3d", uint8_t ((progress + 1) * 0.78125)), TftColor::CYAN,   TftColor::BLACK);
+
+  m_tft.fillRect(
+    17 + (progress % 16) * (cell_size + 2),
+    44 + (progress / 16) * (cell_size + 2),
+    cell_size, cell_size, TftColor::DGREEN
   );
 }
 
@@ -276,6 +300,17 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
   }
 
   return STATUS_OK;
+}
+
+Vector ProgrammerFromSd::ask_vector() {
+  return Vector(
+    ask_choice(
+      m_tft, m_tch, "Which vector?", 3, 54, 1, 3,
+      Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE,
+      Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN,
+      Vector::NAMES[2], TftColor::PINKK,          TftColor::RED
+    )
+  );
 }
 
 uint8_t ProgrammerFromSd::read_range() {
@@ -640,7 +675,9 @@ uint8_t ProgrammerFromSd::debug() {
       break;
     case 5:
       m_tft.fillScreen(TftColor::BLACK);
+#ifdef DEBUG_MODE
       tft_print_chars(m_tft);
+#endif
       // Wait for press
       while (!m_tch.is_touching());
       break;

@@ -68,8 +68,8 @@ public:
 private:
   // read_file() helpers
 
-  TftChoiceMenu *create_fname_menu(TftCtrl &tft, uint8_t rows, uint8_t cols);
-  void update_fname_menu(TftMenu *menu, char (*files)[13], uint8_t num);
+  uint16_t init_anim_and_calc_cell_size();
+  void update_anim_to_show_progress(uint16_t cell_size, uint8_t progress);
 
 public:
   /*** VECTOR IO ***/
@@ -137,7 +137,13 @@ public:
    * Enum of status codes returned from functions of
    * the type `ProgrammerFromSd::*action_func`
    */
-  enum ActionFuncStatus {STATUS_OK, STATUS_ERR_INVALID, STATUS_ERR_FILE, STATUS_ERR_VERIFY, STATUS_ERR_MEMORY};
+  enum ActionFuncStatus {
+    STATUS_OK,          // There were no errors
+    STATUS_ERR_INVALID, // Attempted to perform an invalid action
+    STATUS_ERR_FILE,    // Unable to open file on SD card
+    STATUS_ERR_VERIFY,  // Verification failed (expectation != reality)
+    STATUS_ERR_MEMORY,  // Memory allocator returned null
+  };
 
 private:
   EepromCtrl &m_ee;

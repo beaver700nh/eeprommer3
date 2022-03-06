@@ -4,5 +4,5 @@
 #include "util.hpp"
 
 namespace Util {
-  // Empty at the moment
+  // Empty because implementations are in util.hpp
 };
