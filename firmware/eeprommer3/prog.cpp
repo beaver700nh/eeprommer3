@@ -204,6 +204,19 @@ uint8_t ProgrammerFromSd::read_file() {
   return status;
 }
 
+uint8_t ProgrammerFromSd::write_file() {
+  ActionFuncStatus status = STATUS_OK;
+
+  char fname[64];
+  ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  return status;
+}
+
 uint16_t ProgrammerFromSd::init_anim_and_calc_cell_size() {
   const uint16_t cell_size = MIN(
     TftCalc::fraction(m_tft.height() - 54, 2, 8),
@@ -216,15 +229,15 @@ uint16_t ProgrammerFromSd::init_anim_and_calc_cell_size() {
   m_tft.drawRect(13, 40, bound_w,     bound_h,     TftColor::GREEN);
   m_tft.drawRect(14, 41, bound_w - 2, bound_h - 2, TftColor::GREEN);
 
-  m_tft.drawText( 10, 10, "Reading page   /7F...", TftColor::ORANGE);
-  m_tft.drawText(276, 10, "(   %)",                TftColor::CYAN);
+  m_tft.drawText( 10, 10, "Currently on page   /7F...", TftColor::ORANGE);
+  m_tft.drawText(336, 10, "(   %)",                     TftColor::CYAN);
 
   return cell_size;
 }
 
 void ProgrammerFromSd::update_anim_to_show_progress(uint16_t cell_size, uint8_t progress) {
-  m_tft.drawTextBg(166, 10, STRFMT_NOBUF("%02X", progress),                           TftColor::ORANGE, TftColor::BLACK);
-  m_tft.drawTextBg(288, 10, STRFMT_NOBUF("%3d", uint8_t ((progress + 1) * 0.78125)), TftColor::CYAN,   TftColor::BLACK);
+  m_tft.drawTextBg(226, 10, STRFMT_NOBUF("%02X", progress),                          TftColor::ORANGE, TftColor::BLACK);
+  m_tft.drawTextBg(348, 10, STRFMT_NOBUF("%3d", uint8_t ((progress + 1) * 0.78125)), TftColor::CYAN,   TftColor::BLACK);
 
   m_tft.fillRect(
     17 + (progress % 16) * (cell_size + 2),

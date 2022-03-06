@@ -51,13 +51,7 @@ void setup() {
   else if (res == SdCtrl::STATUS_FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
   else                                     tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
 
-  auto t1 = millis();
-
-  while (millis() - t1 < 2000) {
-    if (skip_btn->is_pressed(tch, tft)) {
-      break;
-    }
-  }
+  Util::skippable_delay(2000, []() -> bool { return skip_btn->is_pressed(tch, tft); });
 
   delete skip_btn;
 

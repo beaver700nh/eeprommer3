@@ -6,7 +6,7 @@
 
 #include "file.hpp"
 
-AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, char *out, uint8_t len, const char *prompt) {
+AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
   const uint8_t rows = 6, cols = 6;
 
   tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
