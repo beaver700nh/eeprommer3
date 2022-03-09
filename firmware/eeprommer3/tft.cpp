@@ -357,7 +357,7 @@ TftKeyboardMenu::TftKeyboardMenu(
   TftCtrl &tft, uint8_t t_debounce,
   uint16_t pad_v, uint16_t pad_h,
   uint16_t marg_v, uint16_t marg_h,
-  TftKeyboardLayout &layout, float btn_height = 1.2
+  TftKeyboardLayout &layout, float btn_height
 )
   : m_t_debounce(t_debounce), m_layout(layout),
   m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h) {
@@ -610,7 +610,7 @@ uint8_t ask_choice(
 }
 
 void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len) {
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
   TftStringMenu menu(tft, T_DEBOUNCE, 10, 10, 50, 10, len);
   menu.draw(tft);
@@ -632,7 +632,7 @@ void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_
 }
 
 bool ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t initial_choice) {
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
   TftYesNoMenu menu(tft, 10, 10, 50, 10, true, (initial_choice < 0 ? 0 : initial_choice));
   uint8_t btn_pressed = menu.wait_for_value(tch, tft);

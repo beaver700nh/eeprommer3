@@ -52,25 +52,17 @@ namespace TftColor {
     // Other miscellaneous colors
     // Some of these are thanks to prenticedavid/MCUFRIEND_kbv (GitHub)
     DRED   = 0x7800,
-    LGREEN = 0xB7E0,
+    ORANGE = 0xFCE3,
+    LIME   = 0xB7E0,
+    LGREEN = 0x7FEF,
     DGREEN = 0x03E0,
     OLIVE  = 0x7BE0,
     DCYAN  = 0x03EF,
     DBLUE  = 0x000F,
-    DGRAY  = 0x39E7,
-
-    // Alt colors thanks to prenticedavid/MCUFRIEND_kbv (GitHub)
-#ifdef TFT_ALT_COLORS
-    ORANGE = 0xFDA0,
-    PURPLE = 0x780F,
-    PINKK  = 0xFC9F,
-    LGRAY  = 0xC618,
-#else
-    ORANGE = 0xFCE3,
     PURPLE = 0xE31D,
     PINKK  = 0xFEF7,
     LGRAY  = 0xBDF7,
-#endif
+    DGRAY  = 0x39E7,
   };
 };
 

@@ -2,7 +2,9 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - finish file r/w
+  - finish file write bug
+  - investigate/fix mysterious read range bug when crossing page boundaries
+  - fix sign-compare warning
   - tweak debug message stuff
   - start work on from_serial programmer
   - add more `TftColor`s

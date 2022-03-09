@@ -66,6 +66,21 @@ public:
   uint8_t verify_file(const char *fname, uint16_t addr);
 
 private:
+  // helper for file r/w funcs
+
+  template<typename Func>
+  void animated_for_each_page(Func action) {
+    const uint16_t cell_size = init_anim_and_calc_cell_size();
+
+    for (uint8_t page = 0; page < 0x80; ++page) {
+      update_anim_to_show_progress(cell_size, page);
+
+      bool should_quit = action(page);
+
+      if (m_tch.is_touching() || should_quit) break;
+    }
+  }
+
   // read_file() helpers
 
   uint16_t init_anim_and_calc_cell_size();
@@ -127,7 +142,7 @@ public:
 
   action_func action_map[NUM_ACTIONS] = {
     &ProgrammerFromSd::read_byte,   &ProgrammerFromSd::write_byte,
-    &ProgrammerFromSd::read_file,   &ProgrammerFromSd::nop,
+    &ProgrammerFromSd::read_file,   &ProgrammerFromSd::write_file,
     &ProgrammerFromSd::read_vector, &ProgrammerFromSd::write_vector,
     &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_multi,
     &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,

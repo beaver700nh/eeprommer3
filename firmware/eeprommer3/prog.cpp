@@ -42,16 +42,16 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
 
 void ProgrammerFromSd::run() {
   TftChoiceMenu menu(10, 10, 50, 10, 2, 30, true);
-  menu.add_btn_calc(m_tft, "Read Byte",      TftColor::BLUE,           TftColor::CYAN);
-  menu.add_btn_calc(m_tft, "Write Byte",     TftColor::RED,            TftColor::PINKK);
-  menu.add_btn_calc(m_tft, "Read to File",   TftColor::CYAN,           TftColor::BLUE);
-  menu.add_btn_calc(m_tft, "Write File",     TftColor::PINKK,          TftColor::RED);
-  menu.add_btn_calc(m_tft, "Read Vector",    TO_565(0x00, 0x17, 0x00), TO_565(0x7F, 0xFF, 0x7F));
-  menu.add_btn_calc(m_tft, "Write Vector",   TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  menu.add_btn_calc(m_tft, "Read Range",     TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, "Write Multiple", TftColor::BLACK,          TftColor::ORANGE);
-  menu.add_btn_calc(m_tft, "Draw Test",      TftColor::DGRAY,          TftColor::GRAY);
-  menu.add_btn_calc(m_tft, "Debug Tools",    TftColor::DGRAY,          TftColor::GRAY);
+  menu.add_btn_calc(m_tft, "Read Byte",       TftColor::BLUE,           TftColor::CYAN);
+  menu.add_btn_calc(m_tft, "Write Byte",      TftColor::RED,            TftColor::PINKK);
+  menu.add_btn_calc(m_tft, "Read to File",    TftColor::CYAN,           TftColor::BLUE);
+  menu.add_btn_calc(m_tft, "Write from File", TftColor::PINKK,          TftColor::RED);
+  menu.add_btn_calc(m_tft, "Read Vector",     TO_565(0x00, 0x17, 0x00), TftColor::LGREEN);
+  menu.add_btn_calc(m_tft, "Write Vector",    TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
+  menu.add_btn_calc(m_tft, "Read Range",      TftColor::LGREEN,         TftColor::DGREEN);
+  menu.add_btn_calc(m_tft, "Write Multiple",  TftColor::BLACK,          TftColor::ORANGE);
+  menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY);
+  menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY);
   menu.add_btn_confirm(m_tft, true);
 
   menu.set_callback(show_help);
@@ -169,26 +169,16 @@ uint8_t ProgrammerFromSd::read_file() {
     status = STATUS_ERR_FILE;
   }
   else {
-    const uint16_t cell_size = init_anim_and_calc_cell_size();
+    animated_for_each_page(
+      [this, &this_page, &file](uint8_t page) -> bool {
+        uint16_t addr = page * 0x0100;
 
-    for (uint8_t page = 0; page < 0x80; ++page) {
-      update_anim_to_show_progress(cell_size, page);
+        this->m_ee.read(addr, addr + 0xFF, this_page);
+        file.write(this_page, 256);
 
-      uint16_t addr1 = page * 0x0100;
-
-#ifdef DEBUG_MODE
-      PRINTF_NOBUF(Serial, "ProgrammerFromSd::read_file(): Reading bytes %d to %d...\n", addr1, addr1 + 0xFF);
-#endif
-
-      m_ee.read(addr1, addr1 + 0xFF, this_page);
-      file.write(this_page, 256);
-
-      if (m_tch.is_touching()) break;
-    }
-
-#ifdef DEBUG_MODE
-    Serial.println();
-#endif
+        return false;
+      }
+    );
 
     delay(1000);
 
@@ -209,8 +199,29 @@ uint8_t ProgrammerFromSd::write_file() {
 
   char fname[64];
   ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
-
   m_tft.fillScreen(TftColor::BLACK);
+
+  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Write file where in EEPROM?");
+  m_tft.fillScreen(TftColor::BLACK);
+
+  uint8_t this_page[256];
+  File file = SD.open(fname, O_READ);
+
+  if (!file) {
+    status = STATUS_ERR_FILE;
+  }
+  else {// FIX
+    animated_for_each_page(
+      [this, &this_page, &file, addr](uint8_t page) -> bool {
+        file.read(this_page, 256);
+        this->m_ee.write(addr, this_page, 256);
+
+        return false;
+      }
+    );
+  }
+
+  file.close();
 
   m_tft.fillScreen(TftColor::BLACK);
 
