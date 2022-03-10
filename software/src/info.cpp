@@ -14,7 +14,12 @@ void AppInfo::help_dlg(wxFrame *parent) {
     "Miscellaneous things are under [Actions].\n"
     "\n"
     "Vectors are 6502 jump vectors, like\n"
-    "IRQ, NMI, and RES. ($FFFA-$FFFF)\n"
+    "IRQ, NMI, and RES. ($FFFA-$FFFF).\n"
+    "\n"
+    "These are at the EEPROM addresses\n"
+    "$7FFA-$7FFF but appear at $FFFA-$FFFF\n"
+    "due to the hardware requiring them\n"
+    "to be memory-mapped to there.\n"
     "You can ignore them if not needed.\n"
   );
 
@@ -42,6 +47,7 @@ void AppInfo::about_dlg() {
   info.AddDeveloper("Anon Ymus");
   info.AddDeveloper("Thanks to StackOverflow");
   info.AddDeveloper("Thanks to wxwidgets.org");
+  info.AddDeveloper("Thanks to VSCode");
 
   wxAboutBox(info);
 }
