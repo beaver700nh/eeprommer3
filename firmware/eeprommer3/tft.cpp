@@ -575,6 +575,38 @@ TftYesNoMenu::TftYesNoMenu(
   add_btn_confirm(tft, force_bottom);
 }
 
+TftProgressIndicator::TftProgressIndicator(
+  TftCtrl &tft, uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+  uint16_t color_frac, uint16_t color_perc, uint16_t color_bar1, uint16_t color_bar2
+)
+  : m_tft(tft), m_max_val(max_val), m_x(x), m_y(y), m_w(w), m_h(h),
+  m_color_frac(color_frac), m_color_perc(color_perc), m_color_bar1(color_bar1), m_color_bar2(color_bar2) {
+  m_tft.drawRect(x,     y,     w,     h,     m_color_bar1);
+  m_tft.drawRect(x + 1, y + 1, w - 2, h - 2, m_color_bar1);
+}
+
+void TftProgressIndicator::tick() {
+  if (m_cur_val > m_max_val) return;
+
+  double fraction = (double) m_cur_val / (double) m_max_val;
+  uint16_t progress = (m_w - 4) * fraction;
+
+  char text[32];
+  snprintf(text, 31, "%d/%d       ", m_cur_val, m_max_val);
+
+  uint16_t ty = m_y + TftCalc::t_center_y(m_h, 2);
+  uint16_t tx = m_x + TftCalc::t_center_x(m_w, text, 2);
+
+  m_tft.fillRect(m_x + 2 + progress, ty, m_w - 4 - progress, 16, TftColor::BLACK);
+  m_tft.fillRect(m_x + 2, m_y + 2, progress, m_h - 4, m_color_bar2);
+
+  m_tft.drawText(tx, ty, text, m_color_frac);
+  tx += (strlen(text) - 6) * 12;
+  m_tft.drawText(tx, ty, STRFMT_NOBUF("(%03d%%)", uint8_t(fraction * 100.0)), m_color_perc);
+
+  ++m_cur_val;
+}
+
 uint8_t ask_choice(
   TftCtrl &tft, TouchCtrl &tch, const char *prompt, int8_t cols, int32_t btn_height, int16_t initial_choice, uint8_t num, ...
 ) {

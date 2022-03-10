@@ -2,7 +2,7 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - finish file write bug
+  - add file write verification
   - investigate/fix mysterious read range bug when crossing page boundaries
   - fix sign-compare warning
   - tweak debug message stuff

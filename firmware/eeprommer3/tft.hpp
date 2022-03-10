@@ -39,6 +39,7 @@
 namespace TftColor {
   enum : uint16_t {
     // Standard full-intensity colors (except gray, which is half-intensity)
+
     RED     = 0xF800,
     YELLOW  = 0xFFE0,
     GREEN   = 0x07E0,
@@ -51,6 +52,7 @@ namespace TftColor {
 
     // Other miscellaneous colors
     // Some of these are thanks to prenticedavid/MCUFRIEND_kbv (GitHub)
+
     DRED   = 0x7800,
     ORANGE = 0xFCE3,
     LIME   = 0xB7E0,
@@ -491,6 +493,41 @@ public:
 };
 
 /*
+ * TftProgressIndicator is a class to show a progress
+ * amount on a TftCtrl as a fraction, a percentange,
+ * and a progress bar.
+ *
+ * It will try to only take up as much space as it is
+ * allotted in the constructor.
+ */
+class TftProgressIndicator {
+public:
+  TftProgressIndicator(
+    TftCtrl &tft, uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+    uint16_t color_frac, uint16_t color_perc, uint16_t color_bar1, uint16_t color_bar2
+  );
+
+  // Template because lambdas without libstdc++ are annoying
+  template<typename Func>
+  void for_each(Func action) {
+    while (m_cur_val <= m_max_val) {
+      tick();
+
+      if (action(m_cur_val)) break;
+    }
+  }
+
+  void tick();
+
+private:
+  TftCtrl &m_tft;
+
+  uint16_t m_max_val, m_cur_val = 0;
+  uint16_t m_x, m_y, m_w, m_h;
+  uint16_t m_color_frac, m_color_perc, m_color_bar1, m_color_bar2;
+};
+
+/*
  * This is a helper function to ask the user for
  * an arbitrarily-sized integer.
  * 
@@ -499,13 +536,13 @@ public:
  */
 template<typename T>
 T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 4);
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
   TftHexSelMenu<T> menu(tft, T_DEBOUNCE, 10, 10, 50, 17);
   menu.draw(tft);
 
   while (true) { // Loop to get a val
-    menu.show_val(tft, 10, 170, 4, TftColor::ORANGE, TftColor::BLACK);
+    menu.show_val(tft, 10, 170, 3, TftColor::ORANGE, TftColor::BLACK);
 
     uint8_t btn_pressed = menu.wait_for_press(tch, tft);
 

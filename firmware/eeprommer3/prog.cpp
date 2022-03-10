@@ -201,7 +201,7 @@ uint8_t ProgrammerFromSd::write_file() {
   ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
   m_tft.fillScreen(TftColor::BLACK);
 
-  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Write file where in EEPROM?");
+  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
   m_tft.fillScreen(TftColor::BLACK);
 
   uint8_t this_page[256];
@@ -210,13 +210,21 @@ uint8_t ProgrammerFromSd::write_file() {
   if (!file) {
     status = STATUS_ERR_FILE;
   }
-  else {// FIX
-    animated_for_each_page(
-      [this, &this_page, &file, addr](uint8_t page) -> bool {
-        file.read(this_page, 256);
-        this->m_ee.write(addr, this_page, 256);
+  else {
+    m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
 
-        return false;
+    TftProgressIndicator bar(
+      m_tft, ceil((float) file.size() / 256.0), 10, 50, m_tft.width() - 20, 40, TftColor::DGREEN, TftColor::BLUE, TftColor::DRED, TftColor::WHITE
+    );
+
+    bar.for_each(
+      [this, &this_page, &file, &addr](uint8_t progress) {
+        auto len = file.read(this_page, 256);
+        this->m_ee.write(addr, this_page, MIN(len, 256));
+
+        addr += 0x0100; // Next page
+
+        return this->m_tch.is_touching();
       }
     );
   }
