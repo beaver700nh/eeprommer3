@@ -37,7 +37,7 @@ build:
 	echo "Output path: $(BIN_PATH)"
 	echo "$(BIN_PATH)" >binpath
 
-	if clang++ $(CXX_FLAGS) ../src/*.cpp -o $(BIN_PATH) $(CXX_LIBS); then
+	if g++ $(CXX_FLAGS) ../src/*.cpp -o $(BIN_PATH) $(CXX_LIBS); then
 		echo "Done compiling - PASSED!"
 		exit 0
 	else
