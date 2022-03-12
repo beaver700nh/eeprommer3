@@ -90,12 +90,15 @@ private:
 
   typedef void (*calc_func)(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
-  // These two are `calc_func`s
+  // These two are `calc_func`s - helper functions
+  // to calculate where and how data should be displayed
+  // for the different modes: hex and chars
   static void calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
   static void calc_chars(uint8_t *offset, char *text, uint16_t *color, uint8_t data);
 
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc);
   void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, calc_func calc, uint8_t cur_page, uint8_t max_page);
+  void store_file(uint8_t *data, uint16_t len);
 
   // write_multi() helpers
 

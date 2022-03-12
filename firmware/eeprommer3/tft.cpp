@@ -585,7 +585,7 @@ TftProgressIndicator::TftProgressIndicator(
   m_tft.drawRect(x + 1, y + 1, w - 2, h - 2, m_color_bar1);
 }
 
-void TftProgressIndicator::tick() {
+void TftProgressIndicator::show() {
   if (m_cur_val > m_max_val) return;
 
   double fraction = (double) m_cur_val / (double) m_max_val;
@@ -603,7 +603,9 @@ void TftProgressIndicator::tick() {
   m_tft.drawText(tx, ty, text, m_color_frac);
   tx += (strlen(text) - 6) * 12;
   m_tft.drawText(tx, ty, STRFMT_NOBUF("(%03d%%)", uint8_t(fraction * 100.0)), m_color_perc);
+}
 
+void TftProgressIndicator::next() {
   ++m_cur_val;
 }
 

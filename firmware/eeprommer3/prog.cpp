@@ -171,7 +171,7 @@ uint8_t ProgrammerFromSd::read_file() {
   else {
     m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
 
-    TftProgressIndicator bar(m_tft, 128, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+    TftProgressIndicator bar(m_tft, 127, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
     bar.for_each(
       [this, &this_page, &file]TFT_PROGRESS_INDICATOR_LAMBDA {
@@ -180,7 +180,7 @@ uint8_t ProgrammerFromSd::read_file() {
         this->m_ee.read(addr, addr + 0xFF, this_page);
         file.write(this_page, 256);
 
-        return false;
+        return this->m_tch.is_touching();
       }
     );
 
@@ -214,7 +214,7 @@ uint8_t ProgrammerFromSd::write_file() {
   else {
     m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
 
-    TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0), 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+    TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
     bar.for_each(
       [this, &this_page, &file, &cur_addr]TFT_PROGRESS_INDICATOR_LAMBDA {
@@ -257,7 +257,7 @@ uint8_t ProgrammerFromSd::verify_file(const char *fname, uint16_t addr) {
 
   m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying '%s' at %04X...", fname, addr), TftColor::CYAN);
 
-  TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0), 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
   bool complete = bar.for_each(
     [this, &expectation, &reality, &file, &addr]TFT_PROGRESS_INDICATOR_LAMBDA {
@@ -371,6 +371,7 @@ uint8_t ProgrammerFromSd::read_range() {
   uint16_t addr1 = ask_val<uint16_t>(m_tft, m_tch, "Start address?");
   m_tft.fillScreen(TftColor::BLACK);
   uint16_t addr2 = ask_val<uint16_t>(m_tft, m_tch, "End address?");
+  uint16_t nbytes = (addr2 - addr1 + 1);
 
   // Turn off top bit of both addresses ensure validity
   addr1 &= ~0x8000;
@@ -381,7 +382,7 @@ uint8_t ProgrammerFromSd::read_range() {
 
   m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
-  auto *data = (uint8_t *) malloc((addr2 - addr1 + 1) * sizeof(uint8_t));
+  auto *data = (uint8_t *) malloc(nbytes * sizeof(uint8_t));
   if (data == nullptr) {
     m_tft.fillScreen(TftColor::BLACK);
     return STATUS_ERR_MEMORY;
@@ -397,15 +398,17 @@ uint8_t ProgrammerFromSd::read_range() {
   m_tft.fillScreen(TftColor::BLACK);
 
   uint8_t viewing_method = ask_choice(
-    m_tft, m_tch, "Select viewing method:", 2, 80, 0, 2,
-    "Raw Hex",    TftColor::BLACK, TftColor::ORANGE,
-    "Characters", TftColor::BLUE,  TftColor::CYAN
+    m_tft, m_tch, "Select viewing method:", 1, 30, 0, 3,
+    "Show as Raw Hexadecimal",   TftColor::BLACK,  TftColor::ORANGE,
+    "Show Printable Characters", TftColor::LGREEN, TftColor::DGREEN,
+    "Write Data to a File",      TftColor::CYAN,  TftColor::BLUE
   );
 
   m_tft.fillScreen(TftColor::BLACK);
 
   if      (viewing_method == 0) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_hex);
   else if (viewing_method == 1) show_range(data, addr1, addr2, &ProgrammerFromSd::calc_chars);
+  else if (viewing_method == 2) store_file(data, nbytes);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -498,10 +501,6 @@ void ProgrammerFromSd::show_page(
   }
 }
 
-// calc_hex() and calc_chars() are helper functions
-// to calculate where and how data should be displayed
-// for the different modes: hex and chars
-
 // Hex mode shows the data as raw hexadecimal values in white
 void ProgrammerFromSd::calc_hex(uint8_t *offset, char *text, uint16_t *color, uint8_t data) {
   *offset = 0;
@@ -517,6 +516,19 @@ void ProgrammerFromSd::calc_chars(uint8_t *offset, char *text, uint16_t *color, 
   *color = (isprint((char) data) ? TftColor::WHITE : TftColor::GRAY);
 
   sprintf(text, "%c", (isprint((char) data) ? (char) data : '?'));
+}
+
+void ProgrammerFromSd::store_file(uint8_t *data, uint16_t len) {
+  char fname[64];
+  ask_str(m_tft, m_tch, "What filename?", fname, 63);
+
+  m_tft.fillScreen(TftColor::BLACK);
+  m_tft.drawText(10, 10, "Please wait...", TftColor::PURPLE);
+
+  File file = SD.open(fname, O_WRITE | O_TRUNC | O_CREAT);
+  file.write(data, len);
+  file.flush();
+  file.close();
 }
 
 uint8_t ProgrammerFromSd::write_multi() {

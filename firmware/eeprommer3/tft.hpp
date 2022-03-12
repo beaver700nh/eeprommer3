@@ -516,15 +516,18 @@ public:
   template<typename Func>
   bool for_each(Func action) {
     while (m_cur_val <= m_max_val) {
-      tick();
+      show();
+      bool should_quit = action(m_cur_val);
+      next();
 
-      if (action(m_cur_val)) return false;
+      if (should_quit) return false;
     }
 
     return true;
   }
 
-  void tick();
+  void show();
+  void next();
 
 private:
   TftCtrl &m_tft;
