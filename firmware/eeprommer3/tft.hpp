@@ -492,6 +492,9 @@ public:
   );
 };
 
+// Should return true to request cancel of loop.
+#define TFT_PROGRESS_INDICATOR_LAMBDA (uint8_t progress) -> bool
+
 /*
  * TftProgressIndicator is a class to show a progress
  * amount on a TftCtrl as a fraction, a percentange,
@@ -507,9 +510,6 @@ public:
     uint16_t color_frac = TftColor::DGREEN, uint16_t color_perc = TftColor::BLUE,
     uint16_t color_bar1 = TftColor::DRED, uint16_t color_bar2 = TftColor::WHITE
   );
-
-// Should return true to request cancel of loop.
-#define TFT_PROGRESS_INDICATOR_LAMBDA (uint8_t progress) -> bool
 
   // Is a template func because lambdas without libstdc++ are annoying.
   // Returns true if loop completed succesfully, false if canceled.

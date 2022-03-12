@@ -255,7 +255,7 @@ uint8_t ProgrammerFromSd::verify_file(const char *fname, uint16_t addr) {
 
   if (!file) return STATUS_ERR_FILE;
 
-  m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying '%s' at %04X...", fname, addr), TftColor::CYAN);
+  m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying `%s' at %04X...", fname, addr), TftColor::CYAN);
 
   TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
@@ -265,7 +265,7 @@ uint8_t ProgrammerFromSd::verify_file(const char *fname, uint16_t addr) {
       this->m_ee.read(addr, addr + nbytes, reality);
 
       if (memcmp(expectation, reality, nbytes) != 0) {
-        this->m_tft.drawText(10, 110, STRFMT_NOBUF("Mismatch somewhere at %04X-%04X!", addr, addr + 0xFF), TftColor::RED);
+        this->m_tft.drawText(10, 110, STRFMT_NOBUF("Mismatch between %04X and %04X!", addr, addr + 0xFF), TftColor::RED);
 
         // Request to quit loop
         return true;
