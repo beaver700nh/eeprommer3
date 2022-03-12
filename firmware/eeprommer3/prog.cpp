@@ -169,9 +169,13 @@ uint8_t ProgrammerFromSd::read_file() {
     status = STATUS_ERR_FILE;
   }
   else {
-    animated_for_each_page(
-      [this, &this_page, &file](uint8_t page) -> bool {
-        uint16_t addr = page * 0x0100;
+    m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
+
+    TftProgressIndicator bar(m_tft, 128, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+
+    bar.for_each(
+      [this, &this_page, &file]TFT_PROGRESS_INDICATOR_LAMBDA {
+        uint16_t addr = progress * 0x0100;
 
         this->m_ee.read(addr, addr + 0xFF, this_page);
         file.write(this_page, 256);
@@ -180,17 +184,13 @@ uint8_t ProgrammerFromSd::read_file() {
       }
     );
 
-    delay(1000);
-
-    m_tft.drawTextBg(10, 10, "Done reading! Quitting in 2 seconds...", TftColor::CYAN, TftColor::BLACK);
-    Util::skippable_delay(2000, [this]() -> bool { return this->m_tch.is_touching(); });
+    m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
+    wait_continue(m_tft, m_tch);
   }
 
   file.flush();
   file.close();
-
   m_tft.fillScreen(TftColor::BLACK);
-
   return status;
 }
 
@@ -202,6 +202,7 @@ uint8_t ProgrammerFromSd::write_file() {
   m_tft.fillScreen(TftColor::BLACK);
 
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
+  uint16_t cur_addr = addr;
   m_tft.fillScreen(TftColor::BLACK);
 
   uint8_t this_page[256];
@@ -213,56 +214,77 @@ uint8_t ProgrammerFromSd::write_file() {
   else {
     m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
 
-    TftProgressIndicator bar(
-      m_tft, ceil((float) file.size() / 256.0), 10, 50, m_tft.width() - 20, 40, TftColor::DGREEN, TftColor::BLUE, TftColor::DRED, TftColor::WHITE
-    );
+    TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0), 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
     bar.for_each(
-      [this, &this_page, &file, &addr](uint8_t progress) {
+      [this, &this_page, &file, &cur_addr]TFT_PROGRESS_INDICATOR_LAMBDA {
         auto len = file.read(this_page, 256);
-        this->m_ee.write(addr, this_page, MIN(len, 256));
+        this->m_ee.write(cur_addr, this_page, MIN(len, 256));
 
-        addr += 0x0100; // Next page
+        cur_addr += 0x0100; // Next page
 
         return this->m_tch.is_touching();
       }
     );
+
+    m_tft.drawText(10, 110, "Done writing!", TftColor::CYAN);
+    wait_continue(m_tft, m_tch);
   }
 
   file.close();
-
   m_tft.fillScreen(TftColor::BLACK);
+
+  // Done writing, ask to verify
+  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?");
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if (should_verify) {
+    return verify_file(fname, addr);
+  }
 
   return status;
 }
 
-uint16_t ProgrammerFromSd::init_anim_and_calc_cell_size() {
-  const uint16_t cell_size = MIN(
-    TftCalc::fraction(m_tft.height() - 54, 2, 8),
-    TftCalc::fraction(m_tft.width()  - 24, 2, 16)
+uint8_t ProgrammerFromSd::verify_file(const char *fname, uint16_t addr) {
+  ActionFuncStatus status = STATUS_OK;
+
+  File file = SD.open(fname, O_READ);
+
+  uint8_t expectation[256];
+  uint8_t reality[256];
+
+  if (!file) return STATUS_ERR_FILE;
+
+  m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying '%s' at %04X...", fname, addr), TftColor::CYAN);
+
+  TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0), 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+
+  bool complete = bar.for_each(
+    [this, &expectation, &reality, &file, &addr]TFT_PROGRESS_INDICATOR_LAMBDA {
+      auto nbytes = file.read(expectation, 256);
+      this->m_ee.read(addr, addr + nbytes, reality);
+
+      if (memcmp(expectation, reality, nbytes) != 0) {
+        this->m_tft.drawText(10, 110, STRFMT_NOBUF("Mismatch somewhere at %04X-%04X!", addr, addr + 0xFF), TftColor::RED);
+
+        // Request to quit loop
+        return true;
+      }
+
+      addr += 0x0100; // Next page
+
+      return false;
+    }
   );
 
-  const uint16_t bound_w = cell_size * 16 + 38;
-  const uint16_t bound_h = bound_w / 2;
+  wait_continue(m_tft, m_tch);
 
-  m_tft.drawRect(13, 40, bound_w,     bound_h,     TftColor::GREEN);
-  m_tft.drawRect(14, 41, bound_w - 2, bound_h - 2, TftColor::GREEN);
+  // `complete` is true if the loop finished normally
+  if (!complete) status = STATUS_ERR_VERIFY;
 
-  m_tft.drawText( 10, 10, "Currently on page   /7F...", TftColor::ORANGE);
-  m_tft.drawText(336, 10, "(   %)",                     TftColor::CYAN);
-
-  return cell_size;
-}
-
-void ProgrammerFromSd::update_anim_to_show_progress(uint16_t cell_size, uint8_t progress) {
-  m_tft.drawTextBg(226, 10, STRFMT_NOBUF("%02X", progress),                          TftColor::ORANGE, TftColor::BLACK);
-  m_tft.drawTextBg(348, 10, STRFMT_NOBUF("%3d", uint8_t ((progress + 1) * 0.78125)), TftColor::CYAN,   TftColor::BLACK);
-
-  m_tft.fillRect(
-    17 + (progress % 16) * (cell_size + 2),
-    44 + (progress / 16) * (cell_size + 2),
-    cell_size, cell_size, TftColor::DGREEN
-  );
+  file.close();
+  m_tft.fillScreen(TftColor::BLACK);
+  return status;
 }
 
 uint8_t ProgrammerFromSd::read_vector() {

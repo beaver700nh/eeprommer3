@@ -65,27 +65,6 @@ public:
   uint8_t write_file();
   uint8_t verify_file(const char *fname, uint16_t addr);
 
-private:
-  // helper for file r/w funcs
-
-  template<typename Func>
-  void animated_for_each_page(Func action) {
-    const uint16_t cell_size = init_anim_and_calc_cell_size();
-
-    for (uint8_t page = 0; page < 0x80; ++page) {
-      update_anim_to_show_progress(cell_size, page);
-
-      bool should_quit = action(page);
-
-      if (m_tch.is_touching() || should_quit) break;
-    }
-  }
-
-  // read_file() helpers
-
-  uint16_t init_anim_and_calc_cell_size();
-  void update_anim_to_show_progress(uint16_t cell_size, uint8_t progress);
-
 public:
   /*** VECTOR IO ***/
 

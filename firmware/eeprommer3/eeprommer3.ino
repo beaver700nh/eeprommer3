@@ -39,19 +39,14 @@ void setup() {
 
   skip_btn->draw(tft);
 
-  tft.drawRGBBitmapFromFile(
-    80, 23, "startup.bin", 320, 240, true,
-    []() -> bool {
-      return skip_btn->is_pressed(tch, tft);
-    }
-  );
+  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
 
   if      (res == SdCtrl::STATUS_OK)       tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
   else if (res == SdCtrl::STATUS_DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
   else if (res == SdCtrl::STATUS_FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
   else                                     tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
 
-  Util::skippable_delay(2000, []() -> bool { return skip_btn->is_pressed(tch, tft); });
+  Util::skippable_delay(2000, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
 
   delete skip_btn;
 

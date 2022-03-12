@@ -504,17 +504,24 @@ class TftProgressIndicator {
 public:
   TftProgressIndicator(
     TftCtrl &tft, uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-    uint16_t color_frac, uint16_t color_perc, uint16_t color_bar1, uint16_t color_bar2
+    uint16_t color_frac = TftColor::DGREEN, uint16_t color_perc = TftColor::BLUE,
+    uint16_t color_bar1 = TftColor::DRED, uint16_t color_bar2 = TftColor::WHITE
   );
 
-  // Template because lambdas without libstdc++ are annoying
+// Should return true to request cancel of loop.
+#define TFT_PROGRESS_INDICATOR_LAMBDA (uint8_t progress) -> bool
+
+  // Is a template func because lambdas without libstdc++ are annoying.
+  // Returns true if loop completed succesfully, false if canceled.
   template<typename Func>
-  void for_each(Func action) {
+  bool for_each(Func action) {
     while (m_cur_val <= m_max_val) {
       tick();
 
-      if (action(m_cur_val)) break;
+      if (action(m_cur_val)) return false;
     }
+
+    return true;
   }
 
   void tick();

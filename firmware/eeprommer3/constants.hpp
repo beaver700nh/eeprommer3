@@ -59,6 +59,15 @@
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
 #define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
 
+/*
+ * Lambdas for use in Util::skippable_delay()
+ */
+
+// Tells whether screen is being touched
+#define LAMBDA_IS_TCHING_TFT [this]() -> bool { return this->m_tch.is_touching(); }
+// Tells whether buttons is being pressed
+#define LAMBDA_IS_TCHING_BTN(btn, tch, tft) []() -> bool { return btn->is_pressed(tch, tft); }
+
 /*****************************************/
 /** Constants ****************************/
 /*****************************************/
