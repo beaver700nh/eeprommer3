@@ -474,30 +474,26 @@ void ProgrammerFromSd::show_page(
     TftColor::PURPLE, TftColor::BLACK, 2
   );
 
-  uint16_t idx = (cur_page == 0 ? 0 : PAGE_ADJUSTED(0x0100 - (addr1 & 0xFF), cur_page - 1));
-
   // Variables for formatting a byte
   uint8_t byte_offset;
   char byte_as_text[3];
   uint16_t color;
 
-  for (uint8_t row = 0x00; row < 0x10; ++row) {
-    for (uint8_t col = 0x00; col < 0x10; ++col) {
-      uint8_t pos = (row << 4) + col;
+  uint16_t glob_range_start = addr1 >> 8;
+  uint16_t glob_page_start = MAX(((cur_page + glob_range_start)     << 8),     addr1);
+  uint16_t glob_page_end   = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
 
-      if (cur_page == 0 && pos < (addr1 & 0xFF)) continue;      // Skip if before start of data
-      if (cur_page == max_page && pos > (addr2 & 0xFF)) return; // Stop if after end of data
+  for (uint16_t i = glob_page_start; i <= glob_page_end; ++i) {
+    uint8_t tft_byte_col = (i & 0x0F);
+    uint8_t tft_byte_row = (i & 0xFF) >> 4;
 
-      // Now we have verified that the position is valid
+    (*calc)(&byte_offset, byte_as_text, &color, data[i - addr1]);
 
-      (*calc)(&byte_offset, byte_as_text, &color, data[idx++]);
+    uint8_t split_offset = (tft_byte_col < 8 ? 0 : 3);
+    uint16_t tft_byte_x = m_tft.width()  / 2 - 141 + 18 * tft_byte_col + byte_offset + split_offset;
+    uint16_t tft_byte_y = m_tft.height() / 2 - 105 + 10 * tft_byte_row;
 
-      uint8_t split_offset = (col < 8 ? 0 : 3);
-      uint16_t byte_x = m_tft.width() / 2 - 141 + 18 * col + byte_offset + split_offset;
-      uint16_t byte_y = m_tft.height() / 2 - 105 + 10 * row;
-
-      m_tft.drawText(byte_x, byte_y, byte_as_text, color, 1);
-    }
+    m_tft.drawText(tft_byte_x, tft_byte_y, byte_as_text, color, 1);
   }
 }
 
