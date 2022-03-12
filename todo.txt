@@ -2,7 +2,6 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - fix sign-compare warning
   - massive refactoring:
     - ProgrammerFromXXX renamed to ProgrammerImplXXX
     - make ProgrammerImplXXX use a bunch of ProgrammerCoreYYY's

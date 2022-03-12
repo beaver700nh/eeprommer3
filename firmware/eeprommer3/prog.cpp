@@ -596,13 +596,13 @@ void ProgrammerFromSd::draw_pairs(
   }
 
   if (buf.get_len() == 0) {
-    m_tft.drawText(margin_l, margin_u,      "No pairs yet!",                     TftColor::LGRAY);
-    m_tft.drawText(margin_l, margin_u + 30, "Click \"Add Pair\" to add a pair!", TftColor::LGRAY);
+    m_tft.drawText(margin_l, margin_u,      "No pairs yet!",                   TftColor::LGRAY);
+    m_tft.drawText(margin_l, margin_u + 30, "Click `Add Pair' to add a pair!", TftColor::LGRAY);
     return;
   }
 
   uint16_t this_pair = offset;
-  uint16_t last_pair = MIN(offset + n - 1, buf.get_len() - 1);
+  uint16_t last_pair = MIN(offset + n - 1U, buf.get_len() - 1U);
 
   do {
     uint16_t x = margin_l;
