@@ -40,15 +40,19 @@ protected:
   SdCtrl &m_sd;
 };
 
-class ProgrammerFromSdByteCore : public ProgrammerFromSdBaseCore {
-public:
-  ProgrammerFromSdByteCore(TYPED_CONTROLLERS) : ProgrammerFromSdBaseCore(CONTROLLERS) {};
+#define ADD_CORE_DECLARATION(name) \
+  class ProgrammerFromSd##name##Core : public ProgrammerFromSdBaseCore { \
+  public: \
+    ProgrammerFromSd##name##Core(TYPED_CONTROLLERS) : ProgrammerFromSdBaseCore(CONTROLLERS) {}; \
+  \
+    Status read(); \
+    Status write(); \
+  \
+  private: \
+    Status verify(uint16_t addr, void *data, uint16_t len = 0); \
+  };
 
-  Status read();
-  Status write();
-
-private:
-  Status verify(uint16_t addr, void *data, uint16_t len = 0);
-};
+ADD_CORE_DECLARATION(Byte)
+ADD_CORE_DECLARATION(File)
 
 #endif

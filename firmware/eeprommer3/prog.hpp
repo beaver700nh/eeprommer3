@@ -52,20 +52,6 @@ public:
   void run();
   void show_status(uint8_t code);
 
-  typedef uint8_t (ProgrammerFromSd::*action_func)();
-
-  /*** BYTE IO ***/
-
-  uint8_t read_byte();
-  uint8_t write_byte();
-  uint8_t verify_byte(uint16_t addr, uint8_t data);
-
-  /*** FILE IO ***/
-
-  uint8_t read_file();
-  uint8_t write_file();
-  uint8_t verify_file(const char *fname, uint16_t addr);
-
 public:
   /*** VECTOR IO ***/
 
@@ -129,6 +115,7 @@ public:
 
   ProgrammerFromSdBaseCore::Func action_map[NUM_ACTIONS] = {
     FUNC(Byte, read), FUNC(Byte, write),
+    FUNC(File, read), FUNC(File, write),
   };
 
 #undef FUNC

@@ -32,6 +32,9 @@
 // - PAGE_ADJUSTED(0x123456FF, 0x00654321) => 0x654321FF
 #define PAGE_ADJUSTED(addr, page) (((page) << 8) + ((addr) & 0xFF))
 
+// Silences "unused variable" warnings
+#define UNUSED_VAR(name) (void) name
+
 // Returns number of elements in array `a`
 #define ARR_LEN(a) (sizeof((a)) / sizeof((a)[0]))
 
