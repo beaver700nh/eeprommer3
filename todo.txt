@@ -4,19 +4,13 @@
 - FIRMWARE
   - massive refactoring:
     - ProgrammerFromXXX { // sd, serial
-        ProgrammerYYYHandler handler[];
-      }
-    - ProgrammerBaseHandler {
-        ProgrammerBaseCore *core;
+        ProgrammerBaseCore *cores[];
       }
     - ProgrammerBaseCore { // ABC
         read(), write()
         _verify()
       }
-    - ProgrammerZZZCore(ProgrammerBaseCore) {
-        // specialize
-      }
-    - ProgrammerYYYHandler(ProgrammerBaseHandler) { // byte, file, vector, range
+    - ProgrammerYYYCore(ProgrammerBaseCore) { // byte, file, vector, range
         // specialize
       }
   - tweak debug message stuff - after refactoring
