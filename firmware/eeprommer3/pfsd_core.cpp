@@ -49,11 +49,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::write() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  // Done writing, ask to verify
-  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?");
-  m_tft.fillScreen(TftColor::BLACK);
-
-  return (should_verify ? verify(addr, (void *) &data) : Status::OK);
+  RETURN_VERIFICATION_OR_OK(addr, (void *) &data);
 }
 
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::verify(uint16_t addr, void *data, uint16_t len) {
@@ -156,11 +152,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::write() {
   file.close();
   m_tft.fillScreen(TftColor::BLACK);
 
-  // Done writing, ask to verify
-  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?");
-  m_tft.fillScreen(TftColor::BLACK);
-
-  return (should_verify ? verify(addr, fname) : status);
+  RETURN_VERIFICATION_OR_VALUE(status, addr, fname);
 }
 
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr, void *data, uint16_t len) {
@@ -206,4 +198,99 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr,
   file.close();
   m_tft.fillScreen(TftColor::BLACK);
   return status;
+}
+
+/*****************************/
+/******** VECTOR CORE ********/
+/*****************************/
+
+// Vector is a helper class for vector-related actions.
+struct Vector {
+  Vector(uint8_t id) : m_id(id), m_addr(0xFFF8 + 2 * (id + 1)) {};
+
+  void update(EepromCtrl &ee) {
+    m_lo = ee.read(m_addr);
+    m_hi = ee.read(m_addr + 1);
+    m_val = (m_hi << 8) | m_lo;
+  }
+
+  uint8_t m_id;
+  uint16_t m_addr;
+
+  uint8_t m_lo, m_hi;
+  uint16_t m_val;
+
+  inline static const char *NAMES[3] = {"NMI", "RESET", "IRQ"};
+};
+
+Vector ask_vector(TftCtrl &tft, TouchCtrl &tch) {
+  return Vector(
+    ask_choice(
+      tft, tch, "Which vector?", 3, 54, 1, 3,
+      Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE,
+      Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN,
+      Vector::NAMES[2], TftColor::PINKK,          TftColor::RED
+    )
+  );
+}
+
+ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::read() {
+  Vector vec = ask_vector(m_tft, m_tch);
+  vec.update(m_ee);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  m_tft.drawText( 10,  10, STRFMT_NOBUF("Value of %s vector:", Vector::NAMES[vec.m_id]), TftColor::CYAN,   3);
+  m_tft.drawText(320,  50, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1),      TftColor::BLUE,   2);
+  m_tft.drawText( 16,  50, STRFMT_NOBUF("HEX: %04X", vec.m_val),                         TftColor::YELLOW, 2);
+  m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
+  m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
+
+  Util::wait_continue(m_tft, m_tch);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  return Status::OK;
+}
+
+ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::write() {
+  Vector vec = ask_vector(m_tft, m_tch);
+  vec.update(m_ee);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  uint16_t new_val = ask_val<uint16_t>(m_tft, m_tch, "Type the new value:");
+  m_ee.write(vec.m_addr,     new_val & 0xFF);
+  m_ee.write(vec.m_addr + 1, new_val >> 8);
+
+  m_tft.fillScreen(TftColor::BLACK);
+  m_tft.drawText(10,  10, "Wrote",                                                 TftColor::DGREEN, 3);
+  m_tft.drawText(10,  37, STRFMT_NOBUF("value %04X", new_val),                     TftColor::GREEN,  4);
+  m_tft.drawText(10,  73, "to",                                                    TftColor::DGREEN, 3);
+  m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
+  m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
+
+  Util::wait_continue(m_tft, m_tch);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  RETURN_VERIFICATION_OR_OK(vec.m_addr, (void *) &new_val)
+}
+
+ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::verify(uint16_t addr, void *data, uint16_t len) {
+  uint16_t actual = (m_ee.read(addr + 1) << 8) | m_ee.read(addr);
+
+  if (actual != *(uint16_t *) data) {
+    m_tft.drawText(10, 10, "Result:",                                          TftColor::ORANGE,  4);
+    m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", *(uint16_t *) data), TftColor::PURPLE,  3);
+    m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual),             TftColor::MAGENTA, 3);
+
+    Util::wait_continue(m_tft, m_tch);
+
+    m_tft.fillScreen(TftColor::BLACK);
+
+    return Status::ERR_VERIFY;
+  }
+
+  return Status::OK;
 }

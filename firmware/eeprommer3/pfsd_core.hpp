@@ -54,5 +54,14 @@ protected:
 
 ADD_CORE_DECLARATION(Byte)
 ADD_CORE_DECLARATION(File)
+ADD_CORE_DECLARATION(Vector)
+
+#define RETURN_VERIFICATION_OR_VALUE(value, ...) \
+  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?"); \
+  m_tft.fillScreen(TftColor::BLACK); \
+  \
+  return (should_verify ? verify(__VA_ARGS__) : value);
+
+#define RETURN_VERIFICATION_OR_OK(...) RETURN_VERIFICATION_OR_VALUE(Status::OK, __VA_ARGS__)
 
 #endif

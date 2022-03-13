@@ -53,17 +53,17 @@ public:
   void show_status(uint8_t code);
 
 public:
-  /*** VECTOR IO ***/
+//   /*** VECTOR IO ***/
 
-  uint8_t read_vector();
-  uint8_t write_vector();
-  uint8_t verify_vector(uint16_t addr, uint16_t data);
+//   uint8_t read_vector();
+//   uint8_t write_vector();
+//   uint8_t verify_vector(uint16_t addr, uint16_t data);
 
-private:
-  // read/write_vector() helper
+// private:
+//   // read/write_vector() helper
 
-  // Function to ask the user to select a 6502 jump vector
-  Vector ask_vector();
+//   // Function to ask the user to select a 6502 jump vector
+//   Vector ask_vector();
 
 public:
   /*** MULTIPLE IO ***/
@@ -114,8 +114,9 @@ public:
 #define FUNC(type, name) (ProgrammerFromSdBaseCore::Func) &ProgrammerFromSd##type##Core::name
 
   ProgrammerFromSdBaseCore::Func action_map[NUM_ACTIONS] = {
-    FUNC(Byte, read), FUNC(Byte, write),
-    FUNC(File, read), FUNC(File, write),
+    FUNC(Byte,   read), FUNC(Byte,   write),
+    FUNC(File,   read), FUNC(File,   write),
+    FUNC(Vector, read), FUNC(Vector, write),
   };
 
 #undef FUNC
