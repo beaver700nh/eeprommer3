@@ -4,7 +4,13 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+class TftCtrl;
+class TouchCtrl;
+
+#undef swap
+
 namespace Util {
+  // Swaps two variables `a` and `b` of type `T`
   template<typename T>
   void swap(T *a, T *b) {
     T temp = *a;
@@ -24,6 +30,9 @@ namespace Util {
 
     return false;
   }
+
+  // Function to wait for the user to press a "Continue" button
+  void wait_continue(TftCtrl &tft, TouchCtrl &tch);
 };
 
 #endif

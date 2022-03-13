@@ -59,6 +59,10 @@
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
 #define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
 
+#define TYPED_CONTROLLERS     TftCtrl &tft, TouchCtrl &tch, EepromCtrl &ee, SdCtrl &sd
+#define INIT_LIST_CONTROLLERS m_tft(tft),   m_tch(tch),     m_ee(ee),       m_sd(sd)
+#define CONTROLLERS           tft,          tch,            ee,             sd
+
 /*
  * Lambdas for use in Util::skippable_delay()
  */

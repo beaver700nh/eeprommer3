@@ -8,6 +8,7 @@
 #include "input.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "pfsd_core.hpp"
 
 /*
  * Vector is a helper class for
@@ -35,8 +36,8 @@ struct Vector {
   inline static const char *NAMES[3] = {"NMI", "RESET", "IRQ"};
 };
 
-// Function to wait for the user to press a "Continue" button
-void wait_continue(TftCtrl &tft, TouchCtrl &tch);
+// Fwd decl because of circular dependency
+class ProgrammerFromSdBaseCore;
 
 /*
  * ProgrammerFromSd is a class that
@@ -46,7 +47,7 @@ void wait_continue(TftCtrl &tft, TouchCtrl &tch);
  */
 class ProgrammerFromSd {
 public:
-  ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft);
+  ProgrammerFromSd(TYPED_CONTROLLERS);
 
   void run();
   void show_status(uint8_t code);
@@ -122,13 +123,15 @@ public:
 
   static constexpr uint8_t NUM_ACTIONS = 10;
 
-  action_func action_map[NUM_ACTIONS] = {
-    &ProgrammerFromSd::read_byte,   &ProgrammerFromSd::write_byte,
-    &ProgrammerFromSd::read_file,   &ProgrammerFromSd::write_file,
-    &ProgrammerFromSd::read_vector, &ProgrammerFromSd::write_vector,
-    &ProgrammerFromSd::read_range,  &ProgrammerFromSd::write_multi,
-    &ProgrammerFromSd::draw,        &ProgrammerFromSd::debug,
+  ProgrammerFromSdBaseCore *m_cores[NUM_ACTIONS / 2];
+
+#define FUNC(type, name) (ProgrammerFromSdBaseCore::Func) &ProgrammerFromSd##type##Core::name
+
+  ProgrammerFromSdBaseCore::Func action_map[NUM_ACTIONS] = {
+    FUNC(Byte, read), FUNC(Byte, write),
   };
+
+#undef FUNC
 
   /*
    * Enum of status codes returned from functions of
@@ -142,11 +145,10 @@ public:
     STATUS_ERR_MEMORY,  // Memory allocator returned null
   };
 
-private:
+  TftCtrl &m_tft;
+  TouchCtrl &m_tch;
   EepromCtrl &m_ee;
   SdCtrl &m_sd;
-  TouchCtrl &m_tch;
-  TftCtrl &m_tft;
 };
 
 #endif

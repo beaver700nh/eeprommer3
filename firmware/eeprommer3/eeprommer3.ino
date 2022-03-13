@@ -17,7 +17,6 @@ void check_packet();
 TftCtrl tft;
 TouchCtrl tch(TS_XP, TS_XM, TS_YP, TS_YM, TS_RESIST);
 SdCtrl sd(SD_CS, SD_EN);
-
 EepromCtrl ee;
 
 // Made global to allow capturing by lambdas; is destroyed inside setup()
@@ -60,7 +59,7 @@ void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
   if (sd.is_enabled()) {
-    ProgrammerFromSd prog(ee, sd, tch, tft);
+    ProgrammerFromSd prog(CONTROLLERS);
     prog.run();
   }
   else {

@@ -11,15 +11,8 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
-void wait_continue(TftCtrl &tft, TouchCtrl &tch) {
-  static TftBtn continue_btn(BOTTOM_BTN(tft, "Continue"));
-  continue_btn.draw(tft);
-  continue_btn.wait_for_press(tch, tft);
-}
-
-ProgrammerFromSd::ProgrammerFromSd(EepromCtrl &ee, SdCtrl &sd, TouchCtrl &tch, TftCtrl &tft)
-  : m_ee(ee), m_sd(sd), m_tch(tch), m_tft(tft) {
-  // Empty
+ProgrammerFromSd::ProgrammerFromSd(TYPED_CONTROLLERS) : INIT_LIST_CONTROLLERS {
+  m_cores[0] = new ProgrammerFromSdByteCore(CONTROLLERS);
 }
 
 void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
@@ -65,10 +58,15 @@ void ProgrammerFromSd::run() {
 
     m_tft.fillScreen(TftColor::BLACK);
 
-    uint8_t status_code = (cur_choice < NUM_ACTIONS ? (this->*(action_map[cur_choice]))() : 1);
+    ProgrammerFromSdBaseCore::Status status_code = (
+      cur_choice < NUM_ACTIONS ?
+      (m_cores[cur_choice / 2]->*action_map[cur_choice])() :
+      ProgrammerFromSdBaseCore::Status::ERR_INVALID
+    );
+
     show_status(status_code);
 
-    wait_continue(m_tft, m_tch);
+    Util::wait_continue(m_tft, m_tch);
 
     m_tft.fillScreen(TftColor::BLACK);
   }
@@ -101,7 +99,7 @@ uint8_t ProgrammerFromSd::read_byte() {
   m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
   m_tft.drawText(20, 170, STRFMT_NOBUF("CHR: %c",        data),               TftColor::YELLOW, 2);
 
-  wait_continue(m_tft, m_tch);
+  Util::wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -121,7 +119,7 @@ uint8_t ProgrammerFromSd::write_byte() {
   m_tft.drawText(10,  73, "to",                                TftColor::DGREEN, 3);
   m_tft.drawText(10, 100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
-  wait_continue(m_tft, m_tch);
+  Util::wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -144,7 +142,7 @@ uint8_t ProgrammerFromSd::verify_byte(uint16_t addr, uint8_t data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", data),   TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual), TftColor::MAGENTA, 3);
 
-    wait_continue(m_tft, m_tch);
+    Util::wait_continue(m_tft, m_tch);
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -185,7 +183,7 @@ uint8_t ProgrammerFromSd::read_file() {
     );
 
     m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
-    wait_continue(m_tft, m_tch);
+    Util::wait_continue(m_tft, m_tch);
   }
 
   file.flush();
@@ -228,7 +226,7 @@ uint8_t ProgrammerFromSd::write_file() {
     );
 
     m_tft.drawText(10, 110, "Done writing!", TftColor::CYAN);
-    wait_continue(m_tft, m_tch);
+    Util::wait_continue(m_tft, m_tch);
   }
 
   file.close();
@@ -277,7 +275,7 @@ uint8_t ProgrammerFromSd::verify_file(const char *fname, uint16_t addr) {
     }
   );
 
-  wait_continue(m_tft, m_tch);
+  Util::wait_continue(m_tft, m_tch);
 
   // `complete` is true if the loop finished normally
   if (!complete) status = STATUS_ERR_VERIFY;
@@ -299,7 +297,7 @@ uint8_t ProgrammerFromSd::read_vector() {
   m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
   m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
 
-  wait_continue(m_tft, m_tch);
+  Util::wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -323,7 +321,7 @@ uint8_t ProgrammerFromSd::write_vector() {
   m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
   m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
 
-  wait_continue(m_tft, m_tch);
+  Util::wait_continue(m_tft, m_tch);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -346,7 +344,7 @@ uint8_t ProgrammerFromSd::verify_vector(uint16_t addr, uint16_t data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", data),   TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual), TftColor::MAGENTA, 3);
 
-    wait_continue(m_tft, m_tch);
+    Util::wait_continue(m_tft, m_tch);
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -728,7 +726,7 @@ uint8_t ProgrammerFromSd::debug() {
       val8 = m_ee.get_data();
       m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
       m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val8)), TftColor::YELLOW, 2);
-      wait_continue(m_tft, m_tch);
+      Util::wait_continue(m_tft, m_tch);
       break;
     case 4:
       m_tft.fillScreen(TftColor::BLACK); 
