@@ -3,11 +3,22 @@
 
 - FIRMWARE
   - massive refactoring:
-    - ProgrammerFromXXX renamed to ProgrammerImplXXX
-    - make ProgrammerImplXXX use a bunch of ProgrammerCoreYYY's
-    - ProgrammerCoreYYY's are children of ProgrammerCore
-    - ProgrammerCore is an ABC with read(), write(), and verify()
-    - ProgrammerImplSerial will use the same ProgrammerCoreYYY's but with different wrapper code
+    - ProgrammerFromXXX { // sd, serial
+        ProgrammerYYYHandler handler[];
+      }
+    - ProgrammerBaseHandler {
+        ProgrammerBaseCore *core;
+      }
+    - ProgrammerBaseCore { // ABC
+        read(), write()
+        _verify()
+      }
+    - ProgrammerZZZCore(ProgrammerBaseCore) {
+        // specialize
+      }
+    - ProgrammerYYYHandler(ProgrammerBaseHandler) { // byte, file, vector, range
+        // specialize
+      }
   - tweak debug message stuff - after refactoring
   - start work on from_serial programmer
 
