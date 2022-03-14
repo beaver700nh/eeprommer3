@@ -9,8 +9,7 @@
 #include "input.hpp"
 
 /*
- * This file contains classes for various
- * front-end purposes.
+ * This file contains classes for various front-end purposes.
  */
 
 // Removes color constants from MCUFRIEND_kbv library
@@ -69,9 +68,8 @@ namespace TftColor {
 };
 
 /*
- * TftCtrl is the main class to interface
- * with the TFT; it is a wrapper around the
- * 3rd-party class MCUFRIEND_kbv.
+ * `TftCtrl` is the main class to interface with the TFT; it is a wrapper
+ * around the 3rd-party class `MCUFRIEND_kbv` - prenticedavid/MCUFRIEND_kbv (GitHub).
  */
 class TftCtrl : public MCUFRIEND_kbv {
 public:
@@ -90,8 +88,7 @@ public:
 };
 
 /*
- * A set of functions to help calculate the
- * positions of elements on a TFT screen
+ * A set of functions to help calculate the positions of elements on a TFT screen
  */
 namespace TftCalc {
   uint16_t t_center_x(uint16_t box, const char *text, uint8_t size);
@@ -117,16 +114,12 @@ namespace TftCalc {
 // Classes from here on are for GUI
 
 /*
- * Forward declaration because some of the
- * GUI classes' methods depend on TouchCtrl
+ * Forward declaration because of circular dependencies between `TouchCtrl` and some GUI classes.
  */
 class TouchCtrl;
 
 /*
- * TftBtn: stores its own data,
- * can detect if it is pressed,
- * and can draw itself to the
- * TFT screen.
+ * `TftBtn` stores its own data, can detect if it is pressed, and can draw itself to the TFT screen.
  */
 class TftBtn {
 public:
@@ -139,7 +132,7 @@ public:
     const char *text, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
-  // Partial constructor, enables auto centering eliminating need for tx and ty.
+  // Partial constructor; enables auto centering, eliminating need for `tx` and `ty`.
   TftBtn(
     uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text,
     uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
@@ -168,17 +161,11 @@ public:
   inline uint16_t get_bg()            { return m_bg; }
   inline void     set_bg(uint16_t bg) { m_bg = bg;   }
 
-  inline uint8_t get_font_size()                  { return m_font_size; }
-  inline void    set_font_size(uint8_t font_size) {
-    m_font_size = font_size;
-    auto_center();
-  }
+  inline uint8_t get_font_size()                  { return m_font_size;                     }
+  inline void    set_font_size(uint8_t font_size) { m_font_size = font_size; auto_center(); }
 
-  inline const char *get_text()                 { return m_text; }
-  inline void        set_text(const char *text) {
-    m_text = text;
-    auto_center();
-  }
+  inline const char *get_text()                 { return m_text;                }
+  inline void        set_text(const char *text) { m_text = text; auto_center(); }
 
   void draw(TftCtrl &tft);
   void erase(TftCtrl &tft);
@@ -201,10 +188,10 @@ public:
 
   // Controls whether the button automatically centers text. Only call this to override auto detection.
   inline void auto_centering(bool auto_center) { m_auto_center = auto_center; }
-  // Default is false / manual centering; if constructed without tx/ty parameters, default is true / auto centering.
+  // Default is false / manual centering; if constructed without `tx/ty` parameters, default is true / auto centering.
   inline bool is_auto_centering() { return m_auto_center; }
 
-  // Sets tx and ty to position text at center of button, but only if in auto_center mode.
+  // Sets `tx` and `ty` to position text at center of button, but only if in `auto_center` mode.
   inline void auto_center() {
     if (!m_auto_center) return;
 
@@ -238,9 +225,7 @@ private:
 };
 
 /*
- * TftMenu makes creating menus easier;
- * it's basically just a group of buttons
- * with some helpful functions included
+ * `TftMenu` makes creating menus easier; it's basically just a group of `TftBtn`s with some helpful functions included.
  */
 class TftMenu {
 public:
@@ -269,9 +254,12 @@ protected:
   uint8_t m_num_btns = 0;
 };
 
+/*
+ * `TftKeyboardLayout` is a class for storing layouts of `TftKeyboardMenu`s.
+ */
 class TftKeyboardLayout {
 public:
-  TftKeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width);
+  TftKeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width) : m_layout(layout), m_length(length), m_width(width) {};
 
   const uint8_t *get_layout();
 
@@ -288,22 +276,21 @@ private:
   uint8_t m_width;
 };
 
+// Functions to get pre-set layouts of HexSel- and String- Menus
+
 TftKeyboardLayout &get_glob_kbd_hex_layout();
 TftKeyboardLayout &get_glob_kbd_str_layout();
 
 /*
- * TftKeyboardMenu is an ABC specialization of
- * TftMenu for getting aggregate values such as
- * strings and numbers from the user via the
- * use of a keyboard.
+ * `TftKeyboardMenu` is an ABC specialization of `TftMenu` for getting aggregate values such as
+ * strings and numbers from the user via the use of a keyboard.
  * 
- * THIS IS A BASE CLASS AND CANNOT BE USED
- * DIRECTLY -- USE A SUBCLASS INSTEAD!
+ * THIS IS A BASE CLASS AND CANNOT BE USED DIRECTLY -- USE A SUBCLASS INSTEAD!
  */
 class TftKeyboardMenu : public TftMenu {
 public:
   // IMPORTANT - Does not initialize internal value string, do not forget to do so
-  // height of button = calculated width of button * param btn_height
+  // height of button = calculated width of button * param `btn_height`
   TftKeyboardMenu(
     TftCtrl &tft, uint8_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, TftKeyboardLayout &layout, float btn_height = 1.2
   );
@@ -336,16 +323,15 @@ protected:
 };
 
 /*
- * TftHexSelMenu is a TftMenu but specialized
- * for inputting numbers in hexadecimal.
+ * `TftHexSelMenu` is a `TftKeyboardMenu` but specialized for inputting numbers in hexadecimal.
  *
- * Type T is an integer type and determines what
+ * Type `T` is an integer type and determines what
  * numbers can be inputted.
  */
 template <typename T>
 class TftHexSelMenu : public TftKeyboardMenu {
 public:
-  // param val_size: 1 = 8 bits, 2 = 16 bits, etc
+  // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
   TftHexSelMenu(TftCtrl &tft, uint8_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
     : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
     m_val = (char *) malloc(BUF_LEN() * sizeof(char));
@@ -401,8 +387,7 @@ public:
 };
 
 /*
- * TftStringMenu is a TftKeyboardMenu but specialized
- * for inputting strings.
+ * `TftStringMenu` is a `TftKeyboardMenu` but specialized for inputting strings.
  */
 class TftStringMenu : public TftKeyboardMenu {
 public:
@@ -432,19 +417,18 @@ private:
 };
 
 /*
- * TftChoiceMenu is a specialized TftMenu to
- * choose one option from a selection of choices.
- * It also supports having button layouts be
- * automatically calculated based on the parameters
- * of padding and margin passed in the constructor.
+ * `TftChoiceMenu` is a `TftMenu` specialized to choose one option from a selection of choices. It also supports
+ * having button layouts be automatically calculated based on the parameters of padding and margin passed in the constructor.
  */
 class TftChoiceMenu : public TftMenu {
 public:
-  // btn_height_px: true = btn_height uses px, false = multiplied with btn width
+  // `btn_height_px`: true = `btn_height` uses px, false = multiplied with btn width
   TftChoiceMenu(
     uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t num_cols,
     float btn_height, bool btn_height_px, uint8_t initial_choice = 0
-  );
+  )
+    : m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
+    m_btn_height(btn_height), m_btn_height_px(btn_height_px), m_cur_choice(initial_choice) {};
 
   typedef void (*Callback)(TftCtrl &tft, uint8_t btn_id, bool is_confirm);
 
@@ -480,10 +464,8 @@ protected:
 };
 
 /*
- * TftYesNoMenu is a specialized TftChoiceMenu
- * which only has the options "Yes" and "No".
- * It also automatically adds the "Confirm" button
- * upon construction.
+ * `TftYesNoMenu` is a `TftChoiceMenu` specialized to only has the options "Yes" and "No".
+ * It also automatically adds the "Confirm" button upon construction.
  */
 class TftYesNoMenu : public TftChoiceMenu {
 public:
@@ -496,12 +478,8 @@ public:
 #define TFT_PROGRESS_INDICATOR_LAMBDA (uint8_t progress) -> bool
 
 /*
- * TftProgressIndicator is a class to show a progress
- * amount on a TftCtrl as a fraction, a percentange,
- * and a progress bar.
- *
- * It will try to only take up as much space as it is
- * allotted in the constructor.
+ * `TftProgressIndicator` is a class to show a progress amount on a `TftCtrl` as a fraction, a percentange, and a progress bar.
+ * It will try to only take up as much space as it is allotted in the constructor.
  */
 class TftProgressIndicator {
 public:
@@ -538,11 +516,8 @@ private:
 };
 
 /*
- * This is a helper function to ask the user for
- * an arbitrarily-sized integer.
- * 
- * Type T is the integer type that determines
- * the kind of integer for which the user is asked.
+ * This is a helper function to ask the user for an arbitrarily-sized integer.
+ * Type `T` is an integer type that determines the kind of integer for which the user is asked.
  */
 template<typename T>
 T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
@@ -567,40 +542,30 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
 }
 
 /*
- * This is a function to ask the user to pick
- * from one of `num` choices.
- * 
- * This function is variadic, so be careful
- * that you provide a valid `num`.
+ * This is a function to ask the user to pick from one of `num` choices.
+ * This function is variadic, so be careful that you provide a valid `num`.
  */
 uint8_t ask_choice(
   TftCtrl &tft, TouchCtrl &tch, const char *prompt, int8_t cols, int32_t btn_height, int16_t initial_choice, uint8_t num, ...
 );
 
 /*
- * This is a function to ask the user a
- * yes or no question, using a TftYesNoMenu.
+ * This is a function to ask the user a yes or no question, using a `TftYesNoMenu`.
  */
 bool ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t initial_choice = -1);
 
 /*
- * This is a helper function to ask the user
- * for an arbitrarily-sized string, using
- * a TftStringMenu.
+ * This is a helper function to ask the user for an arbitrarily-sized string, using a `TftStringMenu`.
  */
 void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len);
 
 /*
- * Debug function for testing touchscreen and TFT screen.
- * This function contains an infinite loop, and will never
- * finish executing.
+ * Debug function for testing touchscreen and TFT screen. Press left edge of screen to quit.
  */
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
 
 /*
- * Quick little function to print the character set of the
- * TFT, to help identify special characters like arrows for
- * use in the GUI.
+ * Quick little function to print the character set of the TFT, to help identify special characters like arrows for use in the GUI.
  */
 void tft_print_chars(TftCtrl &tft);
 

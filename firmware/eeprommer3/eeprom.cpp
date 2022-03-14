@@ -82,8 +82,7 @@ void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   uint16_t first_addr_of_page = addr;
 
   do {
-    // If pair not in the same page as pair #0 then
-    // start a new operation and update the working page
+    // If pair not in the same page as pair #0 then start a new operation and update the working page
     if ((0x7FC0 & ~(i ^ first_addr_of_page)) != 0x7FC0) {
       delay(10);
       first_addr_of_page = i;
@@ -99,8 +98,7 @@ void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   }
   while ((i - addr + 1) < len && ++i);
 
-  // Delay to be sure that the next operation is treated
-  // as a different one than this operation
+  // Delay to be sure that the next operation is treated as a different one than this operation
   delay(10);
 }
 
@@ -131,7 +129,6 @@ void EepromCtrl::write(AddrDataArray *buf) {
     delayMicroseconds(2);
   }
 
-  // Delay to be sure that the next operation is treated
-  // as a different one than this operation
+  // Delay to be sure that the next operation is treated as a different one than this operation
   delay(10);
 }

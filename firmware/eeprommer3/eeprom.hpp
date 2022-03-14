@@ -8,6 +8,8 @@
 
 #include "ad_array.hpp"
 
+// This is a class with functions with low and high level controls of an EEPROM connected
+// on two MCP23X17 I2C IO expanders, defaulting to I2C addresses 0x20 and 0x21
 class EepromCtrl {
 public:
   EepromCtrl() {};

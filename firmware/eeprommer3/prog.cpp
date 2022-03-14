@@ -65,7 +65,9 @@ void ProgrammerFromSd::run() {
 
   uint8_t cur_choice = 0;
 
-  while (true) { // Main loop
+  // Main Loop
+
+  while (true) {
     m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
     show_help(m_tft, cur_choice, false);
     cur_choice = menu.wait_for_value(m_tch, m_tft);

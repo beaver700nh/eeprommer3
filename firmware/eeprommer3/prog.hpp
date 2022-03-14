@@ -14,10 +14,7 @@
 class ProgrammerFromSdBaseCore;
 
 /*
- * ProgrammerFromSd is a class that
- * connects the front-end and back-end
- * for programming the EEPROM from the
- * on-board SD card.
+ * `ProgrammerFromSd` is a class that connects the front-end and back-end for programming the EEPROM from the on-board SD card.
  */
 class ProgrammerFromSd {
 public:

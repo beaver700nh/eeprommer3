@@ -9,6 +9,7 @@ class TouchCtrl;
 
 #undef swap
 
+// A namespace with various miscellaneous utility functions
 namespace Util {
   // Swaps two variables `a` and `b` of type `T`
   template<typename T>

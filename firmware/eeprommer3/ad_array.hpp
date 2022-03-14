@@ -1,9 +1,10 @@
 #ifndef AD_ARRAY_HPP
 #define AD_ARRAY_HPP
 
-// In order to allow this file and ad_map.cpp to be used and tested
-// outside of the Arduino environment, we use <Arduino.h> with Arduino
-// and normal C++ libraries otherwise.
+/*
+ * In order to allow this file and ad_map.cpp to be used and tested outside of the Arduino environment,
+ * we use <Arduino.h> with Arduino and normal C++ libraries otherwise.
+ */
 
 #ifdef ARDUINO
 #  include <Arduino.h>

@@ -137,9 +137,9 @@ TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint
 }
 
 TftBtn::TftBtn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
-  : TftBtn(x, y, w, h, 0, 0, text, fg, bg) { // Passes tx/ty as (0, 0) temporarily
+  : TftBtn(x, y, w, h, 0, 0, text, fg, bg) { // Passes `tx/ty` as (0, 0) temporarily
   m_auto_center = true;
-  auto_center(); // Overwrites dummy ((0, 0) tx/ty with real center
+  auto_center(); // Overwrites dummy (0, 0) `tx/ty` with real center
 }
 
 void TftBtn::draw(TftCtrl &tft) {
@@ -302,11 +302,6 @@ void TftMenu::deselect_all() {
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     m_btns[i]->highlight(false);
   }
-}
-
-TftKeyboardLayout::TftKeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width)
-  : m_layout(layout), m_length(length), m_width(width) {
-  // Empty
 }
 
 const uint8_t *TftKeyboardLayout::get_layout() {
@@ -479,17 +474,6 @@ char TftStringMenu::capitalize(char c) {
   else {
     return tolower(c);
   }
-}
-
-TftChoiceMenu::TftChoiceMenu(
-  uint8_t pad_v, uint8_t pad_h,
-  uint8_t marg_v, uint8_t marg_h,
-  uint8_t num_cols, float btn_height,
-  bool btn_height_px, uint8_t initial_choice
-)
-  : m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
-  m_btn_height(btn_height), m_btn_height_px(btn_height_px), m_cur_choice(initial_choice) {
-  // Empty
 }
 
 void TftChoiceMenu::set_callback(Callback callback) {
