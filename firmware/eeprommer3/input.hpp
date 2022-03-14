@@ -11,9 +11,8 @@
 class TftCtrl;
 
 /*
- * TouchCtrl is a wrapper class around the third-party
- * TouchScreen class that helps get more accurate readings
- * from a resistive touch screen
+ * `TouchCtrl` is a wrapper class around the third-party `TouchScreen` class that helps
+ * get more accurate readings from a resistive touch screen.
  */
 class TouchCtrl : public TouchScreen {
 public:

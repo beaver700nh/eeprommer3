@@ -13,8 +13,7 @@ class TouchCtrl;
 class SdCtrl;
 
 /*
- * Simple little helper struct to store name of
- * file and whether it is a directory.
+ * Simple little helper struct to store name of file and whether it is a directory.
  */
 struct FileInfo {
   char name[13];
@@ -34,9 +33,8 @@ AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *pro
 class TftChoiceMenu;
 
 /*
- * Yet another TftXXXMenu, this one to ask user
- * to select a file from an SD card. Inherits from
- * TftChoiceMenu.
+ * Yet another `TftXXXMenu`, this one to ask user to select a
+ * file from an SD card. Inherits from `TftChoiceMenu`.
  */
 class TftFileSelMenu : public TftChoiceMenu {
 public:
@@ -44,17 +42,15 @@ public:
   ~TftFileSelMenu();
 
   /*
-   * Sets internal files buffer to the files in directory
-   * `path` on `sd`. Reads at most `max_files` files from
-   * directory.
+   * Sets internal files buffer to the files in directory `path` on `sd`.
+   * Reads at most `max_files` files from directory.
    */
   void use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files);
 
   /* Waits for user to select a file.
    *
    * Returns FILE_STATUS_CANCELED if user pressed `Cancel` button.
-   * Returns FILE_STATUS_FNAME_TOO_LONG if resulting path is
-   * `max_path_len` chars or longer.
+   * Returns FILE_STATUS_FNAME_TOO_LONG if resulting path is `max_path_len` chars or longer.
    *
    * If all conditions are met, return FILE_STATUS_OK and sets
    * `file_path` to the path to the file which the user selected.
