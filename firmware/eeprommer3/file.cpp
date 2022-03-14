@@ -6,7 +6,7 @@
 
 #include "file.hpp"
 
-AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
+TftFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
   const uint8_t rows = 6, cols = 6;
 
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
@@ -66,7 +66,7 @@ void TftFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_
   }
 }
 
-AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
+TftFileSelMenu::Status TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
   char cur_path[max_path_len + 1] = "/";
 
   while (true) {
@@ -79,7 +79,7 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtr
     uint8_t btn_id = TftChoiceMenu::wait_for_value(tch, tft);
 
     if (btn_id == get_num_btns() - 2) {
-      return FILE_STATUS_CANCELED;
+      return Status::CANCELED;
     }
 
     if (btn_id == get_num_btns() - 3) {
@@ -87,18 +87,18 @@ AskFileStatus TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtr
       continue;
     }
 
-    if (strlen(cur_path) + strlen(m_files[btn_id].name) >= max_path_len) return FILE_STATUS_FNAME_TOO_LONG;
+    if (strlen(cur_path) + strlen(m_files[btn_id].name) >= max_path_len) return Status::FNAME_TOO_LONG;
 
     // User selected a file, not a control button
 
     if (!FileUtil::go_down_path(cur_path, m_files + btn_id, max_path_len)) {
-      return FILE_STATUS_FNAME_TOO_LONG;
+      return Status::FNAME_TOO_LONG;
     }
 
     // If the file was a regular file, user has selected the needed file, done
     if (!m_files[btn_id].is_dir) {
       strncpy(file_path, cur_path, max_path_len);
-      return FILE_STATUS_OK;
+      return Status::OK;
     }
   }
 }

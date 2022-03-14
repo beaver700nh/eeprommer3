@@ -116,8 +116,23 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::write() {
   Status status = Status::OK;
 
   char fname[64];
-  ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
+  TftFileSelMenu::Status res = ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
   m_tft.fillScreen(TftColor::BLACK);
+
+  if (res == TftFileSelMenu::Status::CANCELED) {
+    m_tft.drawText(10, 10, "Ok, canceled.", TftColor::CYAN, 3);
+    status = Status::OK;
+  }
+  else if (res == TftFileSelMenu::Status::FNAME_TOO_LONG) {
+    m_tft.drawText(10, 10, "File name was too long", TftColor::CYAN, 3);
+    m_tft.drawText(10, 50, "to fit in the buffer.", TftColor::PURPLE, 2);
+    status = Status::ERR_FILE;
+  }
+
+  if (res != TftFileSelMenu::Status::OK) {
+    m_tft.fillScreen(TftColor::BLACK);
+    return status;
+  }
 
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
   uint16_t cur_addr = addr;

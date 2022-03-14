@@ -3,7 +3,6 @@
 
 - FIRMWARE
   - clean up pfsd_core.xpp files -> move funcs into classes
-    - use scoped enum for file status and sd status
   - start work on from_serial programmer
 
 - HARDWARE

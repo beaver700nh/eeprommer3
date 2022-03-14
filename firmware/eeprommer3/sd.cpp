@@ -12,12 +12,12 @@ SdCtrl::SdCtrl(uint8_t cs, int8_t en)
   // Empty
 }
 
-uint8_t SdCtrl::init() {
+SdCtrl::Status SdCtrl::init() {
   pinMode(m_en, INPUT_PULLUP);
 
   if (digitalRead(m_en) == LOW) {
     m_enabled = false;
-    return STATUS_DISABLED;
+    return Status::DISABLED;
   }
   else {
     m_enabled = true;
@@ -34,10 +34,10 @@ uint8_t SdCtrl::init() {
 
     if (!SD.begin(m_cs)) {
       m_enabled = false;
-      return STATUS_FAILED;
+      return Status::FAILED;
     }
 
-    return STATUS_OK;
+    return Status::OK;
   }
 }
 

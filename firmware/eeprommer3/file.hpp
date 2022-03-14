@@ -20,14 +20,9 @@ struct FileInfo {
   bool is_dir;
 };
 
-// Status type returned by ask_file()
-enum AskFileStatus {FILE_STATUS_OK, FILE_STATUS_CANCELED, FILE_STATUS_FNAME_TOO_LONG};
-
 // Ask user to select a file on SD card. Writes path into `out`.
-// Return FILE_STATUS_FNAME_TOO_LONG if path is `len` chars or longer.
-// Return FILE_STATUS_CANCELED is user presses "Cancel" button.
-// Return FILE_STATUS_OK if everything goes smoothly.
-AskFileStatus ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len);
+// Return a Status based on user's choice.
+TftFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len);
 
 // Another fwd decl just in case
 class TftChoiceMenu;
@@ -40,6 +35,12 @@ class TftFileSelMenu : public TftChoiceMenu {
 public:
   TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols);
   ~TftFileSelMenu();
+
+  enum Status : uint8_t {
+    OK,             // No errors
+    CANCELED,       // User pressed "Cancel"
+    FNAME_TOO_LONG, // Filename was too long to fit in buffer
+  };
 
   /*
    * Sets internal files buffer to the files in directory `path` on `sd`.
@@ -55,7 +56,7 @@ public:
    * If all conditions are met, return FILE_STATUS_OK and sets
    * `file_path` to the path to the file which the user selected.
    */
-  AskFileStatus wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len);
+  Status wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len);
 
 private:
   // The supplied `cols` or the maximum number of cols that will fit, whichever is smaller

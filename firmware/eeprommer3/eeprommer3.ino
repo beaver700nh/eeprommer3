@@ -36,20 +36,20 @@ void setup() {
   ee.init();
   SER_LOG_PRINT("Initialized EEPROM!");
 
-  uint8_t res = sd.init();
+  SdCtrl::Status res = sd.init();
   SER_LOG_PRINT("Initializing SD...");
 
   skip_btn->draw(tft);
 
   tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
 
-  if (res == SdCtrl::STATUS_OK) { SER_LOG_PRINT("... SD initialized successfully, proceeding in SD programming mode!"); }
-  else                          { SER_LOG_PRINT("... SD failed to initialize, proceeding in serial programming mode!"); }
+  if (res == SdCtrl::Status::OK) { SER_LOG_PRINT("... SD initialized successfully, proceeding in SD programming mode!"); }
+  else                           { SER_LOG_PRINT("... SD failed to initialize, proceeding in serial programming mode!"); }
 
-  if      (res == SdCtrl::STATUS_OK)       tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
-  else if (res == SdCtrl::STATUS_DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
-  else if (res == SdCtrl::STATUS_FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
-  else                                     tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
+  if      (res == SdCtrl::Status::OK)       tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
+  else if (res == SdCtrl::Status::DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
+  else if (res == SdCtrl::Status::FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
+  else                                      tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
 
   Util::skippable_delay(2000, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
 

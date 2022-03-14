@@ -9,6 +9,7 @@
 
 #include "file.hpp"
 
+// Fwd decl because of circular dependency
 class FileInfo;
 
 class SdCtrl {
@@ -16,7 +17,7 @@ public:
   SdCtrl() {};
   SdCtrl(uint8_t cs, int8_t en = -1);
 
-  uint8_t init();
+  Status init();
   bool is_enabled();
 
   // Get names of at most `num` files from `dir` into `out`; return number of file names gotten
@@ -25,7 +26,11 @@ public:
   // Check if `file` is a directory
   bool is_directory(const char *file);
 
-  enum InitStatus {STATUS_OK, STATUS_DISABLED, STATUS_FAILED};
+  enum Status {
+    OK,       // No errors
+    DISABLED, // Hardware switch has disabled SD
+    FAILED,   // Could not initialize SD
+  };
 
 private:
   uint8_t m_cs;
