@@ -58,9 +58,20 @@
   TftCalc::fraction_x((tft), 10, 1), 24, \
   (text)
 
-// Prints value of `var` over Serial
+// Prints value of `var` over Serial if debug mode is enabled
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
+#ifdef DEBUG_MODE
 #define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
+#else
+#define SER_DEBUG_PRINT(var, type)
+#endif
+
+// Prints `text` over Serial if debug mode is enabled
+#ifdef DEBUG_MODE
+#define SER_LOG_PRINT(text, ...) (Serial.print(F("*!* - SER_LOG_PRINT: ")), PRINTF_NOBUF(Serial, text, ##__VA_ARGS__), Serial.println())
+#else
+#define SER_LOG_PRINT
+#endif
 
 #define TYPED_CONTROLLERS     TftCtrl &tft, TouchCtrl &tch, EepromCtrl &ee, SdCtrl &sd
 #define INIT_LIST_CONTROLLERS m_tft(tft),   m_tch(tch),     m_ee(ee),       m_sd(sd)

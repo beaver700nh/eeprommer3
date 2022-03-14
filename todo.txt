@@ -2,18 +2,8 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - massive refactoring:
-    - ProgrammerFromXXX { // sd, serial
-        ProgrammerBaseCore *cores[];
-      }
-    - ProgrammerBaseCore { // ABC
-        read(), write()
-        _verify()
-      }
-    - ProgrammerYYYCore(ProgrammerBaseCore) { // byte, file, vector, range
-        // specialize
-      }
-  - tweak debug message stuff - after refactoring
+  - add more comments
+  - clean up pfsd_core.xpp files -> move funcs into classes
   - start work on from_serial programmer
 
 - HARDWARE

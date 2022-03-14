@@ -24,6 +24,8 @@ public:
   bool isTouching(void); // Define this because it's undefined in base class
   bool is_touching();    // "Alias" to match naming scheme
 
+  void wait_for_press();
+
   TSPoint get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, TftCtrl &tft);
   TSPoint get_raw_point();
 };

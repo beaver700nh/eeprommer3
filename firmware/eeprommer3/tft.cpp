@@ -678,13 +678,13 @@ void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
   while (true) {
     TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
 
+    if (p.x < 3) break;
+
     if (TouchCtrl::is_valid_pressure(p.z)) {
       tft.fillCircle(p.x, p.y, 3, TftColor::RED);
     }
   }
 }
-
-#ifdef DEBUG_MODE
 
 void tft_print_chars(TftCtrl &tft) {
   uint8_t i = 0;
@@ -694,5 +694,3 @@ void tft_print_chars(TftCtrl &tft) {
   }
   while (i++ != 0xFF);
 }
-
-#endif

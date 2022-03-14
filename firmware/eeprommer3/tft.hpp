@@ -473,9 +473,9 @@ protected:
   uint8_t m_old_choice = 0;
 
   Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {
-    (void) tft;        // Silence unused parameter
-    (void) btn_id;     // Silence unused parameter
-    (void) is_confirm; // Silence unused parameter
+    UNUSED_VAR(tft);
+    UNUSED_VAR(btn_id);
+    UNUSED_VAR(is_confirm);
   };
 };
 
@@ -597,15 +597,11 @@ void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_
  */
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
 
-#ifdef DEBUG_MODE
-
 /*
  * Quick little function to print the character set of the
  * TFT, to help identify special characters like arrows for
  * use in the GUI.
  */
 void tft_print_chars(TftCtrl &tft);
-
-#endif
 
 #endif

@@ -12,13 +12,13 @@ void *operator new(size_t size) {
 
 
 void *operator new[](size_t size, void *ptr) {
-  (void) ptr; // Silence unused parameter
+  UNUSED_VAR(ptr);
   return malloc(size);
 }
 
 
 void *operator new(size_t size, void *ptr) {
-  (void) ptr; // Silence unused parameter
+  UNUSED_VAR(ptr);
   return malloc(size);
 }
 
@@ -31,11 +31,11 @@ void operator delete(void *ptr) {
 }
 
 void operator delete[](void *ptr, size_t size) {
-  (void) size; // Silence unused parameter
+  UNUSED_VAR(size);
   free(ptr);
 }
 
 void operator delete(void *ptr, size_t size) {
-  (void) size; // Silence unused parameter
+  UNUSED_VAR(size);
   free(ptr);
 }

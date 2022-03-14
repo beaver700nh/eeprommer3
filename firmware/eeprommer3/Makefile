@@ -4,12 +4,12 @@
 .SHELL := /bin/bash
 
 all: compile upload run
-
 build: compile upload
+go: upload run
 
 .ONESHELL:
 compile:
-	arduino-cli-mega-compile . --warnings=more --build-property=compiler.cpp.extra_flags=-std=c++1z $(FLAGS)
+	arduino-cli-mega-compile . --warnings=more --build-property=compiler.cpp.extra_flags=-std=c++17 $(FLAGS)
 
 upload:
 	arduino-cli-mega-upload . /dev/ttyACM0 --verbose
@@ -30,3 +30,10 @@ new:
 
 	printf "$$hpp" >$$name.hpp
 	printf "$$cpp" >$$name.cpp
+
+.ONESHELL:
+del:
+	read -p "Name of cpp/hpp pair to delete? " name
+
+	rm $$name.cpp
+	rm $$name.hpp

@@ -12,19 +12,17 @@ bool read_packet(Packet *buf) {
   char ch = Serial.read();
 
 #ifdef DEBUG_MODE
-  char str[100];
-  sprintf(
-    str,
-    "read_packet():\n"
-    "\tstate:\t%d\n"
-    "\ttype: \t%d\n"
-    "\tchar: \t%c\n",
-    (uint8_t) state,
-    (uint8_t) type,
-    (char)    ch
+  Serial.print(
+    STRFMT_NOBUF(
+      "read_packet():\n"
+      "\tstate:\t%d\n"
+      "\ttype: \t%d\n"
+      "\tchar: \t%c\n",
+      (uint8_t) state,
+      (uint8_t) type,
+      (char)    ch
+    )
   );
-
-  Serial.print(str);
 #endif
 
   if (state == PacketState::NONE) {

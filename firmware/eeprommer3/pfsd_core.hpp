@@ -9,9 +9,10 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
-// Fwd decl due to circular dependency
-class ProgrammerFromSd;
-
+/*
+ * ProgrammerFromSdBaseCore is an ABC that contains some functions for manipulating the EEPROM
+ * (EepromCtrl &ee) in a certain way. This certain way is defined in the child classes.
+ */
 class ProgrammerFromSdBaseCore {
 public:
   ProgrammerFromSdBaseCore(TYPED_CONTROLLERS) : INIT_LIST_CONTROLLERS {};
@@ -28,11 +29,11 @@ public:
   // These functions return `Status`es.
   typedef Status (ProgrammerFromSdBaseCore::*Func)();
 
-  virtual Status read() = 0;
-  virtual Status write() = 0;
+  Status read();
+  Status write();
 
 protected:
-  virtual Status verify(uint16_t addr, void *data, uint16_t len = 0) = 0;
+  Status verify(uint16_t addr, void *data, uint16_t len = 0);
 
   TftCtrl &m_tft;
   TouchCtrl &m_tch;
@@ -40,7 +41,7 @@ protected:
   SdCtrl &m_sd;
 };
 
-#define ADD_CORE_DECLARATION(name) \
+#define ADD_RW_CORE_DECLARATION(name) \
   class ProgrammerFromSd##name##Core : public ProgrammerFromSdBaseCore { \
   public: \
     ProgrammerFromSd##name##Core(TYPED_CONTROLLERS) : ProgrammerFromSdBaseCore(CONTROLLERS) {}; \
@@ -49,12 +50,27 @@ protected:
     Status write(); \
   \
   private: \
-    Status verify(uint16_t addr, void *data, uint16_t len = 0); \
+    Status verify(uint16_t addr, void *data); \
   };
 
-ADD_CORE_DECLARATION(Byte)
-ADD_CORE_DECLARATION(File)
-ADD_CORE_DECLARATION(Vector)
+// Manipulates a single byte at a time
+ADD_RW_CORE_DECLARATION(Byte)
+// Reads files to and from EEPROM
+ADD_RW_CORE_DECLARATION(File)
+// Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)
+ADD_RW_CORE_DECLARATION(Vector)
+// Reads ranges and writes arrays of pairs
+ADD_RW_CORE_DECLARATION(Multi)
+
+// Miscellaneous other functions
+class ProgrammerFromSdOtherCore : public ProgrammerFromSdBaseCore {
+public:
+  ProgrammerFromSdOtherCore(TYPED_CONTROLLERS) : ProgrammerFromSdBaseCore(CONTROLLERS) {};
+
+  Status paint();
+  Status debug();
+  Status nop();
+};
 
 #define RETURN_VERIFICATION_OR_VALUE(value, ...) \
   bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?"); \

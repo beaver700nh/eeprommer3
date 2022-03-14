@@ -31,14 +31,20 @@ void setup() {
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
+  SER_LOG_PRINT("Initialized TFT!");
 
   ee.init();
+  SER_LOG_PRINT("Initialized EEPROM!");
 
   uint8_t res = sd.init();
+  SER_LOG_PRINT("Initializing SD...");
 
   skip_btn->draw(tft);
 
   tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
+
+  if (res == SdCtrl::STATUS_OK) { SER_LOG_PRINT("... SD initialized successfully, proceeding in SD programming mode!"); }
+  else                          { SER_LOG_PRINT("... SD failed to initialize, proceeding in serial programming mode!"); }
 
   if      (res == SdCtrl::STATUS_OK)       tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
   else if (res == SdCtrl::STATUS_DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
@@ -59,10 +65,14 @@ void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
   if (sd.is_enabled()) {
+    SER_LOG_PRINT("> COMMENCE SD PROGRAMMING <");
+
     ProgrammerFromSd prog(CONTROLLERS);
     prog.run();
   }
   else {
+    SER_LOG_PRINT("> COMMENCE SERIAL PROGRAMMING <");
+
     while (true) {
       check_packet();
     }
