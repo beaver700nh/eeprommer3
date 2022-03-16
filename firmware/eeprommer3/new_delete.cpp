@@ -10,12 +10,10 @@ void *operator new(size_t size) {
   return malloc(size);
 }
 
-
 void *operator new[](size_t size, void *ptr) {
   UNUSED_VAR(ptr);
   return malloc(size);
 }
-
 
 void *operator new(size_t size, void *ptr) {
   UNUSED_VAR(ptr);

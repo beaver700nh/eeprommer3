@@ -17,6 +17,12 @@ public:
   SdCtrl() {};
   SdCtrl(uint8_t cs, int8_t en = -1);
 
+  enum Status {
+    OK,       // No errors
+    DISABLED, // Hardware switch has disabled SD
+    FAILED,   // Could not initialize SD
+  };
+
   Status init();
   bool is_enabled();
 
@@ -25,12 +31,6 @@ public:
 
   // Check if `file` is a directory
   bool is_directory(const char *file);
-
-  enum Status {
-    OK,       // No errors
-    DISABLED, // Hardware switch has disabled SD
-    FAILED,   // Could not initialize SD
-  };
 
 private:
   uint8_t m_cs;

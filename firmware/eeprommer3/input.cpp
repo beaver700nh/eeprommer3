@@ -6,23 +6,14 @@
 #include "input.hpp"
 #include "tft.hpp"
 
-TouchCtrl::TouchCtrl(uint16_t xp, uint16_t xm, uint16_t yp, uint16_t ym, uint16_t resist)
-  : TouchScreen(xp, yp, xm, ym, resist) {
-  // Empty
-}
-
 bool TouchCtrl::is_valid_pressure(int16_t pressure, int16_t max_pressure) {
-  if (max_pressure > 0) {
-    return IN_RANGE(pressure, 10, max_pressure + 1);
-  }
-  else {
-    return (pressure > 10);
-  }
+  return pressure > 10 && (max_pressure < 0 || pressure < max_pressure);
 }
 
 TSPoint TouchCtrl::get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, TftCtrl &tft) {
   TSPoint p = get_raw_point();
 
+  // Map raw point from touchscreen coords to TFT coords
   uint16_t x = map(p.y, miny, maxy, 0, tft.width());
   uint16_t y = map(p.x, minx, maxx, 0, tft.height());
 
@@ -32,6 +23,7 @@ TSPoint TouchCtrl::get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, ui
 TSPoint TouchCtrl::get_raw_point() {
   TSPoint p = getPoint();
 
+  // `getPoint()` sets these to `INPUT`s, but they need to be `OUTPUT`s for TFT
   pinMode(TS_XM, OUTPUT);
   pinMode(TS_YP, OUTPUT);
 

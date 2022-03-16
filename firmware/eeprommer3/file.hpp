@@ -11,6 +11,7 @@
 class TftCtrl;
 class TouchCtrl;
 class SdCtrl;
+class TftChoiceMenu;
 
 /*
  * Simple little helper struct to store name of file and whether it is a directory.
@@ -20,16 +21,8 @@ struct FileInfo {
   bool is_dir;
 };
 
-// Ask user to select a file on SD card. Writes path into `out`.
-// Return a Status based on user's choice.
-TftFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len);
-
-// Another fwd decl just in case
-class TftChoiceMenu;
-
 /*
- * Yet another `TftXXXMenu`, this one to ask user to select a
- * file from an SD card. Inherits from `TftChoiceMenu`.
+ * Yet another `TftXXXMenu`, this one to ask user to select a file from an SD card. Inherits from `TftChoiceMenu`.
  */
 class TftFileSelMenu : public TftChoiceMenu {
 public:
@@ -43,17 +36,16 @@ public:
   };
 
   /*
-   * Sets internal files buffer to the files in directory `path` on `sd`.
-   * Reads at most `max_files` files from directory.
+   * Sets internal files buffer to the files in directory `path` on `sd`. Reads at most `max_files` files from directory.
    */
   void use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files);
 
   /* Waits for user to select a file.
    *
-   * Returns FILE_STATUS_CANCELED if user pressed `Cancel` button.
-   * Returns FILE_STATUS_FNAME_TOO_LONG if resulting path is `max_path_len` chars or longer.
+   * Returns Status::CANCELED if user pressed `Cancel` button.
+   * Returns Status::FNAME_TOO_LONG if resulting path is `max_path_len` chars or longer.
    *
-   * If all conditions are met, return FILE_STATUS_OK and sets
+   * If all conditions are met, return Status::OK and sets
    * `file_path` to the path to the file which the user selected.
    */
   Status wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len);
@@ -64,16 +56,17 @@ private:
     return MIN(cols, MAX((tft.width() - 10) / (73 + 10), 1));
   }
 
-  // A fraction 1/`rows` of the allotted vertical space (screen height
-  // with vertical margin of `marg_v`), constrained to at least 16
+  // A fraction 1/`rows` of allotted vertical space (screen height with `marg_v` vertical margin), constrained to at least 16
   static inline uint8_t calc_btn_height(TftCtrl &tft, uint8_t rows, uint8_t marg_v, uint8_t pad_v) {
-    return MAX(16, TftCalc::fraction(
+    return MAX(
+      16, TftCalc::fraction(
       tft.height() // take up as much space as possible
       - marg_v     // without the top margin
       - 78         // without the bottom margin
       + 2 * pad_v, // but still need some amount
       pad_v, rows
-    ));
+      )
+    );
   }
 
   FileInfo *m_files = nullptr;
@@ -96,5 +89,8 @@ namespace FileUtil {
   // Set `path` to file `sub_path` inside `path`. Return false if resulting path is `len` chars or longer, true otherwise.
   bool go_down_path(char *path, FileInfo *sub_path, uint8_t len);
 };
+
+// Ask user to select a file on SD card. Writes path into `out`. Return a Status based on user's choice.
+TftFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len);
 
 #endif
