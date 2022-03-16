@@ -1,5 +1,5 @@
-.SILENT: all build compile upload run new
-.PHONY: all build compile upload run new
+.SILENT: all build compile upload run new del
+.PHONY: all build compile upload run new del
 
 .SHELL := /bin/bash
 

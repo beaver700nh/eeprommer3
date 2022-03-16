@@ -2,7 +2,8 @@
   - add more pictures/icons for window
 
 - FIRMWARE
-  - clean up pfsd_core.xpp files -> move funcs into classes
+  - optimize EepromCtrl?
+  - last changes before v0.0.1-rc1
   - start work on from_serial programmer
 
 - HARDWARE

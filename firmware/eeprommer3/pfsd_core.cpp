@@ -6,6 +6,7 @@
 #include "sd.hpp"
 #include "tft.hpp"
 #include "file.hpp"
+#include "vector.hpp"
 
 #include "pfsd_core.hpp"
 
@@ -116,20 +117,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::write() {
   Status status = Status::OK;
 
   char fname[64];
-  TftFileSelMenu::Status res = ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
-  m_tft.fillScreen(TftColor::BLACK);
-
-  if (res == TftFileSelMenu::Status::CANCELED) {
-    m_tft.drawText(10, 10, "Ok, canceled.", TftColor::CYAN, 3);
-    status = Status::OK;
-  }
-  else if (res == TftFileSelMenu::Status::FNAME_TOO_LONG) {
-    m_tft.drawText(10, 10, "File name was too long", TftColor::CYAN, 3);
-    m_tft.drawText(10, 50, "to fit in the buffer.", TftColor::PURPLE, 2);
-    status = Status::ERR_FILE;
-  }
-
-  if (res != TftFileSelMenu::Status::OK) {
+  if (!get_file_to_write_from(fname, 63, &status)) {
     m_tft.fillScreen(TftColor::BLACK);
     return status;
   }
@@ -168,6 +156,23 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::write() {
   RETURN_VERIFICATION_OR_VALUE(status, addr, fname);
 }
 
+bool ProgrammerFromSdFileCore::get_file_to_write_from(char *fname, uint8_t len, Status *res) {
+  TftFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if (temp == TftFileSelMenu::Status::CANCELED) {
+    m_tft.drawText(10, 10, "Ok, canceled.", TftColor::CYAN, 3);
+    *res = Status::OK;
+  }
+  else if (temp == TftFileSelMenu::Status::FNAME_TOO_LONG) {
+    m_tft.drawText(10, 10, "File name was too long", TftColor::CYAN, 3);
+    m_tft.drawText(10, 50, "to fit in the buffer.", TftColor::PURPLE, 2);
+    *res = Status::ERR_FILE;
+  }
+
+  return temp == TftFileSelMenu::Status::OK;
+}
+
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr, void *data) {
   Status status = Status::OK;
 
@@ -189,9 +194,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr,
 
       if (memcmp(expectation, reality, nbytes) != 0) {
         this->m_tft.drawText(10, 110, STRFMT_NOBUF("Mismatch between %04X and %04X!", addr, addr + 0xFF), TftColor::RED);
-
-        // Request to quit loop
-        return true;
+        return true; // Request to quit loop
       }
 
       addr += 0x0100; // Next page
@@ -214,28 +217,6 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr,
 /*****************************/
 /******** VECTOR CORE ********/
 /*****************************/
-
-// Vector is a helper class for vector-related actions.
-struct Vector {
-  Vector(uint8_t id) : m_id(id), m_addr(0xFFF8 + 2 * (id + 1)) {};
-
-  void update(EepromCtrl &ee) {
-    m_lo = ee.read(m_addr);
-    m_hi = ee.read(m_addr + 1);
-    m_val = (m_hi << 8) | m_lo;
-  }
-
-  uint8_t m_id;
-  uint16_t m_addr;
-
-  uint8_t m_lo, m_hi;
-  uint16_t m_val;
-
-  inline static const char *NAMES[3] = {"NMI", "RESET", "IRQ"};
-};
-
-// Helper function to ask user to select a 6502 jump vector
-Vector ask_vector(TftCtrl &tft, TouchCtrl &tch);
 
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::read() {
   Vector vec = ask_vector(m_tft, m_tch);
@@ -298,37 +279,9 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::verify(uint16_t add
   return Status::OK;
 }
 
-Vector ask_vector(TftCtrl &tft, TouchCtrl &tch) {
-  return Vector(
-    ask_choice(
-      tft, tch, "Which vector?", 3, 54, 1, 3,
-      Vector::NAMES[0], TftColor::CYAN,           TftColor::BLUE,
-      Vector::NAMES[1], TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN,
-      Vector::NAMES[2], TftColor::PINKK,          TftColor::RED
-    )
-  );
-}
-
 /********************************/
 /******** MULTIBYTE CORE ********/
 /********************************/
-
-typedef void (*MultiByteShowRangeByteReprFunc)(uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color);
-
-// Hex mode shows the data as raw hexadecimal values in white
-void multi_byte_repr_hex  (uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color);
-// Chars mode shows the data as printable characters; white character if printable, gray "?" if not
-void multi_byte_repr_chars(uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color);
-
-// Multi-byte read helper that shows `data` on screen, assumes `addr1` <= `addr2`
-void show_range(
-  TftCtrl &tft, TouchCtrl &tch,
-  uint8_t *data, uint16_t addr1, uint16_t addr2,
-  MultiByteShowRangeByteReprFunc repr
-);
-
-// Multi-byte read helper that stores `data` to a file on EEPROM
-void store_file(TftCtrl &tft, TouchCtrl &tch, uint8_t *data, uint16_t len);
 
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
   uint16_t addr1 = ask_val<uint16_t>(m_tft, m_tch, "Start address?");
@@ -337,8 +290,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
   uint16_t nbytes = (addr2 - addr1 + 1);
 
   // Turn off top bit of both addresses ensure validity
-  addr1 &= ~0x8000;
-  addr2 &= ~0x8000;
+  addr1 &= ~0x8000; addr2 &= ~0x8000;
 
   // Make sure addr1 <= addr2
   if (addr2 < addr1) Util::swap<uint16_t>(&addr1, &addr2);
@@ -364,9 +316,9 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  if      (viewing_method == 0) show_range(m_tft, m_tch, data, addr1, addr2, &multi_byte_repr_hex);
-  else if (viewing_method == 1) show_range(m_tft, m_tch, data, addr1, addr2, &multi_byte_repr_chars);
-  else if (viewing_method == 2) store_file(m_tft, m_tch, data, nbytes);
+  if      (viewing_method == 0) show_range(data, addr1, addr2, &multi_byte_repr_hex);
+  else if (viewing_method == 1) show_range(data, addr1, addr2, &multi_byte_repr_chars);
+  else if (viewing_method == 2) store_file(data, nbytes);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -375,38 +327,26 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
   return Status::OK;
 }
 
-// Helper function of show_range() that shows only one page of data from a large buffer
-void show_page(
-  TftCtrl &tft, TouchCtrl &tch,
-  uint8_t *data, uint16_t addr1, uint16_t addr2,
-  MultiByteShowRangeByteReprFunc repr,
-  uint8_t cur_page, uint8_t max_page
-);
-
-void show_range(
-  TftCtrl &tft, TouchCtrl &tch,
-  uint8_t *data, uint16_t addr1, uint16_t addr2,
-  MultiByteShowRangeByteReprFunc repr
-) {
+void ProgrammerFromSdMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, MultiByteShowRangeByteReprFunc repr) {
   // Draw frame for the data
-  tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
-  tft.drawRect(tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE);
-  tft.drawRect(tft.width() / 2 - 146, 51, 293, 164, TftColor::WHITE);
-  tft.drawFastVLine(tft.width() / 2, 52, 162, TftColor::GRAY);
+  m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
+  m_tft.drawRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE);
+  m_tft.drawRect(m_tft.width() / 2 - 146, 51, 293, 164, TftColor::WHITE);
+  m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
   TftMenu menu;
-  menu.add_btn(new TftBtn(15,               60, 40, 150, 15, 68, "\x11"));
-  menu.add_btn(new TftBtn(tft.width() - 55, 60, 40, 150, 15, 68, "\x10"));
-  menu.add_btn(new TftBtn(BOTTOM_BTN(tft, "Continue")));
-  menu.draw(tft);
+  menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "\x11"));
+  menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, "\x10"));
+  menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Continue")));
+  menu.draw(m_tft);
 
   uint8_t cur_page = 0;
   uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
 
   while (true) {
-    show_page(tft, tch, data, addr1, addr2, repr, cur_page, max_page);
+    show_page(data, addr1, addr2, repr, cur_page, max_page);
 
-    uint8_t req = menu.wait_for_press(tch, tft);
+    uint8_t req = menu.wait_for_press(m_tch, m_tft);
 
     if      (req == 2) break;
     else if (req == 0) cur_page = (cur_page == 0 ? max_page : cur_page - 1);
@@ -414,16 +354,13 @@ void show_range(
   }
 }
 
-void show_page(
-  TftCtrl &tft, TouchCtrl &tch,
-  uint8_t *data, uint16_t addr1, uint16_t addr2,
-  MultiByteShowRangeByteReprFunc repr,
-  uint8_t cur_page, uint8_t max_page
+void ProgrammerFromSdMultiCore::show_page(
+  uint8_t *data, uint16_t addr1, uint16_t addr2, MultiByteShowRangeByteReprFunc repr, uint8_t cur_page, uint8_t max_page
 ) {
-  tft.fillRect(tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
-  tft.fillRect(tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
+  m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
+  m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
 
-  tft.drawTextBg(
+  m_tft.drawTextBg(
     10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page),
     TftColor::PURPLE, TftColor::BLACK, 2
   );
@@ -442,52 +379,25 @@ void show_page(
     (*repr)(data[i - addr1], &byte_offset, byte_as_text, &byte_color);
 
     uint8_t split_offset = (tft_byte_col < 8 ? 0 : 3);
-    uint16_t tft_byte_x = tft.width()  / 2 - 141 + 18 * tft_byte_col + byte_offset + split_offset;
-    uint16_t tft_byte_y = tft.height() / 2 - 105 + 10 * tft_byte_row;
+    uint16_t tft_byte_x = m_tft.width()  / 2 - 141 + 18 * tft_byte_col + byte_offset + split_offset;
+    uint16_t tft_byte_y = m_tft.height() / 2 - 105 + 10 * tft_byte_row;
 
-    tft.drawText(tft_byte_x, tft_byte_y, byte_as_text, byte_color, 1);
+    m_tft.drawText(tft_byte_x, tft_byte_y, byte_as_text, byte_color, 1);
   }
 }
 
-void multi_byte_repr_hex(uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color) {
-  *offset = 0;
-  *color = TftColor::WHITE;
-
-  sprintf(text_repr, "%02X", input_byte);
-}
-
-void multi_byte_repr_chars(uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color) {
-  *offset = 3;
-  *color = (isprint((char) input_byte) ? TftColor::WHITE : TftColor::GRAY);
-
-  sprintf(text_repr, "%c", (isprint((char) input_byte) ? (char) input_byte : '?'));
-}
-
-void store_file(TftCtrl &tft, TouchCtrl &tch, uint8_t *data, uint16_t len) {
+void ProgrammerFromSdMultiCore::store_file(uint8_t *data, uint16_t len) {
   char fname[64];
-  ask_str(tft, tch, "What filename?", fname, 63);
+  ask_str(m_tft, m_tch, "What filename?", fname, 63);
 
-  tft.fillScreen(TftColor::BLACK);
-  tft.drawText(10, 10, "Please wait...", TftColor::PURPLE);
+  m_tft.fillScreen(TftColor::BLACK);
+  m_tft.drawText(10, 10, "Please wait...", TftColor::PURPLE);
 
   File file = SD.open(fname, O_WRITE | O_TRUNC | O_CREAT);
   file.write(data, len);
   file.flush();
   file.close();
 }
-
-// Multi-byte write helper that draws the pairs to be written to EEPROM
-void draw_pairs(
-  TftCtrl &tft, TouchCtrl &tch, uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
-);
-
-// Multi-byte write helper that polls `menu` and reacts to it:
-// deletes/adds buttons, scrolls menu, and writes to EEPROM as requested
-bool poll_menus_and_react(
-  TftCtrl &tft, TouchCtrl &tch, EepromCtrl &ee, TftMenu &menu, TftMenu &del_btns,
-  AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
-);
 
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::write() {
   AddrDataArray buf;
@@ -517,13 +427,13 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::write() {
     m_tft.drawText(10, 10, "Write Multiple Bytes", TftColor::CYAN, 3);
 
     menu.draw(m_tft);
-    draw_pairs(m_tft, m_tch, 44, 44, 74, 44, 22, 8, num_pairs, scroll, buf, del_btns);
+    draw_pairs(44, 44, 74, 44, 22, 8, num_pairs, scroll, buf, del_btns);
     del_btns.draw(m_tft);
 
     int32_t diff = (int32_t) buf.get_len() - num_pairs;
     uint16_t max_scroll = MAX(0, diff);
 
-    done = poll_menus_and_react(m_tft, m_tch, m_ee, menu, del_btns, &buf, &scroll, max_scroll);
+    done = poll_menus_and_react(menu, del_btns, &buf, &scroll, max_scroll);
   }
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -531,12 +441,12 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::write() {
   RETURN_VERIFICATION_OR_OK(0, (void *) &buf)
 }
 
-void draw_pairs(
-  TftCtrl &tft, TouchCtrl &tch, uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
+void ProgrammerFromSdMultiCore::draw_pairs(
+  uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
   uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
 ) {
   // Clear the pairs area
-  tft.fillRect(margin_l, margin_u, tft.width() - margin_l - margin_r, tft.height() - margin_u - margin_d, TftColor::BLACK);
+  m_tft.fillRect(margin_l, margin_u, m_tft.width() - margin_l - margin_r, m_tft.height() - margin_u - margin_d, TftColor::BLACK);
 
   for (uint8_t i = 0; i < n; ++i) {
     // Hide all the delete buttons here, later show the ones that are needed
@@ -546,8 +456,8 @@ void draw_pairs(
   }
 
   if (buf.get_len() == 0) {
-    tft.drawText(margin_l, margin_u,      "No pairs yet!",                   TftColor::LGRAY);
-    tft.drawText(margin_l, margin_u + 30, "Click `Add Pair' to add a pair!", TftColor::LGRAY);
+    m_tft.drawText(margin_l, margin_u,      "No pairs yet!",                   TftColor::LGRAY);
+    m_tft.drawText(margin_l, margin_u + 30, "Click `Add Pair' to add a pair!", TftColor::LGRAY);
     return;
   }
 
@@ -557,15 +467,15 @@ void draw_pairs(
   do {
     uint16_t x = margin_l;
     uint16_t y = margin_u + (this_pair - offset) * (height + padding);
-    uint16_t w = tft.width() - margin_l - margin_r;
+    uint16_t w = m_tft.width() - margin_l - margin_r;
     uint16_t h = height;
     uint16_t ty = TftCalc::t_center_y(h, 2) + y;
 
     AddrDataArrayPair pair;
     buf.get_pair(this_pair, &pair);
 
-    tft.fillRect(x, y, w, h, TftColor::ORANGE);
-    tft.drawText(margin_l + 3, ty, STRFMT_NOBUF("#%05d: %04X, %02X", this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
+    m_tft.fillRect(x, y, w, h, TftColor::ORANGE);
+    m_tft.drawText(margin_l + 3, ty, STRFMT_NOBUF("#%05d: %04X, %02X", this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
 
     // Show all buttons that have pairs
     auto cur_btn = del_btns.get_btn(this_pair - offset);
@@ -575,18 +485,14 @@ void draw_pairs(
   while (this_pair++ != last_pair);
 }
 
-// Helper function of poll_menus_and_react() that requests and adds a pair to `buf`
-void add_pair_from_user(TftCtrl &tft, TouchCtrl &tch, AddrDataArray *buf);
-
-bool poll_menus_and_react(
-  TftCtrl &tft, TouchCtrl &tch, EepromCtrl &ee, TftMenu &menu, TftMenu &del_btns,
-  AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
+bool ProgrammerFromSdMultiCore::poll_menus_and_react(
+  TftMenu &menu, TftMenu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
 ) {
   int16_t pressed, deleted;
 
   while (true) {
-    pressed = menu.get_pressed(tch, tft);
-    deleted = del_btns.get_pressed(tch, tft);
+    pressed = menu.get_pressed(m_tch, m_tft);
+    deleted = del_btns.get_pressed(m_tch, m_tft);
 
     if (deleted >= 0) {
       buf->remove(deleted);
@@ -596,11 +502,11 @@ bool poll_menus_and_react(
       switch (pressed) {
       case 0:  if (*scroll > 0)          --*scroll; break;
       case 1:  if (*scroll < max_scroll) ++*scroll; break;
-      case 2:  add_pair_from_user(tft, tch, buf);   break;
+      case 2:  add_pair_from_user(buf);   break;
       case 3:
-        tft.fillRect(10, 10, TftCalc::fraction_x(tft, 10, 1), 24, TftColor::BLACK);
-        tft.drawText(10, 12, "Please wait - accessing EEPROM...", TftColor::CYAN, 2);
-        ee.write(buf);
+        m_tft.fillRect(10, 10, TftCalc::fraction_x(m_tft, 10, 1), 24, TftColor::BLACK);
+        m_tft.drawText(10, 12, "Please wait - accessing EEPROM...", TftColor::CYAN, 2);
+        m_ee.write(buf);
         [[fallthrough]];
       default: return true;
       }
@@ -612,12 +518,12 @@ bool poll_menus_and_react(
   return false;
 }
 
-void add_pair_from_user(TftCtrl &tft, TouchCtrl &tch, AddrDataArray *buf) {
-  tft.fillScreen(TftColor::BLACK);
-  auto addr = ask_val<uint16_t>(tft, tch, "Type an address:");
-  tft.fillScreen(TftColor::BLACK);
-  auto data = ask_val<uint8_t>(tft, tch, "Type the data:");
-  tft.fillScreen(TftColor::BLACK);
+void ProgrammerFromSdMultiCore::add_pair_from_user(AddrDataArray *buf) {
+  m_tft.fillScreen(TftColor::BLACK);
+  auto addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
+  m_tft.fillScreen(TftColor::BLACK);
+  auto data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
+  m_tft.fillScreen(TftColor::BLACK);
 
   buf->append((AddrDataArrayPair) {addr, data});
 }
@@ -632,9 +538,10 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::verify(uint16_t addr
     uint8_t real_data = m_ee.read(pair.addr);
 
     if (pair.data != real_data) {
-      m_tft.drawText(10, 10, "Mismatch found!",                         TftColor::ORANGE,  4);
-      m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", pair.data), TftColor::PURPLE,  3);
-      m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", real_data), TftColor::MAGENTA, 3);
+      m_tft.drawText(10,  10, "Mismatch found!",                         TftColor::CYAN,    3);
+      m_tft.drawText(15,  50, STRFMT_NOBUF("Expected: %02X", pair.data), TftColor::PURPLE,  3);
+      m_tft.drawText(15,  77, STRFMT_NOBUF("Actual:   %02X", real_data), TftColor::MAGENTA, 3);
+      m_tft.drawText(15, 104, STRFMT_NOBUF("Address: %04X",  pair.addr), TftColor::ORANGE,  2);
 
       Util::wait_continue(m_tft, m_tch);
 
@@ -672,52 +579,58 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::debug() {
   menu.add_btn(new TftBtn(     10, 170, w1, 30, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
 
-  m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
-  menu.draw(m_tft);
-
   while (true) {
+    m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
+    menu.draw(m_tft);
+
     uint8_t btn = menu.wait_for_press(m_tch, m_tft);
 
     if (btn == menu.get_num_btns() - 1) break;
 
-    uint16_t val16;
-    uint8_t val8;
-
-    switch (btn) {
-    case 0: m_ee.set_we(true);  continue;
-    case 1: m_ee.set_we(false); continue;
-    case 2:
-      m_tft.fillScreen(TftColor::BLACK); 
-      val16 = ask_val<uint16_t>(m_tft, m_tch, "Type the value:");
-      m_ee.set_addr_and_oe(val16);
-      break;
-    case 3:
-      m_tft.fillScreen(TftColor::BLACK); 
-      val8 = m_ee.get_data();
-      m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
-      m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val8)), TftColor::YELLOW, 2);
-      Util::wait_continue(m_tft, m_tch);
-      break;
-    case 4:
-      m_tft.fillScreen(TftColor::BLACK); 
-      val8 = ask_val<uint8_t>(m_tft, m_tch, "Type the value:");
-      m_ee.set_data(val8);
-      break;
-    case 5:
-      m_tft.fillScreen(TftColor::BLACK);
-      tft_print_chars(m_tft);
-      m_tch.wait_for_press();
-      break;
-    }
-
     m_tft.fillScreen(TftColor::BLACK);
-    m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
-    menu.draw(m_tft);
+    do_debug_action(btn);
+    m_tft.fillScreen(TftColor::BLACK);
   }
 
   m_tft.fillScreen(TftColor::BLACK);
 
   return Status::OK;
+}
+
+void ProgrammerFromSdOtherCore::do_debug_action(uint8_t action) {
+  uint16_t val;
+
+  switch (action) {
+  case 0: // Disable write
+    m_ee.set_we(true);
+    break;
+
+  case 1: // Enable write
+    m_ee.set_we(false);
+    break;
+
+  case 2: // Set address bus + OE
+    val = ask_val<uint16_t>(m_tft, m_tch, "Type the value:");
+    m_ee.set_addr_and_oe(val);
+    break;
+
+  case 3: // Read data bus
+    val = m_ee.get_data();
+    m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
+    m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL((uint8_t) val)), TftColor::YELLOW, 2);
+    Util::wait_continue(m_tft, m_tch);
+    break;
+
+  case 4: // Write data bus
+    val = ask_val<uint8_t>(m_tft, m_tch, "Type the value:");
+    m_ee.set_data(val);
+    break;
+
+  case 5: // Print character set
+    tft_print_chars(m_tft);
+    m_tch.wait_for_press();
+    break;
+  }
 }
 
 // Dummy function for unimplemented actions
