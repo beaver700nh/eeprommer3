@@ -544,6 +544,8 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
 /*
  * This is a function to ask the user to pick from one of `num` choices.
  * This function is variadic, so be careful that you provide a valid `num`.
+ *
+ * Vararg format: text, fg, bg
  */
 uint8_t ask_choice(
   TftCtrl &tft, TouchCtrl &tch, const char *prompt, int8_t cols, int32_t btn_height, int16_t initial_choice, uint8_t num, ...

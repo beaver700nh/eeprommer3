@@ -571,12 +571,14 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::debug() {
   auto w2 = TftCalc::fraction_x(m_tft, 10, 2);
 
   TftMenu menu;
-  menu.add_btn(new TftBtn(     10,  50, w2, 30, "WE HI (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
-  menu.add_btn(new TftBtn(w2 + 20,  50, w2, 30, "WE LO (Enable)",  TftColor::PINKK,          TftColor::RED));
+  menu.add_btn(new TftBtn(     10,  50, w2, 30, "WE Hi (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
+  menu.add_btn(new TftBtn(w2 + 20,  50, w2, 30, "WE Lo (Enable)",  TftColor::PINKK,          TftColor::RED   ));
   menu.add_btn(new TftBtn(     10,  90, w1, 30, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
-  menu.add_btn(new TftBtn(     10, 130, w2, 30, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN));
-  menu.add_btn(new TftBtn(w2 + 20, 130, w2, 30, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE));
-  menu.add_btn(new TftBtn(     10, 170, w1, 30, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
+  menu.add_btn(new TftBtn(     10, 130, w2, 30, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN  ));
+  menu.add_btn(new TftBtn(w2 + 20, 130, w2, 30, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE  ));
+  menu.add_btn(new TftBtn(     10, 170, w2, 30, "Set Data Dir",    TftColor::BLACK,          TftColor::ORANGE));
+  menu.add_btn(new TftBtn(w2 + 20, 170, w2, 30, "Monitor Data",    TftColor::YELLOW,         TftColor::DCYAN ));
+  menu.add_btn(new TftBtn(     10, 210, w1, 30, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
 
   while (true) {
@@ -626,11 +628,46 @@ void ProgrammerFromSdOtherCore::do_debug_action(uint8_t action) {
     m_ee.set_data(val);
     break;
 
-  case 5: // Print character set
+  case 5: // Set data direction
+    val = ask_choice(
+      m_tft, m_tch, "Which direction?", 1, 45, 0, 2,
+      "Input",        TftColor::CYAN,   TftColor::BLUE,
+      "Output",       TftColor::PINKK,  TftColor::RED
+    );
+    m_ee.set_ddr(val & 0x01);
+    break;
+
+  case 6: // Monitor data bus
+    monitor_data_bus();
+    break;
+
+  case 7: // Print character set
     tft_print_chars(m_tft);
     m_tch.wait_for_press();
     break;
   }
+}
+
+void ProgrammerFromSdOtherCore::monitor_data_bus() {
+  m_ee.set_ddr(false);
+
+  TftBtn quit_btn(BOTTOM_BTN(m_tft, "Quit"));
+  quit_btn.draw(m_tft);
+
+#ifdef DEBUG_MODE
+  while (!quit_btn.is_pressed(m_tch, m_tft)) {
+    uint8_t val = m_ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
+    m_tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
+    delay(500);
+  }
+#else
+  m_tft.drawText(10,  10, "Error:",                 TftColor::RED,    3);
+  m_tft.drawText(10,  50, "Data bus monitor",       TftColor::ORANGE, 3);
+  m_tft.drawText(10,  90, "is not supported",       TftColor::ORANGE, 3);
+  m_tft.drawText(10, 130, "(DEBUG_MODE disabled!)", TftColor::PURPLE, 2);
+
+  quit_btn.wait_for_press(m_tch, m_tft);
+#endif
 }
 
 // Dummy function for unimplemented actions

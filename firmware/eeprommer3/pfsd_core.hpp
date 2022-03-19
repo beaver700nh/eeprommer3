@@ -132,8 +132,10 @@ public:
   Status nop();
 
 private:
-  // Helper function of debug()
+  // Helper functions of debug()
+
   void do_debug_action(uint8_t action);
+  void monitor_data_bus();
 };
 
 #define RETURN_VERIFICATION_OR_VALUE(value, ...) \
