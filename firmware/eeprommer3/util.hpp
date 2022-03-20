@@ -21,8 +21,8 @@ namespace Util {
 
   // `exit_condition` is a template type
   // to get around annoying lambda errors
-  template<typename T>
-  bool skippable_delay(uint32_t time, T exit_condition) {
+  template<typename Func>
+  bool skippable_delay(uint32_t time, Func exit_condition) {
     auto t1 = millis();
 
     while (millis() - t1 < time) {

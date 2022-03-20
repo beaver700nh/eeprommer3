@@ -18,9 +18,6 @@ TouchCtrl tch(TS_XP, TS_XM, TS_YP, TS_YM, TS_RESIST);
 SdCtrl sd(SD_CS, SD_EN);
 EepromCtrl ee;
 
-// Made global to allow capturing by lambdas; is destroyed inside setup()
-TftBtn *skip_btn = new TftBtn(80, 273, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
-
 void setup() {
   delay(1000);
 
@@ -38,9 +35,10 @@ void setup() {
   SdCtrl::Status res = sd.init();
   SER_LOG_PRINT("Initializing SD...");
 
-  skip_btn->draw(tft);
+  TftBtn skip_btn(80, 273, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
+  skip_btn.draw(tft);
 
-  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
+  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(&skip_btn, tch, tft));
 
   if (res == SdCtrl::Status::OK) { SER_LOG_PRINT("... SD initialized successfully, proceeding in SD programming mode!"); }
   else                           { SER_LOG_PRINT("... SD failed to initialize, proceeding in serial programming mode!"); }
@@ -50,9 +48,7 @@ void setup() {
   else if (res == SdCtrl::Status::FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
   else                                      tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
 
-  Util::skippable_delay(2000, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
-
-  delete skip_btn;
+  Util::skippable_delay(2000, LAMBDA_IS_TCHING_BTN(&skip_btn, tch, tft));
 
   Serial.println(F("Hello, world!"));
   Serial.println();
@@ -96,4 +92,5 @@ void check_packet() {
   }
 }
 
+// Empty and unused loop function
 void loop() {}

@@ -84,7 +84,7 @@
 // Tells whether screen is being touched
 #define LAMBDA_IS_TCHING_TFT [this]() -> bool { return this->m_tch.is_touching(); }
 // Tells whether buttons is being pressed
-#define LAMBDA_IS_TCHING_BTN(btn, tch, tft) []() -> bool { return btn->is_pressed(tch, tft); }
+#define LAMBDA_IS_TCHING_BTN(btn, tch, tft) [&]() -> bool { return (btn)->is_pressed(tch, tft); }
 
 /*****************************************/
 /** Constants ****************************/

@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include <SD.h>
 #include <MCUFRIEND_kbv.h>
 
 #include "input.hpp"
@@ -81,10 +82,45 @@ public:
   void drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint16_t bg = TftColor::BLACK, uint8_t size = 2);
   void drawText(const char *text);
 
-  bool drawRGBBitmapFromFile(
-    uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height,
-    bool swap_endian, bool (*check_skip)()
-  );
+  template<typename Func>
+  bool drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, bool swap_endian, Func check_skip) {
+    bool success = true;
+
+    File f = SD.open(file);
+    if (!f) return false;
+
+    size_t row_size_bytes = width * sizeof(uint16_t);
+    auto *buf = (uint16_t *) malloc(row_size_bytes);
+
+    if (buf == nullptr) {
+      success = false;
+    }
+    else {
+      for (uint16_t j = 0; j < height; ++j) {
+        int16_t res = f.read((uint8_t *) buf, row_size_bytes);
+
+        if (res < 0) {
+          success = false;
+          break;
+        }
+
+        if (swap_endian) {
+          for (uint16_t i = 0; i < width; ++i) {
+            buf[i] = (buf[i] << 8) | (buf[i] >> 8);
+          }
+        }
+
+        setAddrWindow(x, y + j, x + width, y + j);
+        pushColors(buf, width, true);
+
+        if (check_skip()) break;
+      }
+    }
+
+    f.close();
+    free(buf);
+    return success;
+  }
 };
 
 /*

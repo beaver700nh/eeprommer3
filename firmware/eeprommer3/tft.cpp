@@ -4,7 +4,6 @@
 #include <stdarg.h>
 
 #include <MCUFRIEND_kbv.h>
-#include <SD.h>
 #include <TouchScreen.h>
 
 #include "tft.hpp"
@@ -33,48 +32,6 @@ void TftCtrl::drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t colo
 
 void TftCtrl::drawText(const char *text) {
   print(text);
-}
-
-bool TftCtrl::drawRGBBitmapFromFile(
-  uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height,
-  bool swap_endian, bool (*check_skip)()
-) {
-  bool success = true;
-
-  File f = SD.open(file);
-  if (!f) return false;
-
-  size_t row_size_bytes = width * sizeof(uint16_t);
-  uint16_t *buf = (uint16_t *) malloc(row_size_bytes);
-
-  if (buf == nullptr) {
-    f.close();
-    return false;
-  }
-
-  for (uint16_t j = 0; j < height; ++j) {
-    int16_t res = f.read((uint8_t *) buf, row_size_bytes);
-
-    if (res < 0) {
-      success = false;
-      break;
-    }
-
-    if (swap_endian) {
-      for (uint16_t i = 0; i < width; ++i) {
-        buf[i] = (buf[i] << 8) | (buf[i] >> 8);
-      }
-    }
-
-    setAddrWindow(x, y + j, x + width, y + j);
-    pushColors(buf, width, true);
-
-    if ((*check_skip)()) break;
-  }
-
-  f.close();
-  free(buf);
-  return success;
 }
 
 namespace TftCalc {
