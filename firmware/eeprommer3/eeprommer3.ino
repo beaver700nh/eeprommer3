@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <IoAbstractionWire.h>
 #include <Wire.h>
 
 #include "comm.hpp"
