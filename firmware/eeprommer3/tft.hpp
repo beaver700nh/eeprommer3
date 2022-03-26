@@ -328,7 +328,7 @@ public:
   // IMPORTANT - Does not initialize internal value string, do not forget to do so
   // height of button = calculated width of button * param `btn_height`
   TftKeyboardMenu(
-    TftCtrl &tft, uint8_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, TftKeyboardLayout &layout, float btn_height = 1.2
+    TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, TftKeyboardLayout &layout, float btn_height = 1.2
   );
 
   ~TftKeyboardMenu();
@@ -339,6 +339,9 @@ public:
   void get_val(char *buf, uint8_t len);
   char *get_ptr_val();
   void set_val(const char *buf, uint8_t len);
+
+  // Placeholder: only checks for debounce
+  bool handle_key(uint8_t key);
 
   TftKeyboardLayout &get_layout();
 
@@ -351,7 +354,7 @@ protected:
   char *m_val;
 
   unsigned long m_t_last_press = 0;
-  uint8_t m_t_debounce;
+  uint16_t m_t_debounce;
 
   TftKeyboardLayout &m_layout;
 
@@ -368,7 +371,7 @@ template <typename T>
 class TftHexSelMenu : public TftKeyboardMenu {
 public:
   // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
-  TftHexSelMenu(TftCtrl &tft, uint8_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
+  TftHexSelMenu(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
     : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
     m_val = (char *) malloc(BUF_LEN() * sizeof(char));
 
@@ -383,6 +386,7 @@ public:
     uint8_t len = strlen(m_val);
 
     if (len >= BUF_LEN()) {
+      // Scroll on reaching length limit, discard overflow
       for (uint8_t i = 1; i < BUF_LEN(); ++i) {
         m_val[i - 1] = m_val[i];
       }
@@ -417,6 +421,13 @@ public:
     return result;
   }
 
+  bool handle_key(uint8_t key) {
+    if (!TftKeyboardMenu::handle_key(key)) return false;
+
+    update_val(IN_RANGE(key, 0, 10) ? key + '0' : key + 'A' - 10);
+    return true;
+  }
+
   inline virtual const uint8_t BUF_LEN() override {
     return BIT_WIDTH(T) / 4;
   }
@@ -427,9 +438,7 @@ public:
  */
 class TftStringMenu : public TftKeyboardMenu {
 public:
-  TftStringMenu(TftCtrl &tft, uint8_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
-
-  int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
+  TftStringMenu(TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
 
   void update_val(char c);
 
@@ -439,6 +448,8 @@ public:
 
     TftKeyboardMenu::show_val(tft, x, y, MIN(maxfit_len, m_buf_len), size, fg, bg);
   }
+
+  bool handle_key(uint8_t key);
 
   char capitalize(char c);
 
@@ -569,9 +580,7 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
 
     if (btn_pressed == 16) break;
 
-    menu.update_val(
-      (IN_RANGE(btn_pressed, 0, 10) ? btn_pressed + '0' : btn_pressed + 'A' - 10)
-    );
+    menu.handle_key(btn_pressed);
   }
 
   return menu.get_int_val();

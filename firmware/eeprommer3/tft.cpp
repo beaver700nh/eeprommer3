@@ -306,10 +306,8 @@ TftKeyboardLayout &get_glob_kbd_str_layout() {
 }
 
 TftKeyboardMenu::TftKeyboardMenu(
-  TftCtrl &tft, uint8_t t_debounce,
-  uint16_t pad_v, uint16_t pad_h,
-  uint16_t marg_v, uint16_t marg_h,
-  TftKeyboardLayout &layout, float btn_height
+  TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h,
+  uint16_t marg_v, uint16_t marg_h, TftKeyboardLayout &layout, float btn_height
 )
   : m_t_debounce(t_debounce), m_layout(layout),
   m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h) {
@@ -361,36 +359,30 @@ void TftKeyboardMenu::set_val(const char *buf, uint8_t len) {
   strncpy(m_val, buf, len);
 }
 
+bool TftKeyboardMenu::handle_key(uint8_t key) {
+  UNUSED_VAR(key);
+
+  unsigned long t_since_last_press = millis() - m_t_last_press;
+
+  if (t_since_last_press > m_t_debounce) {
+    m_t_last_press = millis();
+    return true;
+  }
+
+  return false;
+}
+
 TftKeyboardLayout &TftKeyboardMenu::get_layout() {
   return m_layout;
 }
 
 TftStringMenu::TftStringMenu(
-  TftCtrl &tft, uint8_t debounce,
-  uint16_t pad_v, uint16_t pad_h,
-  uint16_t marg_v, uint16_t marg_h,
-  uint8_t buf_len
+  TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h,
+  uint16_t marg_v, uint16_t marg_h, uint8_t buf_len
 )
   : TftKeyboardMenu(tft, debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_str_layout()), m_buf_len(buf_len) {
   m_val = (char *) malloc((BUF_LEN() + 1) * sizeof(char));
   m_val[0] = '\0';
-}
-
-int16_t TftStringMenu::get_pressed(TouchCtrl &tch, TftCtrl &tft) {
-  auto retval = TftMenu::get_pressed(tch, tft);
-
-  if (retval > 0) {
-    unsigned long t_since_last_press = millis() - m_t_last_press;
-
-    if (t_since_last_press > m_t_debounce) {
-      m_t_last_press = millis();
-    }
-    else {
-      return -1; // Ignore press because insufficient elapsed time
-    }
-  }
-
-  return retval;
 }
 
 void TftStringMenu::update_val(char c) {
@@ -422,6 +414,16 @@ void TftStringMenu::update_val(char c) {
 
     break;
   }
+}
+
+bool TftStringMenu::handle_key(uint8_t key) {
+  if (!TftKeyboardMenu::handle_key(key)) return false;
+
+  auto w = get_layout().get_width();
+  char ch = get_layout().get_char(key % w, key / w);
+
+  update_val(ch);
+  return true;
 }
 
 char TftStringMenu::capitalize(char c) {
@@ -597,10 +599,7 @@ void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_
 
     if (btn_pressed == menu.get_num_btns() - 1) break;
 
-    auto w = menu.get_layout().get_width();
-    char ch = menu.get_layout().get_char(btn_pressed % w, btn_pressed / w);
-
-    menu.update_val(ch);
+    menu.handle_key(btn_pressed);
   }
 
   menu.get_val(buf, len);

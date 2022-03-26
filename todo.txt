@@ -3,7 +3,16 @@
 
 - FIRMWARE
   - last changes before v0.0.1-rc1
-    - fix lack of memory? or is wontfix? decide
+    - tweak colors? maybe make highlight btn-color-sensitive
+    - draw spaces in StringMenu
+    - have a caps indicator on StringMenu
+    - check for address rollovers
+    - triple check all mallocs
+    - add progress bar on read range
+    - put labels (addr) on ReadRange
+    - switch repr mode on ReadRange
+    - rotate screen for PChrSet, bigger font
+    - add help / about screens
   - start work on from_serial programmer
 
 - HARDWARE
