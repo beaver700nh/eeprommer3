@@ -3,9 +3,6 @@
 
 - FIRMWARE
   - last changes before v0.0.1-rc1
-    - tweak colors? maybe make highlight btn-color-sensitive
-    - draw spaces in StringMenu
-    - have a caps indicator on StringMenu
     - check for address rollovers
     - triple check all mallocs
     - add progress bar on read range

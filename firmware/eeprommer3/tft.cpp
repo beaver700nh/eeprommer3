@@ -123,7 +123,30 @@ void TftBtn::erase(TftCtrl &tft) {
 }
 
 void TftBtn::draw_highlight(TftCtrl &tft) {
-  auto color = (m_is_highlighted ? TftColor::YELLOW : TftColor::BLACK);
+  auto color = ([=]() -> uint16_t {
+    if (!m_is_highlighted) {
+      return TftColor::BLACK;
+    }
+    else {
+      uint16_t inverted = ~m_bg;
+
+      // Prevent gray-ish colors
+      if (IN_RANGE(inverted, 0x6000, 0x8000)) {
+        inverted -= 0x4000;
+      }
+      else if (IN_RANGE(inverted, 0x8000, 0xA000)) {
+        inverted += 0x4000;
+      }
+
+      // Prevent too-dark and too-bright colors
+      inverted = map(inverted, 0x0000, 0xFFFF, 0x2000, 0xDFFF);
+
+      // Prevent too-dark colors (a different way)
+      if (inverted < 0x4000) inverted += 0x2000;
+
+      return inverted;
+    }
+  })();
 
   tft.drawRect(m_x - 1, m_y - 1, m_w + 2, m_h + 2, color);
   tft.drawRect(m_x - 2, m_y - 2, m_w + 4, m_h + 4, color);
