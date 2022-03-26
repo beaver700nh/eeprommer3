@@ -442,12 +442,7 @@ public:
 
   void update_val(char c);
 
-  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
-    uint8_t char_width = 6 * (size == 0 ? 1 : size); // Prevent divide-by-zero
-    uint8_t maxfit_len = (tft.width() - size - 2 * m_marg_h) / char_width - 2;
-
-    TftKeyboardMenu::show_val(tft, x, y, MIN(maxfit_len, m_buf_len), size, fg, bg);
-  }
+  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg);
 
   bool handle_key(uint8_t key);
 

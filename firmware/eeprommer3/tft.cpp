@@ -390,7 +390,7 @@ void TftStringMenu::update_val(char c) {
 
   switch (c) {
   case '\x7f':
-    m_capitalize = true;
+    m_capitalize = !m_capitalize;
     break;
 
   case '\x11':
@@ -414,6 +414,18 @@ void TftStringMenu::update_val(char c) {
 
     break;
   }
+}
+
+void TftStringMenu::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
+  // Show caps indicator
+  tft.drawTextBg(TftCalc::right(tft, 10, 10), 10, (m_capitalize ? "A" : "a"));
+
+  uint8_t char_width = 6 * (size == 0 ? 1 : size); // Prevent divide-by-zero
+  uint8_t maxfit_len = (tft.width() - size - 2 * m_marg_h) / char_width - 2;
+
+  uint8_t working_text_len = MIN(maxfit_len, m_buf_len);
+
+  TftKeyboardMenu::show_val(tft, x, y, working_text_len, size, fg, bg);
 }
 
 bool TftStringMenu::handle_key(uint8_t key) {
