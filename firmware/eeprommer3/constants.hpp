@@ -50,6 +50,12 @@
 // Returns a 565-color representation of 24-bit color (`r`, `g`, `b`)
 #define TO_565(r, g, b) (((r) >> 3 << 11) | ((g) >> 2 << 5) | ((b) >> 3))
 
+// These return the individual RGB components of a 565 color
+
+#define RED_565(c) ((c) >> 11)
+#define GRN_565(c) (((c) >> 5) & 0x3F)
+#define BLU_565(c) ((c) & 0x1F)
+
 // Shorthand for bottom button in TftBtn ctor
 // `tft`: TftCtrl object to get dimensions
 // `text`: text of button

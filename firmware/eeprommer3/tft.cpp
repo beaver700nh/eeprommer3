@@ -128,23 +128,23 @@ void TftBtn::draw_highlight(TftCtrl &tft) {
       return TftColor::BLACK;
     }
     else {
-      uint16_t inverted = ~m_bg;
+      uint16_t res = ~m_bg;
 
       // Prevent gray-ish colors
-      if (IN_RANGE(inverted, 0x6000, 0x8000)) {
-        inverted -= 0x4000;
+      if (IN_RANGE(RED_565(res), 0x60, 0x80) || IN_RANGE(GRN_565(res), 0x60, 0x80) || IN_RANGE(BLU_565(res), 0x60, 0x80)) {
+        res &= ~0x2104;
       }
-      else if (IN_RANGE(inverted, 0x8000, 0xA000)) {
-        inverted += 0x4000;
+      else if (IN_RANGE(RED_565(res), 0x80, 0xA0) || IN_RANGE(GRN_565(res), 0x80, 0xA0) || IN_RANGE(BLU_565(res), 0x80, 0xA0)) {
+        res |= 0x39E7;
       }
 
       // Prevent too-dark and too-bright colors
-      inverted = map(inverted, 0x0000, 0xFFFF, 0x2000, 0xDFFF);
+      res = map(res, 0x0000, 0xFFFF, 0x2000, 0xDFFF);
 
       // Prevent too-dark colors (a different way)
-      if (inverted < 0x4000) inverted += 0x2000;
+      if (res < 0x4000) res |= 0x39E7;
 
-      return inverted;
+      return res;
     }
   })();
 
@@ -662,10 +662,15 @@ void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
 }
 
 void tft_print_chars(TftCtrl &tft) {
+  uint8_t original_rotation = tft.getRotation();
+  tft.setRotation(0);
+
   uint8_t i = 0;
 
   do {
-    tft.drawText(10 + 7 * (i & 0x0F), 10 + 10 * (i >> 4), STRFMT_NOBUF("%c", i), TftColor::WHITE, 1);
+    tft.drawText(10 + 18 * (i & 0x0F), 10 + 24 * (i >> 4), STRFMT_NOBUF("%c", i));
   }
   while (i++ != 0xFF);
+
+  tft.setRotation(original_rotation);
 }
