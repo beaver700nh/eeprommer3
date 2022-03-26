@@ -8,7 +8,6 @@
     - add progress bar on read range
     - put labels (addr) on ReadRange
     - switch repr mode on ReadRange
-    - rotate screen for PChrSet, bigger font
     - add help / about screens
   - start work on from_serial programmer
 

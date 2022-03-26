@@ -131,17 +131,14 @@ void TftBtn::draw_highlight(TftCtrl &tft) {
       uint16_t res = ~m_bg;
 
       // Prevent gray-ish colors
-      if (IN_RANGE(RED_565(res), 0x60, 0x80) || IN_RANGE(GRN_565(res), 0x60, 0x80) || IN_RANGE(BLU_565(res), 0x60, 0x80)) {
+      if (IN_RANGE(RED_565(res), 0x0C, 0x10) || IN_RANGE(GRN_565(res), 0x18, 0x20) || IN_RANGE(BLU_565(res), 0x0C, 0x10)) {
         res &= ~0x2104;
       }
-      else if (IN_RANGE(RED_565(res), 0x80, 0xA0) || IN_RANGE(GRN_565(res), 0x80, 0xA0) || IN_RANGE(BLU_565(res), 0x80, 0xA0)) {
+      else if (IN_RANGE(RED_565(res), 0x10, 0x14) || IN_RANGE(GRN_565(res), 0x20, 0x28) || IN_RANGE(BLU_565(res), 0x10, 0x14)) {
         res |= 0x39E7;
       }
 
-      // Prevent too-dark and too-bright colors
-      res = map(res, 0x0000, 0xFFFF, 0x2000, 0xDFFF);
-
-      // Prevent too-dark colors (a different way)
+      // Prevent too-dark colors
       if (res < 0x4000) res |= 0x39E7;
 
       return res;
