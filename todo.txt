@@ -3,6 +3,7 @@
 
 - FIRMWARE
   - last changes before v0.0.1-rc1
+    - write multi is bugged?
     - check for address rollovers
     - triple check all mallocs
     - add progress bar on read range
