@@ -13,4 +13,4 @@
   - start work on from_serial programmer
 
 - HARDWARE
-  - update hardware to add pullup resistors to eeprom data bus
+  - check if up to date
