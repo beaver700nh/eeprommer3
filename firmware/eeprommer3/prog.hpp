@@ -27,7 +27,7 @@ public:
 public:
   static constexpr uint8_t NUM_ACTIONS = 12;
 
-  ProgrammerFromSdBaseCore *m_cores[NUM_ACTIONS / 2];
+  ProgrammerFromSdBaseCore *m_cores[NUM_ACTIONS];
 
 #define FUNC(type, name) (ProgrammerFromSdBaseCore::Func) &ProgrammerFromSd##type##Core::name
 

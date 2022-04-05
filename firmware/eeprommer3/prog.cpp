@@ -11,15 +11,22 @@
 #include "prog.hpp"
 
 ProgrammerFromSd::ProgrammerFromSd(TYPED_CONTROLLERS) : INIT_LIST_CONTROLLERS {
-  m_cores[0] = new ProgrammerFromSdByteCore  (CONTROLLERS);
-  m_cores[1] = new ProgrammerFromSdFileCore  (CONTROLLERS);
-  m_cores[2] = new ProgrammerFromSdVectorCore(CONTROLLERS);
-  m_cores[3] = new ProgrammerFromSdMultiCore (CONTROLLERS);
-  m_cores[4] = new ProgrammerFromSdOtherCore (CONTROLLERS);
+  m_cores[ 0] = new ProgrammerFromSdByteCore  (CONTROLLERS);
+  m_cores[ 1] = new ProgrammerFromSdByteCore  (CONTROLLERS);
+  m_cores[ 2] = new ProgrammerFromSdFileCore  (CONTROLLERS);
+  m_cores[ 3] = new ProgrammerFromSdFileCore  (CONTROLLERS);
+  m_cores[ 4] = new ProgrammerFromSdVectorCore(CONTROLLERS);
+  m_cores[ 5] = new ProgrammerFromSdVectorCore(CONTROLLERS);
+  m_cores[ 6] = new ProgrammerFromSdMultiCore (CONTROLLERS);
+  m_cores[ 7] = new ProgrammerFromSdMultiCore (CONTROLLERS);
+  m_cores[ 8] = new ProgrammerFromSdOtherCore (CONTROLLERS);
+  m_cores[ 9] = new ProgrammerFromSdOtherCore (CONTROLLERS);
+  m_cores[10] = new ProgrammerFromSdOtherCore (CONTROLLERS);
+  m_cores[11] = new ProgrammerFromSdOtherCore (CONTROLLERS);
 }
 
 ProgrammerFromSd::~ProgrammerFromSd() {
-  for (uint8_t i = 0; i < NUM_ACTIONS / 2; ++i) {
+  for (uint8_t i = 0; i < NUM_ACTIONS; ++i) {
     delete m_cores[i];
   }
 }
@@ -92,9 +99,12 @@ void ProgrammerFromSd::run() {
 
     SER_LOG_PRINT("Executing action #%d: %s.", cur_choice, menu.get_btn(cur_choice)->get_text());
 
+    auto the_core = m_cores[cur_choice];
+    auto the_action = action_map[cur_choice];
+
     ProgrammerFromSdBaseCore::Status status_code = (
       cur_choice < NUM_ACTIONS ?
-      (m_cores[cur_choice / 2]->*action_map[cur_choice])() :
+      (the_core->*the_action)() :
       ProgrammerFromSdBaseCore::Status::ERR_INVALID
     );
 
@@ -111,7 +121,9 @@ void ProgrammerFromSd::run() {
 void ProgrammerFromSd::show_status(ProgrammerFromSdBaseCore::Status code) {
   m_tft.drawText(10, 10, "Result:", TftColor::CYAN, 4);
 
-  const char *details_buf[] = {
+  constexpr uint8_t NUM_DETAILS = 5;
+
+  const char *details_buf[NUM_DETAILS] = {
     "No errors.",
     "Invalid action.",
     "Failed to open file.",
@@ -121,7 +133,7 @@ void ProgrammerFromSd::show_status(ProgrammerFromSdBaseCore::Status code) {
 
   const char  *str_repr = (code == ProgrammerFromSdBaseCore::Status::OK ? "Success!" : "Failed!");
   uint16_t   color_repr = (code ? TftColor::RED : TftColor::GREEN);
-  const char *text_repr = (code < 5 ? details_buf[code] : "Unknown reason.");
+  const char *text_repr = (code < NUM_DETAILS ? details_buf[code] : "Unknown reason.");
 
   m_tft.drawText(15, 50, str_repr, color_repr, 3);
   m_tft.drawText(15, 80, text_repr, TftColor::PURPLE, 2);
