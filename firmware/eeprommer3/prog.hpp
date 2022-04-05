@@ -25,7 +25,7 @@ public:
   void show_status(ProgrammerFromSdBaseCore::Status code);
 
 public:
-  static constexpr uint8_t NUM_ACTIONS = 10;
+  static constexpr uint8_t NUM_ACTIONS = 12;
 
   ProgrammerFromSdBaseCore *m_cores[NUM_ACTIONS / 2];
 
@@ -37,6 +37,7 @@ public:
     FUNC(Vector, read ), FUNC(Vector, write),
     FUNC(Multi,  read ), FUNC(Multi,  write),
     FUNC(Other,  paint), FUNC(Other,  debug),
+    FUNC(Other,  about), FUNC(Other,  help ),
   };
 
 #undef FUNC

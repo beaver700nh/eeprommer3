@@ -129,6 +129,10 @@ public:
 
   Status paint();
   Status debug();
+
+  Status about();
+  Status help();
+
   Status nop();
 
 private:

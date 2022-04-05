@@ -670,6 +670,16 @@ void ProgrammerFromSdOtherCore::monitor_data_bus() {
 #endif
 }
 
+// Opens an about menu
+ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::about() {
+  // todo
+}
+
+// Opens a help menu
+ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::help() {
+  // todo
+}
+
 // Dummy function for unimplemented actions
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::nop() {
   // Always returns 0 for success

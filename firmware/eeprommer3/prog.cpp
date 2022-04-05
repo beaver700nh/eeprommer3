@@ -36,10 +36,22 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
     "Write to a 6502 jump vector.",
     "Read multiple bytes from EEPROM.",
     "Write multiple bytes to EEPROM.",
+    nullptr,
+    nullptr,
+    "Show `about' menu.",
+    "Show `help' menu.",
   };
 
+  auto *help_text = ([&]() -> const char * {
+    if (btn_id >= ARR_LEN(helps) || helps[btn_id] == nullptr) {
+      return "No help text available.";
+    }
+
+    return helps[btn_id];
+  })();
+
   tft.fillRect(10, 250, tft.width(), 16, TftColor::BLACK);
-  tft.drawText(10, 250, (btn_id < ARR_LEN(helps) ? helps[btn_id] : "No help text available."), TftColor::PURPLE, 2);
+  tft.drawText(10, 250, help_text, TftColor::PURPLE, 2);
 }
 
 void ProgrammerFromSd::run() {
@@ -54,6 +66,10 @@ void ProgrammerFromSd::run() {
   menu.add_btn_calc(m_tft, "Write Multiple",  TftColor::BLACK,          TftColor::ORANGE);
   menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY);
   menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY);
+
+  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10 + 24 + 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
+  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24,           10), 10, 24, 24, "?", TftColor::BLACK, TftColor::YELLOW));
+
   menu.add_btn_confirm(m_tft, true);
 
 #ifndef DEBUG_MODE
