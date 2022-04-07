@@ -10,19 +10,27 @@
 
 #include "prog.hpp"
 
-ProgrammerFromSd::ProgrammerFromSd(TYPED_CONTROLLERS) : INIT_LIST_CONTROLLERS {
-  m_cores[ 0] = new ProgrammerFromSdByteCore  (CONTROLLERS);
-  m_cores[ 1] = new ProgrammerFromSdByteCore  (CONTROLLERS);
-  m_cores[ 2] = new ProgrammerFromSdFileCore  (CONTROLLERS);
-  m_cores[ 3] = new ProgrammerFromSdFileCore  (CONTROLLERS);
-  m_cores[ 4] = new ProgrammerFromSdVectorCore(CONTROLLERS);
-  m_cores[ 5] = new ProgrammerFromSdVectorCore(CONTROLLERS);
-  m_cores[ 6] = new ProgrammerFromSdMultiCore (CONTROLLERS);
-  m_cores[ 7] = new ProgrammerFromSdMultiCore (CONTROLLERS);
-  m_cores[ 8] = new ProgrammerFromSdOtherCore (CONTROLLERS);
-  m_cores[ 9] = new ProgrammerFromSdOtherCore (CONTROLLERS);
-  m_cores[10] = new ProgrammerFromSdOtherCore (CONTROLLERS);
-  m_cores[11] = new ProgrammerFromSdOtherCore (CONTROLLERS);
+ProgrammerFromSd::ProgrammerFromSd(TYPED_CONTROLLERS)
+  : m_menu(10, 10, 50, 10, 2, 30, true), INIT_LIST_CONTROLLERS {
+  static ProgrammerFromSdBaseCore \
+    *core_byte   = new ProgrammerFromSdByteCore  (CONTROLLERS),
+    *core_file   = new ProgrammerFromSdFileCore  (CONTROLLERS),
+    *core_vector = new ProgrammerFromSdVectorCore(CONTROLLERS),
+    *core_multi  = new ProgrammerFromSdMultiCore (CONTROLLERS),
+    *core_other  = new ProgrammerFromSdOtherCore (CONTROLLERS);
+
+  m_cores[ 0] = core_byte;
+  m_cores[ 1] = core_byte;
+  m_cores[ 2] = core_file;
+  m_cores[ 3] = core_file;
+  m_cores[ 4] = core_vector;
+  m_cores[ 5] = core_vector;
+  m_cores[ 6] = core_multi;
+  m_cores[ 7] = core_multi;
+  m_cores[ 8] = core_other;
+  m_cores[ 9] = core_other;
+  m_cores[10] = core_other;
+  m_cores[11] = core_other;
 }
 
 ProgrammerFromSd::~ProgrammerFromSd() {
@@ -61,30 +69,35 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
   tft.drawText(10, 250, help_text, TftColor::PURPLE, 2);
 }
 
-void ProgrammerFromSd::run() {
-  TftChoiceMenu menu(10, 10, 50, 10, 2, 30, true);
-  menu.add_btn_calc(m_tft, "Read Byte",       TftColor::BLUE,           TftColor::CYAN);
-  menu.add_btn_calc(m_tft, "Write Byte",      TftColor::RED,            TftColor::PINKK);
-  menu.add_btn_calc(m_tft, "Read to File",    TftColor::CYAN,           TftColor::BLUE);
-  menu.add_btn_calc(m_tft, "Write from File", TftColor::PINKK,          TftColor::RED);
-  menu.add_btn_calc(m_tft, "Read Vector",     TO_565(0x00, 0x17, 0x00), TftColor::LGREEN);
-  menu.add_btn_calc(m_tft, "Write Vector",    TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  menu.add_btn_calc(m_tft, "Read Range",      TftColor::LGREEN,         TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, "Write Multiple",  TftColor::BLACK,          TftColor::ORANGE);
-  menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY);
-  menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY);
+void ProgrammerFromSd::init() {
+  m_menu.add_btn_calc(m_tft, "Read Byte",       TftColor::BLUE,           TftColor::CYAN);
+  m_menu.add_btn_calc(m_tft, "Write Byte",      TftColor::RED,            TftColor::PINKK);
+  m_menu.add_btn_calc(m_tft, "Read to File",    TftColor::CYAN,           TftColor::BLUE);
+  m_menu.add_btn_calc(m_tft, "Write from File", TftColor::PINKK,          TftColor::RED);
+  m_menu.add_btn_calc(m_tft, "Read Vector",     TO_565(0x00, 0x17, 0x00), TftColor::LGREEN);
+  m_menu.add_btn_calc(m_tft, "Write Vector",    TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
+  m_menu.add_btn_calc(m_tft, "Read Range",      TftColor::LGREEN,         TftColor::DGREEN);
+  m_menu.add_btn_calc(m_tft, "Write Multiple",  TftColor::BLACK,          TftColor::ORANGE);
+  m_menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY);
+  m_menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY);
 
-  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10 + 24 + 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
-  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24,           10), 10, 24, 24, "?", TftColor::BLACK, TftColor::YELLOW));
+  m_menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10 + 24 + 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
+  m_menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24,           10), 10, 24, 24, "?", TftColor::BLACK, TftColor::YELLOW));
 
-  menu.add_btn_confirm(m_tft, true);
+  m_menu.add_btn_confirm(m_tft, true);
 
 #ifndef DEBUG_MODE
-  menu.get_btn(8)->operation(false);
-  menu.get_btn(9)->operation(false);
+  m_menu.get_btn(8)->operation(false);
+  m_menu.get_btn(9)->operation(false);
 #endif
 
-  menu.set_callback(show_help);
+  m_menu.set_callback(show_help);
+
+  initalized = true;
+}
+
+void ProgrammerFromSd::run() {
+  if (!initalized) return;
 
   uint8_t cur_choice = 0;
 
@@ -93,11 +106,11 @@ void ProgrammerFromSd::run() {
   while (true) {
     m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
     show_help(m_tft, cur_choice, false);
-    cur_choice = menu.wait_for_value(m_tch, m_tft);
+    cur_choice = m_menu.wait_for_value(m_tch, m_tft);
 
     m_tft.fillScreen(TftColor::BLACK);
 
-    SER_LOG_PRINT("Executing action #%d: %s.", cur_choice, menu.get_btn(cur_choice)->get_text());
+    SER_LOG_PRINT("Executing action #%d: %s.", cur_choice, m_menu.get_btn(cur_choice)->get_text());
 
     auto the_core = m_cores[cur_choice];
     auto the_action = action_map[cur_choice];

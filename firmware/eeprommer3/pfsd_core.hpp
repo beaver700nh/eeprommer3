@@ -138,7 +138,18 @@ public:
 private:
   // Helper functions of debug()
 
-  void do_debug_action(uint8_t action);
+  enum DebugAction : uint8_t {
+    DISABLE_WRITE,       // Set !WE high (disable)
+    ENABLE_WRITE,        // Set !WE low (enable)
+    SET_ADDR_BUS_AND_OE, // Set 16 bits: 15 = !OE, 14-0 = address
+    READ_DATA_BUS,       // Read 8 bits from data bus
+    WRITE_DATA_BUS,      // Write 8 bits to data bus
+    SET_DATA_DIR,        // Set data bus as input or output
+    MONITOR_DATA_BUS,    // Poll and show data bus at an interval
+    PRINT_CHARSET,       // Print TFT driver's charset, 0x00-0xFF
+  };
+
+  void do_debug_action(DebugAction action);
   void monitor_data_bus();
 };
 

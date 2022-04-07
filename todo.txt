@@ -3,7 +3,6 @@
 
 - FIRMWARE
   - last changes before v0.0.1-rc1
-    - split ProgrammerFromSd::run into ...::init() also
     - write multi is bugged?
     - check for address rollovers
     - triple check all mallocs

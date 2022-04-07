@@ -585,7 +585,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::debug() {
     m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
     menu.draw(m_tft);
 
-    uint8_t btn = menu.wait_for_press(m_tch, m_tft);
+    DebugAction btn = (DebugAction) menu.wait_for_press(m_tch, m_tft);
 
     if (btn == menu.get_num_btns() - 1) break;
 
@@ -599,52 +599,44 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::debug() {
   return Status::OK;
 }
 
-void ProgrammerFromSdOtherCore::do_debug_action(uint8_t action) {
-  uint16_t val;
-
-  switch (action) {
-  case 0: // Disable write
+void ProgrammerFromSdOtherCore::do_debug_action(DebugAction action) {
+  if (action == DebugAction::DISABLE_WRITE) {
     m_ee.set_we(true);
-    break;
-
-  case 1: // Enable write
+  }
+  else if (action == DebugAction::ENABLE_WRITE) {
     m_ee.set_we(false);
-    break;
-
-  case 2: // Set address bus + OE
-    val = ask_val<uint16_t>(m_tft, m_tch, "Type the value:");
-    m_ee.set_addr_and_oe(val);
-    break;
-
-  case 3: // Read data bus
-    val = m_ee.get_data();
-    m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
-    m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL((uint8_t) val)), TftColor::YELLOW, 2);
-    Util::wait_continue(m_tft, m_tch);
-    break;
-
-  case 4: // Write data bus
-    val = ask_val<uint8_t>(m_tft, m_tch, "Type the value:");
-    m_ee.set_data(val);
-    break;
-
-  case 5: // Set data direction
-    val = ask_choice(
-      m_tft, m_tch, "Which direction?", 1, 45, 0, 2,
-      "Input",        TftColor::CYAN,   TftColor::BLUE,
-      "Output",       TftColor::PINKK,  TftColor::RED
+  }
+  else if (action == DebugAction::SET_ADDR_BUS_AND_OE) { 
+    m_ee.set_addr_and_oe(
+      ask_val<uint16_t>(m_tft, m_tch, "Type the value:")
     );
-    m_ee.set_ddr(val & 0x01);
-    break;
+  }
+  else if (action == DebugAction::READ_DATA_BUS) {
+    m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
+    m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(m_ee.get_data())), TftColor::YELLOW, 2);
 
-  case 6: // Monitor data bus
+    Util::wait_continue(m_tft, m_tch);
+  }
+  else if (action == DebugAction::WRITE_DATA_BUS) {
+    m_ee.set_data(
+      ask_val<uint8_t>(m_tft, m_tch, "Type the value:")
+    );
+  }
+  else if (action == DebugAction::SET_DATA_DIR) {
+    m_ee.set_ddr(
+      ask_choice(
+        m_tft, m_tch, "Which direction?", 1, 45, 0, 2,
+        "Input",        TftColor::CYAN,   TftColor::BLUE,
+        "Output",       TftColor::PINKK,  TftColor::RED
+      )
+    );
+  }
+  else if (action == DebugAction::MONITOR_DATA_BUS) {
     monitor_data_bus();
-    break;
-
-  case 7: // Print character set
+  }
+  else if (action == DebugAction::PRINT_CHARSET) {
     tft_print_chars(m_tft);
     m_tch.wait_for_press();
-    break;
   }
 }
 
@@ -661,6 +653,8 @@ void ProgrammerFromSdOtherCore::monitor_data_bus() {
     delay(500);
   }
 #else
+  // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
+
   m_tft.drawText(10,  10, "Error:",                 TftColor::RED,    3);
   m_tft.drawText(10,  50, "Data bus monitor",       TftColor::ORANGE, 3);
   m_tft.drawText(10,  90, "is not supported",       TftColor::ORANGE, 3);
@@ -670,14 +664,12 @@ void ProgrammerFromSdOtherCore::monitor_data_bus() {
 #endif
 }
 
-// Opens an about menu
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::about() {
-  // todo
+  return Status::OK;
 }
 
-// Opens a help menu
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::help() {
-  // todo
+  return Status::OK;
 }
 
 // Dummy function for unimplemented actions

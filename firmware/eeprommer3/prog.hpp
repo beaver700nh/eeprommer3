@@ -21,6 +21,8 @@ public:
   ProgrammerFromSd(TYPED_CONTROLLERS);
   ~ProgrammerFromSd();
 
+  void init();
+
   void run();
   void show_status(ProgrammerFromSdBaseCore::Status code);
 
@@ -41,6 +43,9 @@ public:
   };
 
 #undef FUNC
+
+  TftChoiceMenu m_menu;
+  bool initalized;
 
   TftCtrl &m_tft;
   TouchCtrl &m_tch;

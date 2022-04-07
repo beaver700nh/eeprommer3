@@ -63,6 +63,7 @@ void mainprog() {
     SER_LOG_PRINT("> COMMENCE SD PROGRAMMING <");
 
     ProgrammerFromSd prog(CONTROLLERS);
+    prog.init();
     prog.run();
   }
   else {
