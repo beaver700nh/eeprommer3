@@ -665,6 +665,21 @@ void ProgrammerFromSdOtherCore::monitor_data_bus() {
 }
 
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::about() {
+  m_tft.drawText( 10,  10, "About",                    TftColor::CYAN,   3);
+  m_tft.drawText( 10,  50, "eeprommer3",               TftColor::PURPLE, 2);
+  m_tft.drawText(142,  50, "- hardware/firmware side", TftColor::BLUE,   2);
+  m_tft.drawText( 10,  90, "AT28C256 EEPROM programmer using 2 I2C", TftColor::LGRAY);
+  m_tft.drawText( 10, 120, "MCP23017 chips. Use: standalone device", TftColor::LGRAY);
+  m_tft.drawText( 10, 150, "or computer peripheral via USB. Allows", TftColor::LGRAY);
+  m_tft.drawText( 10, 180, "access to SD card connected on SPI bus", TftColor::LGRAY);
+  m_tft.drawText( 10, 240, "Made by beaver700nh (GitHub) 2021-2022", TftColor::DGRAY);
+
+  TftBtn ok_btn(BOTTOM_BTN(m_tft, "OK"));
+  ok_btn.draw(m_tft);
+  ok_btn.wait_for_press(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
   return Status::OK;
 }
 
