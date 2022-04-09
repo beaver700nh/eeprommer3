@@ -52,9 +52,11 @@ void EepromCtrl::set_oe(bool oe) {
 uint8_t EepromCtrl::read(uint16_t addr) {
   set_we(true);
   set_addr_and_oe(addr & ~0x8000); // ~OE is off to enable output
-  _delay_us(10);
+
+  _delay_us(Timing::ADDR_SETUP);
   uint8_t data = get_data();
-  _delay_us(1);
+  _delay_us(Timing::ADDR_HOLD);
+
   return data;
 }
 
@@ -63,9 +65,11 @@ void EepromCtrl::write(uint16_t addr, uint8_t data) {
   set_data(data);
 
   set_we(false);
-  _delay_us(10);
+  _delay_us(Timing::WE_PULSE);
   set_we(true);
-  _delay_ms(10);
+  _delay_us(Timing::WE_HOLD);
+
+  _delay_ms(Timing::WRITE_TIME);
 }
 
 void EepromCtrl::read(uint16_t addr1, uint16_t addr2, uint8_t *buf) {
@@ -79,27 +83,29 @@ void EepromCtrl::read(uint16_t addr1, uint16_t addr2, uint8_t *buf) {
 
 void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   uint16_t i = addr;
-  uint16_t first_addr_of_page = addr;
+  uint16_t start_of_working_page = addr;
+
+  set_addr_and_oe(0x8000); // ~OE is on to disable output
 
   do {
-    // If pair not in the same page as pair #0 then start a new operation and update the working page
-    if ((0x7FC0 & ~(i ^ first_addr_of_page)) != 0x7FC0) {
-      delay(10);
-      first_addr_of_page = i;
+    // If byte not in the same page as working page then start a new operation and update the working page
+    if ((0x7FC0 & ~(i ^ start_of_working_page)) != 0x7FC0) {
+      _delay_ms(Timing::WRITE_TIME);
+      start_of_working_page = i;
     }
 
-    set_addr_and_oe(i | 0x8000); // ~OE is on to disable output
+    set_addr_and_oe(i | 0x8000);
     set_data(buf[i - addr]);
 
     set_we(false);
-    _delay_us(10);
+    _delay_us(Timing::WE_PULSE);
     set_we(true);
-    _delay_us(2);
+    _delay_us(Timing::WE_HOLD);
   }
   while ((i - addr + 1) < len && ++i);
 
   // Delay to be sure that the next operation is treated as a different one than this operation
-  _delay_ms(10);
+  _delay_ms(Timing::WRITE_TIME);
 }
 
 void EepromCtrl::write(AddrDataArray *buf) {
@@ -109,28 +115,28 @@ void EepromCtrl::write(AddrDataArray *buf) {
   AddrDataArrayPair pair0;
 
   buf->get_pair(0, &pair0);
-  uint16_t first_addr_of_page = pair0.addr;
+  uint16_t start_of_working_page = pair0.addr;
 
   uint16_t i = 0;
 
   while (buf->get_pair(i++, &pair) == true) {
-    // If pair not in the same page as pair #0 then start a new operation
-    if ((0x7FC0 & ~(pair.addr ^ first_addr_of_page)) != 0x7FC0) {
-      _delay_ms(10);
-      first_addr_of_page = pair.addr;
+    // If pair not in the same page as working page then start a new operation
+    if ((0x7FC0 & ~(pair.addr ^ start_of_working_page)) != 0x7FC0) {
+      _delay_ms(Timing::WRITE_TIME);
+      start_of_working_page = pair.addr;
     }
 
     set_addr_and_oe(pair.addr | 0x8000); // ~OE is on to disable output
     set_data(pair.data);
 
     set_we(false);
-    _delay_us(10);
+    _delay_us(Timing::WE_PULSE);
     set_we(true);
-    _delay_us(2);
+    _delay_us(Timing::WE_HOLD);
   }
 
   // Delay to be sure that the next operation is treated as a different one than this operation
-  _delay_ms(10);
+  _delay_ms(Timing::WRITE_TIME);
 }
 
 IoExpCtrl::~IoExpCtrl() {

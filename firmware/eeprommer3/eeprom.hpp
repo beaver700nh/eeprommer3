@@ -59,6 +59,14 @@ public:
 #endif
 
 private:
+  enum Timing : uint8_t {
+    ADDR_SETUP = 1,  // in microseconds
+    ADDR_HOLD  = 1,  // in microseconds
+    WE_PULSE   = 1,  // in microseconds
+    WE_HOLD    = 5,  // in microseconds
+    WRITE_TIME = 25, // in milliseconds
+  };
+
   IoExpCtrl m_exp_0, m_exp_1;
 };
 
