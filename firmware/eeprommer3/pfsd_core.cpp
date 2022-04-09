@@ -193,7 +193,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr,
       this->m_ee.read(addr, addr + nbytes, reality);
 
       if (memcmp(expectation, reality, nbytes) != 0) {
-        this->m_tft.drawText(10, 110, STRFMT_NOBUF("Mismatch between %04X and %04X!", addr, addr + 0xFF), TftColor::RED);
+        this->m_tft.drawText(10, 150, STRFMT_NOBUF("Mismatch between %04X and %04X!", addr, addr + 0xFF), TftColor::RED);
         return true; // Request to quit loop
       }
 

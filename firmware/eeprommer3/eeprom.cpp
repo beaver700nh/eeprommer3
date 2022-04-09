@@ -83,28 +83,15 @@ void EepromCtrl::read(uint16_t addr1, uint16_t addr2, uint8_t *buf) {
 
 void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   uint16_t i = addr;
-  uint16_t start_of_working_page = addr;
 
   set_addr_and_oe(0x8000); // ~OE is on to disable output
 
   do {
-    // If byte not in the same page as working page then start a new operation and update the working page
-    if ((0x7FC0 & ~(i ^ start_of_working_page)) != 0x7FC0) {
-      _delay_ms(Timing::WRITE_TIME);
-      start_of_working_page = i;
-    }
-
-    set_addr_and_oe(i | 0x8000);
-    set_data(buf[i - addr]);
-
-    set_we(false);
-    _delay_us(Timing::WE_PULSE);
-    set_we(true);
-    _delay_us(Timing::WE_HOLD);
+    write(i, buf[i - addr]);
   }
   while ((i - addr + 1) < len && ++i);
 
-  // Delay to be sure that the next operation is treated as a different one than this operation
+  // Delay to be sure that the next operation is treated as a different operation than this one
   _delay_ms(Timing::WRITE_TIME);
 }
 
@@ -112,30 +99,14 @@ void EepromCtrl::write(AddrDataArray *buf) {
   if (buf->get_len() < 1) return;
 
   AddrDataArrayPair pair;
-  AddrDataArrayPair pair0;
-
-  buf->get_pair(0, &pair0);
-  uint16_t start_of_working_page = pair0.addr;
 
   uint16_t i = 0;
 
   while (buf->get_pair(i++, &pair) == true) {
-    // If pair not in the same page as working page then start a new operation
-    if ((0x7FC0 & ~(pair.addr ^ start_of_working_page)) != 0x7FC0) {
-      _delay_ms(Timing::WRITE_TIME);
-      start_of_working_page = pair.addr;
-    }
-
-    set_addr_and_oe(pair.addr | 0x8000); // ~OE is on to disable output
-    set_data(pair.data);
-
-    set_we(false);
-    _delay_us(Timing::WE_PULSE);
-    set_we(true);
-    _delay_us(Timing::WE_HOLD);
+    write(pair.addr, pair.data);
   }
 
-  // Delay to be sure that the next operation is treated as a different one than this operation
+  // Delay to be sure that the next operation is treated as a different operation than this one
   _delay_ms(Timing::WRITE_TIME);
 }
 
