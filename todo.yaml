@@ -1,0 +1,20 @@
+SOFTWARE:
+  add more pictures/icons for window
+  scrap most of it?:
+    a lot is already implemented in FIRMWARE so unnecessary to rewrite here
+    should make much more simple SOFTWARE that only does what FIRMWARE can't
+
+FIRMWARE:
+  last changes before v0.0.1-rc1:
+    write multi is bugged?:
+      nvm figured it out - page write broken
+    check for address rollovers
+    triple check all mallocs
+    add progress bar on read range
+    put labels (addr) on ReadRange
+    switch repr mode on ReadRange
+    add help screen(s)
+  start work on from_serial programmer
+
+HARDWARE:
+  check if up to date

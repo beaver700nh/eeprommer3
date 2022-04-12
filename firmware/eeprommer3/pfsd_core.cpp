@@ -689,6 +689,5 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::help() {
 
 // Dummy function for unimplemented actions
 ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::nop() {
-  // Always returns 0 for success
   return Status::OK;
 }
