@@ -32,8 +32,8 @@ namespace Util {
     return false;
   }
 
-  // Function to wait for the user to press a "Continue" button
-  void wait_continue(TftCtrl &tft, TouchCtrl &tch);
+  // Function to wait for the user to press a button at the bottom of the screen
+  void wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text);
 };
 
 #endif

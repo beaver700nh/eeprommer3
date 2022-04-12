@@ -26,7 +26,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::read() {
   m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
   m_tft.drawText(20, 170, STRFMT_NOBUF("CHR: %c",        data),               TftColor::YELLOW, 2);
 
-  Util::wait_continue(m_tft, m_tch);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -46,7 +46,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::write() {
   m_tft.drawText(10,  73, "to",                                TftColor::DGREEN, 3);
   m_tft.drawText(10, 100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
-  Util::wait_continue(m_tft, m_tch);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -61,7 +61,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::verify(uint16_t addr,
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", *(uint8_t *) data), TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual),            TftColor::MAGENTA, 3);
 
-    Util::wait_continue(m_tft, m_tch);
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -104,7 +104,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::read() {
     );
 
     m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
-    Util::wait_continue(m_tft, m_tch);
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
   }
 
   file.flush();
@@ -147,7 +147,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::write() {
     );
 
     m_tft.drawText(10, 110, "Done writing!", TftColor::CYAN);
-    Util::wait_continue(m_tft, m_tch);
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
   }
 
   file.close();
@@ -204,7 +204,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr,
   );
 
   m_tft.drawText(10, 110, "Done verifying!", TftColor::CYAN);
-  Util::wait_continue(m_tft, m_tch);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   // `complete` is true if the loop finished normally
   if (!complete) status = Status::ERR_VERIFY;
@@ -230,7 +230,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::read() {
   m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
   m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
 
-  Util::wait_continue(m_tft, m_tch);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -254,7 +254,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::write() {
   m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
   m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
 
-  Util::wait_continue(m_tft, m_tch);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -269,7 +269,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::verify(uint16_t add
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", *(uint16_t *) data), TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual),             TftColor::MAGENTA, 3);
 
-    Util::wait_continue(m_tft, m_tch);
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -327,7 +327,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
   return Status::OK;
 }
 
-void ProgrammerFromSdMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, MultiByteShowRangeByteReprFunc repr) {
+void ProgrammerFromSdMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
   // Draw frame for the data
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
   m_tft.drawRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE);
@@ -355,7 +355,7 @@ void ProgrammerFromSdMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16
 }
 
 void ProgrammerFromSdMultiCore::show_page(
-  uint8_t *data, uint16_t addr1, uint16_t addr2, MultiByteShowRangeByteReprFunc repr, uint8_t cur_page, uint8_t max_page
+  uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page
 ) {
   m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
   m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
@@ -365,9 +365,6 @@ void ProgrammerFromSdMultiCore::show_page(
     TftColor::PURPLE, TftColor::BLACK, 2
   );
 
-  // Variables for formatting a byte
-  uint8_t byte_offset; char byte_as_text[3]; uint16_t byte_color;
-
   uint16_t glob_range_start = addr1 >> 8;
   uint16_t glob_page_start = MAX(((cur_page + glob_range_start)     << 8),     addr1);
   uint16_t glob_page_end   = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
@@ -376,13 +373,13 @@ void ProgrammerFromSdMultiCore::show_page(
     uint8_t tft_byte_col = (i & 0x0F);
     uint8_t tft_byte_row = (i & 0xFF) >> 4;
 
-    (*repr)(data[i - addr1], &byte_offset, byte_as_text, &byte_color);
+    ByteRepr br = (*repr)(data[i - addr1]);
 
     uint8_t split_offset = (tft_byte_col < 8 ? 0 : 3);
-    uint16_t tft_byte_x = m_tft.width()  / 2 - 141 + 18 * tft_byte_col + byte_offset + split_offset;
+    uint16_t tft_byte_x = m_tft.width()  / 2 - 141 + 18 * tft_byte_col + br.offset + split_offset;
     uint16_t tft_byte_y = m_tft.height() / 2 - 105 + 10 * tft_byte_row;
 
-    m_tft.drawText(tft_byte_x, tft_byte_y, byte_as_text, byte_color, 1);
+    m_tft.drawText(tft_byte_x, tft_byte_y, br.text, br.color, 1);
   }
 }
 
@@ -543,7 +540,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::verify(uint16_t addr
       m_tft.drawText(15,  77, STRFMT_NOBUF("Actual:   %02X", real_data), TftColor::MAGENTA, 3);
       m_tft.drawText(15, 104, STRFMT_NOBUF("Address: %04X",  pair.addr), TftColor::ORANGE,  2);
 
-      Util::wait_continue(m_tft, m_tch);
+      Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
       m_tft.fillScreen(TftColor::BLACK);
 
@@ -615,7 +612,7 @@ void ProgrammerFromSdOtherCore::do_debug_action(DebugAction action) {
     m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
     m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(m_ee.get_data())), TftColor::YELLOW, 2);
 
-    Util::wait_continue(m_tft, m_tch);
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
   }
   else if (action == DebugAction::WRITE_DATA_BUS) {
     m_ee.set_data(
@@ -674,9 +671,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::about() {
   m_tft.drawText( 10, 180, "access to SD card connected on SPI bus", TftColor::LGRAY);
   m_tft.drawText( 10, 240, "Made by beaver700nh (GitHub) 2021-2022", TftColor::DGRAY);
 
-  TftBtn ok_btn(BOTTOM_BTN(m_tft, "OK"));
-  ok_btn.draw(m_tft);
-  ok_btn.wait_for_press(m_tch, m_tft);
+  Util::wait_bottom_btn(m_tft, m_tch, "OK");
 
   m_tft.fillScreen(TftColor::BLACK);
 

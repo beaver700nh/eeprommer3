@@ -11,8 +11,8 @@
 #include "tft.hpp"
 
 /*
- * ProgrammerFromSdBaseCore is an ABC that contains some functions for manipulating the EEPROM
- * (EepromCtrl &ee) in a certain way. This certain way is defined in the child classes.
+ * ProgrammerFromSdBaseCore is an ABC that contains functions for manipulating EEPROM
+ * (EepromCtrl &ee) in a way which is defined in the child classes.
  */
 class ProgrammerFromSdBaseCore {
 public:
@@ -80,29 +80,47 @@ ADD_RW_CORE_CLASS_BODY(Multi)
 private:
   /******************************** READ RANGE HELPERS ********************************/
 
-  typedef void (*MultiByteShowRangeByteReprFunc)(uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color);
+  // Contains info for customizing a byte's representation
+  struct ByteRepr {
+    uint8_t offset; // X-offset of byte on screen
+    char text[3];   // Text representation of byte
+    uint16_t color; // Color of byte
+  };
+
+  // Returns a `ByteRepr` for a given byte, tells how to format it
+  typedef ByteRepr (*ByteReprFunc)(uint8_t input_byte);
 
   // Helper that shows `data` on screen, assumes `addr1` <= `addr2`
-  void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, MultiByteShowRangeByteReprFunc repr);
+  void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);
 
   // Helper function of show_range() that shows only one page of data from a large buffer
-  void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, MultiByteShowRangeByteReprFunc repr, uint8_t cur_page, uint8_t max_page);
+  void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page);
 
   // Helper that stores `data` to a file on EEPROM
   void store_file(uint8_t *data, uint16_t len);
 
   // Hex mode shows the data as raw hexadecimal values in white
-  static inline void multi_byte_repr_hex(uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color) {
-    *offset = 0;
-    *color = TftColor::WHITE;
-    sprintf(text_repr, "%02X", input_byte);
+  static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte) {
+    ByteRepr repr = {
+      .offset = 0,
+      .color = TftColor::WHITE,
+    };
+
+    sprintf(repr.text, "%02X", input_byte);
+
+    return repr;
   }
 
   // Chars mode shows the data as printable characters; white character if printable, gray "?" if not
-  static inline void multi_byte_repr_chars(uint8_t input_byte, uint8_t *offset, char *text_repr, uint16_t *color) {
-    *offset = 3;
-    *color = (isprint((char) input_byte) ? TftColor::WHITE : TftColor::GRAY);
-    sprintf(text_repr, "%c", (isprint((char) input_byte) ? (char) input_byte : '?'));
+  static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte) {
+    ByteRepr repr = {
+      .offset = 3,
+      .color = (isprint((char) input_byte) ? TftColor::WHITE : TftColor::GRAY),
+    };
+
+    sprintf(repr.text, "%c", (isprint((char) input_byte) ? (char) input_byte : '?'));
+
+    return repr;
   }
 
   /******************************** WRITE RANGE HELPERS ********************************/

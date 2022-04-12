@@ -6,6 +6,9 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
+    make it intelligently decide whether to use serial or sd:
+      menu?
+      alternate intro screen for non-SD
     write multi is bugged?:
       nvm figured it out - page write broken
     check for address rollovers
