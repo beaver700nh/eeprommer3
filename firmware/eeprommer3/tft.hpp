@@ -78,6 +78,8 @@ public:
 
   void init(uint16_t driver_id, uint8_t orientation);
 
+  void drawThickRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, uint8_t thickness);
+
   void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint8_t size = 2);
   void drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint16_t bg = TftColor::BLACK, uint8_t size = 2);
   void drawText(const char *text);

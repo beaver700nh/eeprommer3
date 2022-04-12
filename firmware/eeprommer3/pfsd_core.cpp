@@ -330,8 +330,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
 void ProgrammerFromSdMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
   // Draw frame for the data
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
-  m_tft.drawRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE);
-  m_tft.drawRect(m_tft.width() / 2 - 146, 51, 293, 164, TftColor::WHITE);
+  m_tft.drawThickRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE, 2);
   m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
 
   TftMenu menu;
@@ -675,10 +674,6 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::about() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return Status::OK;
-}
-
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::help() {
   return Status::OK;
 }
 

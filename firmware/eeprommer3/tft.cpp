@@ -18,6 +18,12 @@ void TftCtrl::init(uint16_t driver_id, uint8_t orientation) {
   setRotation(orientation);
 }
 
+void TftCtrl::drawThickRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, uint8_t thickness) {
+  for (uint8_t i = 0; i < thickness; ++i) {
+    drawRect(x + i, y + i, w - i * 2, h - i * 2, color);
+  }
+}
+
 void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size) {
   setTextColor(color);
   setTextSize(size);

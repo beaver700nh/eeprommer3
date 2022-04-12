@@ -7,6 +7,7 @@ SOFTWARE:
 FIRMWARE:
   last changes before v0.0.1-rc1:
     make it intelligently decide whether to use serial or sd:
+      IN PROGRESS!
       menu?
       alternate intro screen for non-SD
     write multi is bugged?:

@@ -101,11 +101,10 @@ private:
 
   // Hex mode shows the data as raw hexadecimal values in white
   static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte) {
-    ByteRepr repr = {
-      .offset = 0,
-      .color = TftColor::WHITE,
-    };
+    ByteRepr repr;
 
+    repr.offset = 0;
+    repr.color = TftColor::WHITE;
     sprintf(repr.text, "%02X", input_byte);
 
     return repr;
@@ -113,11 +112,10 @@ private:
 
   // Chars mode shows the data as printable characters; white character if printable, gray "?" if not
   static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte) {
-    ByteRepr repr = {
-      .offset = 3,
-      .color = (isprint((char) input_byte) ? TftColor::WHITE : TftColor::GRAY),
-    };
-
+    ByteRepr repr;
+    
+    repr.offset = 3;
+    repr.color = (isprint((char) input_byte) ? TftColor::WHITE : TftColor::GRAY);
     sprintf(repr.text, "%c", (isprint((char) input_byte) ? (char) input_byte : '?'));
 
     return repr;
@@ -149,7 +147,6 @@ public:
   Status debug();
 
   Status about();
-  Status help();
 
   Status nop();
 

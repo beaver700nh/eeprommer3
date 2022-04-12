@@ -30,7 +30,6 @@ ProgrammerFromSd::ProgrammerFromSd(TYPED_CONTROLLERS)
   m_cores[ 8] = core_other;
   m_cores[ 9] = core_other;
   m_cores[10] = core_other;
-  m_cores[11] = core_other;
 }
 
 ProgrammerFromSd::~ProgrammerFromSd() {
@@ -53,8 +52,7 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
     "Write multiple bytes to EEPROM.",
     nullptr,
     nullptr,
-    "Show `about' menu.",
-    "Show `help' menu.",
+    "Show info/about/credits menu.",
   };
 
   auto *help_text = ([&]() -> const char * {
@@ -81,8 +79,7 @@ void ProgrammerFromSd::init() {
   m_menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY);
   m_menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY);
 
-  m_menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10 + 24 + 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
-  m_menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24,           10), 10, 24, 24, "?", TftColor::BLACK, TftColor::YELLOW));
+  m_menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
 
   m_menu.add_btn_confirm(m_tft, true);
 
@@ -93,11 +90,11 @@ void ProgrammerFromSd::init() {
 
   m_menu.set_callback(show_help);
 
-  initalized = true;
+  initialized = true;
 }
 
 void ProgrammerFromSd::run() {
-  if (!initalized) return;
+  if (!initialized) return;
 
   uint8_t cur_choice = 0;
 
@@ -125,7 +122,7 @@ void ProgrammerFromSd::run() {
 
     show_status(status_code);
 
-    Util::wait_continue(m_tft, m_tch);
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 
     m_tft.fillScreen(TftColor::BLACK);
   }

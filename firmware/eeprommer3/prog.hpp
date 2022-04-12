@@ -39,13 +39,13 @@ public:
     FUNC(Vector, read ), FUNC(Vector, write),
     FUNC(Multi,  read ), FUNC(Multi,  write),
     FUNC(Other,  paint), FUNC(Other,  debug),
-    FUNC(Other,  about), FUNC(Other,  help ),
+    FUNC(Other,  about),
   };
 
 #undef FUNC
 
   TftChoiceMenu m_menu;
-  bool initalized;
+  bool initialized;
 
   TftCtrl &m_tft;
   TouchCtrl &m_tch;

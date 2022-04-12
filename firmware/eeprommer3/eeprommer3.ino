@@ -9,6 +9,7 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
+void draw_intro(uint16_t x, uint16_t y, TftBtn *skip_btn);
 void mainprog();
 
 void check_packet();
@@ -35,13 +36,16 @@ void setup() {
   SdCtrl::Status res = sd.init();
   SER_LOG_PRINT("Initializing SD...");
 
-  TftBtn skip_btn(80, 273, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
+  uint16_t intro_x = (tft.width() - 320) / 2;
+  uint16_t intro_y = (tft.height() - 240) / 2 - 17;
+
+  TftBtn skip_btn(80, intro_y + 250, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
   skip_btn.draw(tft);
 
-  tft.drawRGBBitmapFromFile(80, 23, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(&skip_btn, tch, tft));
+  draw_intro(intro_x, intro_y, &skip_btn);
 
-  if (res == SdCtrl::Status::OK) { SER_LOG_PRINT("... SD initialized successfully, proceeding in SD programming mode!"); }
-  else                           { SER_LOG_PRINT("... SD failed to initialize, proceeding in serial programming mode!"); }
+  if (res == SdCtrl::Status::OK) SER_LOG_PRINT("... success!");
+  else                           SER_LOG_PRINT("... failed!");
 
   if      (res == SdCtrl::Status::OK)       tft.drawText(90, 241, "SD init success!",   TftColor::GREEN,   2);
   else if (res == SdCtrl::Status::DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
@@ -54,6 +58,26 @@ void setup() {
   Serial.println();
 
   mainprog();
+}
+
+void draw_intro(uint16_t x, uint16_t y, TftBtn *skip_btn) {
+  if (sd.is_enabled()) {
+    tft.drawRGBBitmapFromFile(x, y, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
+  }
+  else {
+    tft.drawThickRect(x, y, 320, 240, TftColor::CYAN, 4);
+    tft.drawText(TftCalc::t_center_x_l(tft, 10, 4), y + 10, "EEPROMMER3",         TftColor::ORANGE, 4);
+    tft.drawText(TftCalc::t_center_x_l(tft, 15, 2), y + 50, "by @beaver700nh",    TftColor::BLUE,   2);
+    tft.drawText(TftCalc::t_center_x_l(tft, 18, 2), y + 90, "made using Arduino", TftColor::CYAN,   2);
+
+    tft.fillCircle   (x + 135, y + 140, 20,     TftColor::CYAN);
+    tft.fillRect     (x + 175, y + 120, 40, 40, TftColor::DGRAY);
+    tft.drawThickRect(x + 175, y + 120, 40, 40, TftColor::LGRAY, 2);
+
+    tft.drawText(x + 10, y + 190, "Loading...", TftColor::PURPLE, 3);
+
+    Util::skippable_delay(2000, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
+  }
 }
 
 void mainprog() {
