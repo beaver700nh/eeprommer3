@@ -10,14 +10,14 @@
 
 #include "prog.hpp"
 
-ProgrammerFromSd::ProgrammerFromSd(TYPED_CONTROLLERS)
+Programmer::Programmer(TYPED_CONTROLLERS)
   : m_menu(10, 10, 50, 10, 2, 30, true), INIT_LIST_CONTROLLERS {
-  static ProgrammerFromSdBaseCore \
-    *core_byte   = new ProgrammerFromSdByteCore  (CONTROLLERS),
-    *core_file   = new ProgrammerFromSdFileCore  (CONTROLLERS),
-    *core_vector = new ProgrammerFromSdVectorCore(CONTROLLERS),
-    *core_multi  = new ProgrammerFromSdMultiCore (CONTROLLERS),
-    *core_other  = new ProgrammerFromSdOtherCore (CONTROLLERS);
+  static ProgrammerBaseCore \
+    *core_byte   = new ProgrammerByteCore  (CONTROLLERS),
+    *core_file   = new ProgrammerFileCore  (CONTROLLERS),
+    *core_vector = new ProgrammerVectorCore(CONTROLLERS),
+    *core_multi  = new ProgrammerMultiCore (CONTROLLERS),
+    *core_other  = new ProgrammerOtherCore (CONTROLLERS);
 
   m_cores[ 0] = core_byte;
   m_cores[ 1] = core_byte;
@@ -32,7 +32,7 @@ ProgrammerFromSd::ProgrammerFromSd(TYPED_CONTROLLERS)
   m_cores[10] = core_other;
 }
 
-ProgrammerFromSd::~ProgrammerFromSd() {
+Programmer::~Programmer() {
   for (uint8_t i = 0; i < NUM_ACTIONS; ++i) {
     delete m_cores[i];
   }
@@ -67,7 +67,7 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
   tft.drawText(10, 250, help_text, TftColor::PURPLE, 2);
 }
 
-void ProgrammerFromSd::init() {
+void Programmer::init() {
   m_menu.add_btn_calc(m_tft, "Read Byte",       TftColor::BLUE,           TftColor::CYAN);
   m_menu.add_btn_calc(m_tft, "Write Byte",      TftColor::RED,            TftColor::PINKK);
   m_menu.add_btn_calc(m_tft, "Read to File",    TftColor::CYAN,           TftColor::BLUE);
@@ -93,7 +93,7 @@ void ProgrammerFromSd::init() {
   initialized = true;
 }
 
-void ProgrammerFromSd::run() {
+void Programmer::run() {
   if (!initialized) return;
 
   uint8_t cur_choice = 0;
@@ -112,10 +112,10 @@ void ProgrammerFromSd::run() {
     auto the_core = m_cores[cur_choice];
     auto the_action = action_map[cur_choice];
 
-    ProgrammerFromSdBaseCore::Status status_code = (
+    ProgrammerBaseCore::Status status_code = (
       cur_choice < NUM_ACTIONS ?
       (the_core->*the_action)() :
-      ProgrammerFromSdBaseCore::Status::ERR_INVALID
+      ProgrammerBaseCore::Status::ERR_INVALID
     );
 
     SER_LOG_PRINT("Action returned status code %d.", status_code);
@@ -128,7 +128,7 @@ void ProgrammerFromSd::run() {
   }
 }
 
-void ProgrammerFromSd::show_status(ProgrammerFromSdBaseCore::Status code) {
+void Programmer::show_status(ProgrammerBaseCore::Status code) {
   m_tft.drawText(10, 10, "Result:", TftColor::CYAN, 4);
 
   constexpr uint8_t NUM_DETAILS = 5;
@@ -141,7 +141,7 @@ void ProgrammerFromSd::show_status(ProgrammerFromSdBaseCore::Status code) {
     "Failed to allocate memory.",
   };
 
-  const char  *str_repr = (code == ProgrammerFromSdBaseCore::Status::OK ? "Success!" : "Failed!");
+  const char  *str_repr = (code == ProgrammerBaseCore::Status::OK ? "Success!" : "Failed!");
   uint16_t   color_repr = (code ? TftColor::RED : TftColor::GREEN);
   const char *text_repr = (code < NUM_DETAILS ? details_buf[code] : "Unknown reason.");
 

@@ -8,32 +8,31 @@
 #include "input.hpp"
 #include "eeprom.hpp"
 #include "sd.hpp"
-#include "pfsd_core.hpp"
+#include "prog_core.hpp"
 
 // Fwd decl because of circular dependency
-class ProgrammerFromSdBaseCore;
+class ProgrammerBaseCore;
 
 /*
- * `ProgrammerFromSd` is a class that connects the front-end and back-end for programming the EEPROM from the on-board SD card.
+ * `Programmer` is a class that connects the front-end and back-end for programming the EEPROM .
  */
-class ProgrammerFromSd {
+class Programmer {
 public:
-  ProgrammerFromSd(TYPED_CONTROLLERS);
-  ~ProgrammerFromSd();
+  Programmer(TYPED_CONTROLLERS);
+  ~Programmer();
 
   void init();
 
   void run();
-  void show_status(ProgrammerFromSdBaseCore::Status code);
+  void show_status(ProgrammerBaseCore::Status code);
 
-public:
   static constexpr uint8_t NUM_ACTIONS = 12;
 
-  ProgrammerFromSdBaseCore *m_cores[NUM_ACTIONS];
+  ProgrammerBaseCore *m_cores[NUM_ACTIONS];
 
-#define FUNC(type, name) (ProgrammerFromSdBaseCore::Func) &ProgrammerFromSd##type##Core::name
+#define FUNC(type, name) (ProgrammerBaseCore::Func) &Programmer##type##Core::name
 
-  ProgrammerFromSdBaseCore::Func action_map[NUM_ACTIONS] = {
+  ProgrammerBaseCore::Func action_map[NUM_ACTIONS] = {
     FUNC(Byte,   read ), FUNC(Byte,   write),
     FUNC(File,   read ), FUNC(File,   write),
     FUNC(Vector, read ), FUNC(Vector, write),

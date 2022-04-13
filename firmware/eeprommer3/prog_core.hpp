@@ -11,12 +11,12 @@
 #include "tft.hpp"
 
 /*
- * ProgrammerFromSdBaseCore is an ABC that contains functions for manipulating EEPROM
+ * ProgrammerBaseCore is an ABC that contains functions for manipulating EEPROM
  * (EepromCtrl &ee) in a way which is defined in the child classes.
  */
-class ProgrammerFromSdBaseCore {
+class ProgrammerBaseCore {
 public:
-  ProgrammerFromSdBaseCore(TYPED_CONTROLLERS) : INIT_LIST_CONTROLLERS {};
+  ProgrammerBaseCore(TYPED_CONTROLLERS) : INIT_LIST_CONTROLLERS {};
 
   // These status codes are returned by `Func`s.
   enum Status : uint8_t {
@@ -28,7 +28,7 @@ public:
   };
 
   // These functions return `Status`es.
-  typedef Status (ProgrammerFromSdBaseCore::*Func)();
+  typedef Status (ProgrammerBaseCore::*Func)();
 
   Status read();
   Status write();
@@ -42,16 +42,21 @@ protected:
   SdCtrl &m_sd;
 };
 
-#define ADD_RW_CORE_CLASS_DECLARATION(name) class ProgrammerFromSd##name##Core : public ProgrammerFromSdBaseCore
-#define ADD_RW_CORE_CLASS_BODY(name) \
+#define ADD_RW_CORE_CLASS_DECLARATION(name) class Programmer##name##Core : public ProgrammerBaseCore
+
+#define ADD_RW_CORE_CLASS_BODY_NO_CTOR(name) \
   public: \
-    ProgrammerFromSd##name##Core(TYPED_CONTROLLERS) : ProgrammerFromSdBaseCore(CONTROLLERS) {}; \
-  \
     Status read(); \
     Status write(); \
   \
   private: \
     Status verify(uint16_t addr, void *data);
+
+#define ADD_RW_CORE_CLASS_BODY(name) \
+  public: \
+    Programmer##name##Core(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {}; \
+  \
+  ADD_RW_CORE_CLASS_BODY_NO_CTOR(name)
 
 // Manipulates a single byte at a time
 ADD_RW_CORE_CLASS_DECLARATION(Byte) {
@@ -60,12 +65,38 @@ ADD_RW_CORE_CLASS_BODY(Byte)
 
 // Reads files to and from EEPROM
 ADD_RW_CORE_CLASS_DECLARATION(File) {
-ADD_RW_CORE_CLASS_BODY(File)
+public:
+  ProgrammerFileCore(TYPED_CONTROLLERS);
+
+ADD_RW_CORE_CLASS_BODY_NO_CTOR(File)
 
 private:
+  enum FileType : int8_t {NO_FILE = -1, SD_CARD_FILE, SERIAL_FILE};
+
+  FileType get_file_type();
+
+  // This enum is used to tell which file I/O methods are available.
+  enum AvailableFileIO : uint8_t {
+    NOT_AVAIL    = 0x00,
+    OVER_SD_CARD = 0x01,
+    OVER_SERIAL  = 0x02,
+  };
+
+  uint8_t m_available_file_io = AvailableFileIO::NOT_AVAIL;
+
+  /******************************** SD FUNCTIONS ********************************/
+
+  Status sd_read();
+  Status sd_write();
+
   // Returns true if everything is fine, false if there were errors
   // Writes file name (limited to `len` chars) into `fname`; writes status into `res`
   bool get_file_to_write_from(char *fname, uint8_t len, Status *res);
+
+  /******************************** SERIAL FUNCTIONS ********************************/ // - TODO
+
+  Status serial_read();
+  Status serial_write();
 };
 
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)
@@ -139,9 +170,9 @@ private:
 };
 
 // Miscellaneous other functions
-class ProgrammerFromSdOtherCore : public ProgrammerFromSdBaseCore {
+class ProgrammerOtherCore : public ProgrammerBaseCore {
 public:
-  ProgrammerFromSdOtherCore(TYPED_CONTROLLERS) : ProgrammerFromSdBaseCore(CONTROLLERS) {};
+  ProgrammerOtherCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
 
   Status paint();
   Status debug();

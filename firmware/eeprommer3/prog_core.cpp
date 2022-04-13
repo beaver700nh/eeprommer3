@@ -8,13 +8,13 @@
 #include "file.hpp"
 #include "vector.hpp"
 
-#include "pfsd_core.hpp"
+#include "prog_core.hpp"
 
 /***************************/
 /******** BYTE CORE ********/
 /***************************/
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::read() {
+ProgrammerBaseCore::Status ProgrammerByteCore::read() {
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
   uint8_t data = m_ee.read(addr);
 
@@ -33,7 +33,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::read() {
   return Status::OK;
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::write() {
+ProgrammerBaseCore::Status ProgrammerByteCore::write() {
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
   m_tft.fillScreen(TftColor::BLACK);
   uint8_t data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
@@ -53,7 +53,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::write() {
   RETURN_VERIFICATION_OR_OK(addr, (void *) &data);
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::verify(uint16_t addr, void *data) {
+ProgrammerBaseCore::Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
   uint8_t actual = m_ee.read(addr);
 
   if (actual != *(uint8_t *) data) {
@@ -75,7 +75,50 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdByteCore::verify(uint16_t addr,
 /******** FILE CORE ********/
 /***************************/
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::read() {
+ProgrammerFileCore::ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {
+  if (m_sd.is_enabled()) {
+    m_available_file_io |= AvailableFileIO::OVER_SD_CARD;
+  }
+
+  if (Serial) {
+    m_available_file_io |= AvailableFileIO::OVER_SERIAL;
+  }
+}
+
+ProgrammerFileCore::FileType ProgrammerFileCore::get_file_type() {
+  // if (m_available_file_io == AvailableFileIO::NOT_AVAIL) {
+  //   m_tft.drawText(10, 10, "Error",                    TftColor::RED,    3);
+  //   m_tft.drawText(10, 50, "No file system available", TftColor::PURPLE, 3);
+
+  //   Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+
+  //   return FileType::NO_FILE;
+  // }
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  m_tft.drawText(10, 10, "Select a file type", TftColor::CYAN, 3);
+
+  TftChoiceMenu menu(10, 10, 50, 10, 1, 40, true, 0);
+  menu.add_btn_calc(m_tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
+  menu.add_btn_calc(m_tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE);
+  menu.add_btn_confirm(m_tft, true);
+
+  if (~m_available_file_io & AvailableFileIO::OVER_SD_CARD) menu.get_btn(0)->operation(false);
+  if (~m_available_file_io & AvailableFileIO::OVER_SERIAL)  menu.get_btn(1)->operation(false);
+
+  auto type = menu.wait_for_press(m_tch, m_tft);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  return (FileType) type;
+}
+
+ProgrammerBaseCore::Status ProgrammerFileCore::read() {
+  //
+}
+
+ProgrammerBaseCore::Status ProgrammerFileCore::sd_read() {
   Status status = Status::OK;
 
   char fname[64];
@@ -113,7 +156,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::read() {
   return status;
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::write() {
+ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
   Status status = Status::OK;
 
   char fname[64];
@@ -156,7 +199,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::write() {
   RETURN_VERIFICATION_OR_VALUE(status, addr, fname);
 }
 
-bool ProgrammerFromSdFileCore::get_file_to_write_from(char *fname, uint8_t len, Status *res) {
+bool ProgrammerFileCore::get_file_to_write_from(char *fname, uint8_t len, Status *res) {
   TftFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -173,7 +216,7 @@ bool ProgrammerFromSdFileCore::get_file_to_write_from(char *fname, uint8_t len, 
   return temp == TftFileSelMenu::Status::OK;
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr, void *data) {
+ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   Status status = Status::OK;
 
   File file = SD.open((const char *) data, O_READ);
@@ -218,7 +261,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdFileCore::verify(uint16_t addr,
 /******** VECTOR CORE ********/
 /*****************************/
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::read() {
+ProgrammerBaseCore::Status ProgrammerVectorCore::read() {
   Vector vec = ask_vector(m_tft, m_tch);
   vec.update(m_ee);
 
@@ -237,7 +280,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::read() {
   return Status::OK;
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::write() {
+ProgrammerBaseCore::Status ProgrammerVectorCore::write() {
   Vector vec = ask_vector(m_tft, m_tch);
   vec.update(m_ee);
 
@@ -261,7 +304,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::write() {
   RETURN_VERIFICATION_OR_OK(vec.m_addr, (void *) &new_val)
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::verify(uint16_t addr, void *data) {
+ProgrammerBaseCore::Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
   uint16_t actual = (m_ee.read(addr + 1) << 8) | m_ee.read(addr);
 
   if (actual != *(uint16_t *) data) {
@@ -283,7 +326,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdVectorCore::verify(uint16_t add
 /******** MULTIBYTE CORE ********/
 /********************************/
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
+ProgrammerBaseCore::Status ProgrammerMultiCore::read() {
   uint16_t addr1 = ask_val<uint16_t>(m_tft, m_tch, "Start address?");
   m_tft.fillScreen(TftColor::BLACK);
   uint16_t addr2 = ask_val<uint16_t>(m_tft, m_tch, "End address?");
@@ -327,7 +370,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::read() {
   return Status::OK;
 }
 
-void ProgrammerFromSdMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
+void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
   // Draw frame for the data
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
   m_tft.drawThickRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE, 2);
@@ -353,7 +396,7 @@ void ProgrammerFromSdMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16
   }
 }
 
-void ProgrammerFromSdMultiCore::show_page(
+void ProgrammerMultiCore::show_page(
   uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page
 ) {
   m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
@@ -382,7 +425,7 @@ void ProgrammerFromSdMultiCore::show_page(
   }
 }
 
-void ProgrammerFromSdMultiCore::store_file(uint8_t *data, uint16_t len) {
+void ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
   char fname[64];
   ask_str(m_tft, m_tch, "What filename?", fname, 63);
 
@@ -395,7 +438,7 @@ void ProgrammerFromSdMultiCore::store_file(uint8_t *data, uint16_t len) {
   file.close();
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::write() {
+ProgrammerBaseCore::Status ProgrammerMultiCore::write() {
   AddrDataArray buf;
 
   uint16_t _y = TftCalc::bottom(m_tft, 24, 10);
@@ -437,7 +480,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::write() {
   RETURN_VERIFICATION_OR_OK(0, (void *) &buf)
 }
 
-void ProgrammerFromSdMultiCore::draw_pairs(
+void ProgrammerMultiCore::draw_pairs(
   uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
   uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
 ) {
@@ -481,7 +524,7 @@ void ProgrammerFromSdMultiCore::draw_pairs(
   while (this_pair++ != last_pair);
 }
 
-bool ProgrammerFromSdMultiCore::poll_menus_and_react(
+bool ProgrammerMultiCore::poll_menus_and_react(
   TftMenu &menu, TftMenu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
 ) {
   int16_t pressed, deleted;
@@ -514,7 +557,7 @@ bool ProgrammerFromSdMultiCore::poll_menus_and_react(
   return false;
 }
 
-void ProgrammerFromSdMultiCore::add_pair_from_user(AddrDataArray *buf) {
+void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
   m_tft.fillScreen(TftColor::BLACK);
   auto addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
   m_tft.fillScreen(TftColor::BLACK);
@@ -524,7 +567,7 @@ void ProgrammerFromSdMultiCore::add_pair_from_user(AddrDataArray *buf) {
   buf->append((AddrDataArrayPair) {addr, data});
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::verify(uint16_t addr, void *data) {
+ProgrammerBaseCore::Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
   auto *buf = (AddrDataArray *) data;
 
   for (uint16_t i = 0; i < buf->get_len(); ++i) {
@@ -554,7 +597,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdMultiCore::verify(uint16_t addr
 /******** OTHER CORE - MISC ********/
 /***********************************/
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::paint() {
+ProgrammerBaseCore::Status ProgrammerOtherCore::paint() {
   tft_draw_test(m_tch, m_tft);
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -562,7 +605,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::paint() {
   return Status::OK;
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::debug() {
+ProgrammerBaseCore::Status ProgrammerOtherCore::debug() {
   auto w1 = TftCalc::fraction_x(m_tft, 10, 1);
   auto w2 = TftCalc::fraction_x(m_tft, 10, 2);
 
@@ -595,7 +638,7 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::debug() {
   return Status::OK;
 }
 
-void ProgrammerFromSdOtherCore::do_debug_action(DebugAction action) {
+void ProgrammerOtherCore::do_debug_action(DebugAction action) {
   if (action == DebugAction::DISABLE_WRITE) {
     m_ee.set_we(true);
   }
@@ -636,7 +679,7 @@ void ProgrammerFromSdOtherCore::do_debug_action(DebugAction action) {
   }
 }
 
-void ProgrammerFromSdOtherCore::monitor_data_bus() {
+void ProgrammerOtherCore::monitor_data_bus() {
   m_ee.set_ddr(false);
 
   TftBtn quit_btn(BOTTOM_BTN(m_tft, "Quit"));
@@ -660,7 +703,7 @@ void ProgrammerFromSdOtherCore::monitor_data_bus() {
 #endif
 }
 
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::about() {
+ProgrammerBaseCore::Status ProgrammerOtherCore::about() {
   m_tft.drawText( 10,  10, "About",                    TftColor::CYAN,   3);
   m_tft.drawText( 10,  50, "eeprommer3",               TftColor::PURPLE, 2);
   m_tft.drawText(142,  50, "- hardware/firmware side", TftColor::BLUE,   2);
@@ -678,6 +721,6 @@ ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::about() {
 }
 
 // Dummy function for unimplemented actions
-ProgrammerFromSdBaseCore::Status ProgrammerFromSdOtherCore::nop() {
+ProgrammerBaseCore::Status ProgrammerOtherCore::nop() {
   return Status::OK;
 }

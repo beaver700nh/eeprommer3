@@ -111,8 +111,11 @@ void TftBtn::draw(TftCtrl &tft) {
 
   if (!m_is_visible) return; // If it is invisible, there is nothing to draw.
 
-  tft.fillRect(m_x, m_y, m_w, m_h, m_bg);
-  tft.drawText(m_x + m_tx, m_y + m_ty, m_text, m_fg, m_font_size);
+  uint16_t fg = (m_is_operational ? m_fg : TftColor::DGRAY);
+  uint16_t bg = (m_is_operational ? m_bg : TftColor::GRAY);
+
+  tft.fillRect(m_x, m_y, m_w, m_h, bg);
+  tft.drawText(m_x + m_tx, m_y + m_ty, m_text, fg, m_font_size);
 
   draw_highlight(tft);
 }
@@ -133,27 +136,28 @@ void TftBtn::draw_highlight(TftCtrl &tft) {
     if (!m_is_highlighted) {
       return TftColor::BLACK;
     }
-    else {
-      uint16_t res = ~m_bg;
 
-      // Prevent gray-ish colors
-      if (IN_RANGE(RED_565(res), 0x0C, 0x10) || IN_RANGE(GRN_565(res), 0x18, 0x20) || IN_RANGE(BLU_565(res), 0x0C, 0x10)) {
-        res &= ~0x2104;
-      }
-      else if (IN_RANGE(RED_565(res), 0x10, 0x14) || IN_RANGE(GRN_565(res), 0x20, 0x28) || IN_RANGE(BLU_565(res), 0x10, 0x14)) {
-        res |= 0x39E7;
-      }
-
-      // Prevent too-dark colors
-      if (res < 0x4000) res |= 0x39E7;
-
-      return res;
+    if (!m_is_operational) {
+      return TftColor::LGRAY;
     }
+
+    uint16_t res = ~m_bg;
+
+    // Prevent gray-ish colors
+    if (IN_RANGE(RED_565(res), 0x0C, 0x10) || IN_RANGE(GRN_565(res), 0x18, 0x20) || IN_RANGE(BLU_565(res), 0x0C, 0x10)) {
+      res &= ~0x2104;
+    }
+    else if (IN_RANGE(RED_565(res), 0x10, 0x14) || IN_RANGE(GRN_565(res), 0x20, 0x28) || IN_RANGE(BLU_565(res), 0x10, 0x14)) {
+      res |= 0x39E7;
+    }
+
+    // Prevent too-dark colors
+    if (res < 0x4000) res |= 0x39E7;
+
+    return res;
   })();
 
-  tft.drawRect(m_x - 1, m_y - 1, m_w + 2, m_h + 2, color);
-  tft.drawRect(m_x - 2, m_y - 2, m_w + 4, m_h + 4, color);
-  tft.drawRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, color);
+  tft.drawThickRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, color, 3);
 }
 
 void TftBtn::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
@@ -520,7 +524,7 @@ uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
     uint8_t btn_pressed = wait_for_press(tch, tft);
     (*m_callback)(tft, btn_pressed, btn_pressed == m_confirm_btn);
 
-    if (btn_pressed == m_confirm_btn) break;
+    if (btn_pressed == m_confirm_btn && get_btn(m_cur_choice)->is_operational()) break;
 
     select(btn_pressed);
     update(tft);
