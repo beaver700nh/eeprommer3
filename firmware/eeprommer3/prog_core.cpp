@@ -10,6 +10,11 @@
 
 #include "prog_core.hpp"
 
+// Dummy function for unimplemented actions
+ProgrammerBaseCore::Status ProgrammerBaseCore::nop() {
+  return Status::OK;
+}
+
 /***************************/
 /******** BYTE CORE ********/
 /***************************/
@@ -86,15 +91,6 @@ ProgrammerFileCore::ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(C
 }
 
 ProgrammerFileCore::FileType ProgrammerFileCore::get_file_type() {
-  // if (m_available_file_io == AvailableFileIO::NOT_AVAIL) {
-  //   m_tft.drawText(10, 10, "Error",                    TftColor::RED,    3);
-  //   m_tft.drawText(10, 50, "No file system available", TftColor::PURPLE, 3);
-
-  //   Util::wait_bottom_btn(m_tft, m_tch, "Continue");
-
-  //   return FileType::NO_FILE;
-  // }
-
   m_tft.fillScreen(TftColor::BLACK);
 
   m_tft.drawText(10, 10, "Select a file type", TftColor::CYAN, 3);
@@ -107,15 +103,41 @@ ProgrammerFileCore::FileType ProgrammerFileCore::get_file_type() {
   if (~m_available_file_io & AvailableFileIO::OVER_SD_CARD) menu.get_btn(0)->operation(false);
   if (~m_available_file_io & AvailableFileIO::OVER_SERIAL)  menu.get_btn(1)->operation(false);
 
-  auto type = menu.wait_for_press(m_tch, m_tft);
+  uint8_t type = menu.wait_for_value(m_tch, m_tft);
 
   m_tft.fillScreen(TftColor::BLACK);
 
   return (FileType) type;
 }
 
+ProgrammerBaseCore::Status ProgrammerFileCore::err_no_fsys() {
+  m_tft.drawText(10, 10, "Error",                    TftColor::RED,    3);
+  m_tft.drawText(10, 50, "No file system available", TftColor::PURPLE, 3);
+
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+
+  return Status::ERR_FILE;
+}
+
 ProgrammerBaseCore::Status ProgrammerFileCore::read() {
-  //
+  return checked_rwv(&sd_read, &ser_read);
+}
+
+ProgrammerBaseCore::Status ProgrammerFileCore::write() {
+  return checked_rwv(&sd_write, &ser_write);
+}
+
+ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
+  FileType type = get_file_type();
+
+  if (type == FileType::SD_CARD_FILE) {
+    return sd_verify(addr, data);
+  }
+  else if (type == FileType::SERIAL_FILE) {
+    return nop();
+  }
+
+  return Status::ERR_INVALID;
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::sd_read() {
@@ -216,7 +238,7 @@ bool ProgrammerFileCore::get_file_to_write_from(char *fname, uint8_t len, Status
   return temp == TftFileSelMenu::Status::OK;
 }
 
-ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
+ProgrammerBaseCore::Status ProgrammerFileCore::sd_verify(uint16_t addr, void *data) {
   Status status = Status::OK;
 
   File file = SD.open((const char *) data, O_READ);
@@ -717,10 +739,5 @@ ProgrammerBaseCore::Status ProgrammerOtherCore::about() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return Status::OK;
-}
-
-// Dummy function for unimplemented actions
-ProgrammerBaseCore::Status ProgrammerOtherCore::nop() {
   return Status::OK;
 }

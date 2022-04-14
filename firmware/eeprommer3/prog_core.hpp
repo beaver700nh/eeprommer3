@@ -10,6 +10,22 @@
 #include "sd.hpp"
 #include "tft.hpp"
 
+#define ADD_RW_CORE_CLASS_DECLARATION(name) class Programmer##name##Core : public ProgrammerBaseCore
+
+#define ADD_RW_CORE_CLASS_BODY_NO_CTOR(name) \
+  public: \
+    Status read(); \
+    Status write(); \
+  \
+  protected: \
+    Status verify(uint16_t addr, void *data);
+
+#define ADD_RW_CORE_CLASS_BODY(name) \
+  public: \
+    Programmer##name##Core(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {}; \
+  \
+  ADD_RW_CORE_CLASS_BODY_NO_CTOR(name)
+
 /*
  * ProgrammerBaseCore is an ABC that contains functions for manipulating EEPROM
  * (EepromCtrl &ee) in a way which is defined in the child classes.
@@ -22,7 +38,7 @@ public:
   enum Status : uint8_t {
     OK,          // There were no errors
     ERR_INVALID, // Attempted to perform an invalid action
-    ERR_FILE,    // Unable to open file on SD card
+    ERR_FILE,    // Unable to open file
     ERR_VERIFY,  // Verification failed (expectation != reality)
     ERR_MEMORY,  // Memory allocator returned null
   };
@@ -30,11 +46,7 @@ public:
   // These functions return `Status`es.
   typedef Status (ProgrammerBaseCore::*Func)();
 
-  Status read();
-  Status write();
-
-protected:
-  Status verify(uint16_t addr, void *data, uint16_t len = 0);
+  Status nop();
 
   TftCtrl &m_tft;
   TouchCtrl &m_tch;
@@ -42,21 +54,9 @@ protected:
   SdCtrl &m_sd;
 };
 
-#define ADD_RW_CORE_CLASS_DECLARATION(name) class Programmer##name##Core : public ProgrammerBaseCore
-
-#define ADD_RW_CORE_CLASS_BODY_NO_CTOR(name) \
-  public: \
-    Status read(); \
-    Status write(); \
-  \
-  private: \
-    Status verify(uint16_t addr, void *data);
-
-#define ADD_RW_CORE_CLASS_BODY(name) \
-  public: \
-    Programmer##name##Core(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {}; \
-  \
-  ADD_RW_CORE_CLASS_BODY_NO_CTOR(name)
+/*************************************************/
+/******** Start of ProgrammerCore Classes ********/
+/*************************************************/
 
 // Manipulates a single byte at a time
 ADD_RW_CORE_CLASS_DECLARATION(Byte) {
@@ -71,9 +71,10 @@ public:
 ADD_RW_CORE_CLASS_BODY_NO_CTOR(File)
 
 private:
-  enum FileType : int8_t {NO_FILE = -1, SD_CARD_FILE, SERIAL_FILE};
+  enum FileType : int8_t {SD_CARD_FILE, SERIAL_FILE};
 
   FileType get_file_type();
+  Status err_no_fsys();
 
   // This enum is used to tell which file I/O methods are available.
   enum AvailableFileIO : uint8_t {
@@ -86,8 +87,27 @@ private:
 
   /******************************** SD FUNCTIONS ********************************/
 
+  template<typename Func>
+  Status checked_rwv(Func sd_func, Func ser_func) {
+    if (m_available_file_io == AvailableFileIO::NOT_AVAIL) {
+      return err_no_fsys();
+    }
+
+    FileType type = get_file_type();
+
+    if (type == FileType::SD_CARD_FILE) {
+      return (this->*sd_func)();
+    }
+    else if (type == FileType::SERIAL_FILE) {
+      return (this->*ser_func)();
+    }
+
+    return Status::ERR_INVALID;
+  }
+
   Status sd_read();
   Status sd_write();
+  Status sd_verify(uint16_t addr, void *data);
 
   // Returns true if everything is fine, false if there were errors
   // Writes file name (limited to `len` chars) into `fname`; writes status into `res`
@@ -95,8 +115,8 @@ private:
 
   /******************************** SERIAL FUNCTIONS ********************************/ // - TODO
 
-  Status serial_read();
-  Status serial_write();
+  Status ser_read()  { return Status::OK; };
+  Status ser_write() { return Status::OK; };
 };
 
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)
@@ -179,8 +199,6 @@ public:
 
   Status about();
 
-  Status nop();
-
 private:
   // Helper functions of debug()
 
@@ -198,6 +216,10 @@ private:
   void do_debug_action(DebugAction action);
   void monitor_data_bus();
 };
+
+#undef ADD_RW_CORE_CLASS_DECLARATION
+#undef ADD_RW_CORE_CLASS_BODY
+#undef ADD_RW_CORE_CLASS_BODY_NO_CTOR
 
 #define RETURN_VERIFICATION_OR_VALUE(value, ...) \
   bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?"); \
