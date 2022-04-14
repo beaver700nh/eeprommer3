@@ -120,11 +120,11 @@ ProgrammerBaseCore::Status ProgrammerFileCore::err_no_fsys() {
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::read() {
-  return checked_rwv(&sd_read, &ser_read);
+  return checked_rw(&ProgrammerFileCore::sd_read, &ProgrammerFileCore::ser_read);
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::write() {
-  return checked_rwv(&sd_write, &ser_write);
+  return checked_rw(&ProgrammerFileCore::sd_write, &ProgrammerFileCore::ser_write);
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {

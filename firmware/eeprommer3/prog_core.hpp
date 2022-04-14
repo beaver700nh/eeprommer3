@@ -87,8 +87,10 @@ private:
 
   /******************************** SD FUNCTIONS ********************************/
 
-  template<typename Func>
-  Status checked_rwv(Func sd_func, Func ser_func) {
+  // Helper type for file IO funcs
+  typedef Status (ProgrammerFileCore::*RWFunc)();
+
+  Status checked_rw(RWFunc sd_func, RWFunc ser_func) {
     if (m_available_file_io == AvailableFileIO::NOT_AVAIL) {
       return err_no_fsys();
     }
