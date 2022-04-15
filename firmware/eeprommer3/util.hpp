@@ -34,6 +34,12 @@ namespace Util {
 
   // Function to wait for the user to press a button at the bottom of the screen
   void wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text);
+
+  // Function to validate an address
+  void validate_addr(uint16_t *addr);
+
+  // Function to validate two addresses (and make sure first is not greater than second)
+  void validate_addrs(uint16_t *addr1, uint16_t *addr2);
 };
 
 #endif

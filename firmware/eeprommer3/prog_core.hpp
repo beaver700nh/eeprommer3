@@ -58,12 +58,12 @@ public:
 /******** Start of ProgrammerCore Classes ********/
 /*************************************************/
 
-// Manipulates a single byte at a time
+/*** Manipulates a single byte at a time ***/
 ADD_RW_CORE_CLASS_DECLARATION(Byte) {
 ADD_RW_CORE_CLASS_BODY(Byte)
 };
 
-// Reads files to and from EEPROM
+/*** Reads files to and from EEPROM ***/
 ADD_RW_CORE_CLASS_DECLARATION(File) {
 public:
   ProgrammerFileCore(TYPED_CONTROLLERS);
@@ -71,48 +71,26 @@ public:
 ADD_RW_CORE_CLASS_BODY_NO_CTOR(File)
 
 private:
-  enum FileType : int8_t {SD_CARD_FILE, SERIAL_FILE};
+  enum FileType : int8_t {UNAVAILABLE = -1, SD_CARD_FILE, SERIAL_FILE};
+
+  uint8_t m_available_file_io = FileType::UNAVAILABLE;
 
   FileType get_file_type();
   Status err_no_fsys();
-
-  // This enum is used to tell which file I/O methods are available.
-  enum AvailableFileIO : uint8_t {
-    NOT_AVAIL    = 0x00,
-    OVER_SD_CARD = 0x01,
-    OVER_SERIAL  = 0x02,
-  };
-
-  uint8_t m_available_file_io = AvailableFileIO::NOT_AVAIL;
 
   /******************************** SD FUNCTIONS ********************************/
 
   // Helper type for file IO funcs
   typedef Status (ProgrammerFileCore::*RWFunc)();
 
-  Status checked_rw(RWFunc sd_func, RWFunc ser_func) {
-    if (m_available_file_io == AvailableFileIO::NOT_AVAIL) {
-      return err_no_fsys();
-    }
-
-    FileType type = get_file_type();
-
-    if (type == FileType::SD_CARD_FILE) {
-      return (this->*sd_func)();
-    }
-    else if (type == FileType::SERIAL_FILE) {
-      return (this->*ser_func)();
-    }
-
-    return Status::ERR_INVALID;
-  }
+  // Checks what file system is available and delegates RWFunc to the correct one
+  Status checked_rw(RWFunc sd_func, RWFunc ser_func);
 
   Status sd_read();
   Status sd_write();
   Status sd_verify(uint16_t addr, void *data);
 
-  // Returns true if everything is fine, false if there were errors
-  // Writes file name (limited to `len` chars) into `fname`; writes status into `res`
+  // Returns successfulness; writes file name (max `len` chars) into `fname`, writes status into `res`
   bool get_file_to_write_from(char *fname, uint8_t len, Status *res);
 
   /******************************** SERIAL FUNCTIONS ********************************/ // - TODO
@@ -133,6 +111,8 @@ ADD_RW_CORE_CLASS_BODY(Multi)
 private:
   /******************************** READ RANGE HELPERS ********************************/
 
+  void read_with_progress_bar(uint8_t *data, uint16_t addr1, uint16_t addr2);
+
   // Contains info for customizing a byte's representation
   struct ByteRepr {
     uint8_t offset; // X-offset of byte on screen
@@ -143,36 +123,18 @@ private:
   // Returns a `ByteRepr` for a given byte, tells how to format it
   typedef ByteRepr (*ByteReprFunc)(uint8_t input_byte);
 
-  // Helper that shows `data` on screen, assumes `addr1` <= `addr2`
-  void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);
+  void handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2); // In a user-friendly way, shows read data to user
 
-  // Helper function of show_range() that shows only one page of data from a large buffer
-  void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page);
+  void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);                                    // Show whole range on TFT
+  void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page); // One page at a time
 
-  // Helper that stores `data` to a file on EEPROM
-  void store_file(uint8_t *data, uint16_t len);
+  void store_file(uint8_t *data, uint16_t len); // Stores data to SD card
 
   // Hex mode shows the data as raw hexadecimal values in white
-  static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte) {
-    ByteRepr repr;
-
-    repr.offset = 0;
-    repr.color = TftColor::WHITE;
-    sprintf(repr.text, "%02X", input_byte);
-
-    return repr;
-  }
+  static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte);
 
   // Chars mode shows the data as printable characters; white character if printable, gray "?" if not
-  static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte) {
-    ByteRepr repr;
-    
-    repr.offset = 3;
-    repr.color = (isprint((char) input_byte) ? TftColor::WHITE : TftColor::GRAY);
-    sprintf(repr.text, "%c", (isprint((char) input_byte) ? (char) input_byte : '?'));
-
-    return repr;
-  }
+  static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte);
 
   /******************************** WRITE RANGE HELPERS ********************************/
 

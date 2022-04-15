@@ -82,11 +82,13 @@ ProgrammerBaseCore::Status ProgrammerByteCore::verify(uint16_t addr, void *data)
 
 ProgrammerFileCore::ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {
   if (m_sd.is_enabled()) {
-    m_available_file_io |= AvailableFileIO::OVER_SD_CARD;
+    m_available_file_io |= FileType::SD_CARD_FILE;
   }
 
+  // TODO: Add test for ACK-ing connected serial
+  // This doesn't work at the moment
   if (Serial) {
-    m_available_file_io |= AvailableFileIO::OVER_SERIAL;
+    m_available_file_io |= FileType::SERIAL_FILE;
   }
 }
 
@@ -100,8 +102,8 @@ ProgrammerFileCore::FileType ProgrammerFileCore::get_file_type() {
   menu.add_btn_calc(m_tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE);
   menu.add_btn_confirm(m_tft, true);
 
-  if (~m_available_file_io & AvailableFileIO::OVER_SD_CARD) menu.get_btn(0)->operation(false);
-  if (~m_available_file_io & AvailableFileIO::OVER_SERIAL)  menu.get_btn(1)->operation(false);
+  if (~m_available_file_io & FileType::SD_CARD_FILE) menu.get_btn(0)->operation(false);
+  if (~m_available_file_io & FileType::SERIAL_FILE)  menu.get_btn(1)->operation(false);
 
   uint8_t type = menu.wait_for_value(m_tch, m_tft);
 
@@ -119,6 +121,23 @@ ProgrammerBaseCore::Status ProgrammerFileCore::err_no_fsys() {
   return Status::ERR_FILE;
 }
 
+ProgrammerBaseCore::Status ProgrammerFileCore::checked_rw(ProgrammerFileCore::RWFunc sd_func, ProgrammerFileCore::RWFunc ser_func) {
+  if (m_available_file_io == FileType::UNAVAILABLE) {
+    return err_no_fsys();
+  }
+
+  FileType type = get_file_type();
+
+  if (type == FileType::SD_CARD_FILE) {
+    return (this->*sd_func)();
+  }
+  else if (type == FileType::SERIAL_FILE) {
+    return (this->*ser_func)();
+  }
+
+  return Status::ERR_INVALID;
+}
+
 ProgrammerBaseCore::Status ProgrammerFileCore::read() {
   return checked_rw(&ProgrammerFileCore::sd_read, &ProgrammerFileCore::ser_read);
 }
@@ -128,15 +147,7 @@ ProgrammerBaseCore::Status ProgrammerFileCore::write() {
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
-  FileType type = get_file_type();
-
-  if (type == FileType::SD_CARD_FILE) {
-    return sd_verify(addr, data);
-  }
-  else if (type == FileType::SERIAL_FILE) {
-    return nop();
-  }
-
+  // This function is unused
   return Status::ERR_INVALID;
 }
 
@@ -188,7 +199,10 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
   }
 
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
+  Util::validate_addr(&addr);
+
   uint16_t cur_addr = addr;
+
   m_tft.fillScreen(TftColor::BLACK);
 
   uint8_t this_page[256];
@@ -352,15 +366,10 @@ ProgrammerBaseCore::Status ProgrammerMultiCore::read() {
   uint16_t addr1 = ask_val<uint16_t>(m_tft, m_tch, "Start address?");
   m_tft.fillScreen(TftColor::BLACK);
   uint16_t addr2 = ask_val<uint16_t>(m_tft, m_tch, "End address?");
+
+  Util::validate_addrs(&addr1, &addr2);
+
   uint16_t nbytes = (addr2 - addr1 + 1);
-
-  // Turn off top bit of both addresses ensure validity
-  addr1 &= ~0x8000; addr2 &= ~0x8000;
-
-  // Make sure addr1 <= addr2
-  if (addr2 < addr1) Util::swap<uint16_t>(&addr1, &addr2);
-
-  m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
 
   auto *data = (uint8_t *) malloc(nbytes * sizeof(uint8_t));
   if (data == nullptr) {
@@ -368,9 +377,29 @@ ProgrammerBaseCore::Status ProgrammerMultiCore::read() {
     return Status::ERR_MEMORY;
   }
 
-  m_ee.read(addr1, addr2, data);
+  read_with_progress_bar(data, addr1, addr2);
 
   m_tft.fillScreen(TftColor::BLACK);
+
+  handle_data(data, addr1, addr2);
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  free(data);
+
+  return Status::OK;
+}
+
+void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, uint16_t addr2) {
+  m_tft.fillScreen(TftColor::BLACK);
+
+  m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
+
+  m_ee.read(addr1, addr2, data);
+}
+
+void ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
+  uint16_t nbytes = (addr2 - addr1 + 1);
 
   uint8_t viewing_method = ask_choice(
     m_tft, m_tch, "Select viewing method:", 1, 30, 0, 3,
@@ -384,12 +413,6 @@ ProgrammerBaseCore::Status ProgrammerMultiCore::read() {
   if      (viewing_method == 0) show_range(data, addr1, addr2, &multi_byte_repr_hex);
   else if (viewing_method == 1) show_range(data, addr1, addr2, &multi_byte_repr_chars);
   else if (viewing_method == 2) store_file(data, nbytes);
-
-  m_tft.fillScreen(TftColor::BLACK);
-
-  free(data);
-
-  return Status::OK;
 }
 
 void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
@@ -430,8 +453,8 @@ void ProgrammerMultiCore::show_page(
   );
 
   uint16_t glob_range_start = addr1 >> 8;
-  uint16_t glob_page_start = MAX(((cur_page + glob_range_start)     << 8),     addr1);
-  uint16_t glob_page_end   = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
+  uint16_t glob_page_start  = MAX(((cur_page + glob_range_start)     << 8),     addr1);
+  uint16_t glob_page_end    = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
 
   for (uint16_t i = glob_page_start; i <= glob_page_end; ++i) {
     uint8_t tft_byte_col = (i & 0x0F);
@@ -445,6 +468,26 @@ void ProgrammerMultiCore::show_page(
 
     m_tft.drawText(tft_byte_x, tft_byte_y, br.text, br.color, 1);
   }
+}
+
+inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_hex(uint8_t input_byte) {
+  ByteRepr repr;
+
+  repr.offset = 0;
+  repr.color = TftColor::WHITE;
+  sprintf(repr.text, "%02X", input_byte);
+
+  return repr;
+}
+
+inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_chars(uint8_t input_byte) {
+  ByteRepr repr;
+  
+  repr.offset = 3;
+  repr.color = (isprint((char) input_byte) ? TftColor::WHITE : TftColor::GRAY);
+  sprintf(repr.text, "%c", (isprint((char) input_byte) ? (char) input_byte : '?'));
+
+  return repr;
 }
 
 void ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
@@ -585,6 +628,8 @@ void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
   m_tft.fillScreen(TftColor::BLACK);
   auto data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
   m_tft.fillScreen(TftColor::BLACK);
+
+  Util::validate_addr(&addr);
 
   buf->append((AddrDataArrayPair) {addr, data});
 }

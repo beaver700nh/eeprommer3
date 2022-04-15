@@ -7,19 +7,11 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
-    make it intelligently decide whether to use serial or sd:
-      IN PROGRESS! - finish
-      menu? - continue
-      alternate intro screen for non-SD - done
-    write multi is bugged?:
-      nvm figured it out - page write broken:
-        fix that ASAP
+    fix page write
     check for address rollovers
-    triple check all mallocs
     add progress bar on read range
     put labels (addr) on ReadRange
     switch repr mode on ReadRange
-    add help screen(s)
   start work on serial file io
 
 HARDWARE:

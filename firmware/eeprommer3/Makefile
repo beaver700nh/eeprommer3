@@ -1,5 +1,5 @@
-.SILENT: all build compile upload run new del
-.PHONY: all build compile upload run new del
+.SILENT: all build compile upload run new del search
+.PHONY: all build compile upload run new del search
 
 .SHELL := /bin/bash
 
@@ -7,7 +7,6 @@ all: compile upload run
 build: compile upload
 go: upload run
 
-.ONESHELL:
 compile:
 	arduino-cli-mega-compile . --warnings=more --build-property=compiler.cpp.extra_flags=-std=c++17 $(FLAGS)
 
@@ -37,3 +36,6 @@ del:
 
 	rm $$name.cpp
 	rm $$name.hpp
+
+search:
+	grep -n $(PATTERN) *.?pp
