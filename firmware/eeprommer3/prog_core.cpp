@@ -21,6 +21,8 @@ ProgrammerBaseCore::Status ProgrammerBaseCore::nop() {
 
 ProgrammerBaseCore::Status ProgrammerByteCore::read() {
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
+  Util::validate_addr(&addr);
+
   uint8_t data = m_ee.read(addr);
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -40,6 +42,8 @@ ProgrammerBaseCore::Status ProgrammerByteCore::read() {
 
 ProgrammerBaseCore::Status ProgrammerByteCore::write() {
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
+  Util::validate_addr(&addr);
+
   m_tft.fillScreen(TftColor::BLACK);
   uint8_t data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
 
@@ -159,34 +163,43 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_read() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  uint8_t this_page[256];
   File file = SD.open(fname, O_CREAT | O_WRITE | O_TRUNC);
 
-  if (!file) status = Status::ERR_FILE;
+  if (!file) {
+    status = Status::ERR_FILE;
+  }
   else {
-    m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
-
-    TftProgressIndicator bar(m_tft, 0x7F, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
-
-    bar.for_each(
-      [this, &this_page, &file]TFT_PROGRESS_INDICATOR_LAMBDA {
-        uint16_t addr = progress * 0x0100;
-
-        this->m_ee.read(addr, addr + 0xFF, this_page);
-        file.write(this_page, 0xFF);
-
-        return this->m_tch.is_touching();
-      }
-    );
-
-    m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+    sd_read_with_progress_bar(&file);
+    file.flush();
   }
 
-  file.flush();
   file.close();
+
   m_tft.fillScreen(TftColor::BLACK);
+
   return status;
+}
+
+void ProgrammerFileCore::sd_read_with_progress_bar(File *file) {
+  uint8_t this_page[256];
+
+  m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
+
+  TftProgressIndicator bar(m_tft, 0x7F, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+
+  bar.for_each(
+    [this, &this_page, &file]TFT_PROGRESS_INDICATOR_LAMBDA {
+      uint16_t addr = progress << 8;
+
+      this->m_ee.read(addr, addr + 0xFF, this_page);
+      file->write(this_page, 0xFF);
+
+      return this->m_tch.is_touching();
+    }
+  );
+
+  m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
@@ -201,38 +214,34 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
   Util::validate_addr(&addr);
 
-  uint16_t cur_addr = addr;
-
   m_tft.fillScreen(TftColor::BLACK);
 
-  uint8_t this_page[256];
   File file = SD.open(fname, O_READ);
 
-  if (!file) status = Status::ERR_FILE;
-  else {
-    m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
+  if (!file) {
+    status = Status::ERR_FILE;
+  }
+  else if (file.size() > (0x7FFF - addr + 1)) {
+    status = Status::ERR_INVALID;
 
-    TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+    m_tft.drawText(10, 10, "Error",           TftColor::CYAN, 3);
+    m_tft.drawText(10, 50, "File too large!", TftColor::RED,  2);
 
-    bar.for_each(
-      [this, &this_page, &file, &cur_addr]TFT_PROGRESS_INDICATOR_LAMBDA {
-        auto len = file.read(this_page, 0xFF);
-        this->m_ee.write(cur_addr, this_page, MIN(len, 0xFF));
-
-        cur_addr += 0x0100; // Next page
-
-        return this->m_tch.is_touching();
-      }
-    );
-
-    m_tft.drawText(10, 110, "Done writing!", TftColor::CYAN);
     Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  }
+  else {
+    sd_write_with_progress_bar(&file, addr);
   }
 
   file.close();
+
   m_tft.fillScreen(TftColor::BLACK);
 
-  RETURN_VERIFICATION_OR_VALUE(status, addr, fname);
+  if (status == Status::OK) {
+    RETURN_VERIFICATION_OR_VALUE(status, addr, fname);
+  }
+
+  return status;
 }
 
 bool ProgrammerFileCore::get_file_to_write_from(char *fname, uint8_t len, Status *res) {
@@ -249,7 +258,34 @@ bool ProgrammerFileCore::get_file_to_write_from(char *fname, uint8_t len, Status
     *res = Status::ERR_FILE;
   }
 
+  if (temp != TftFileSelMenu::Status::OK) {
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  }
+
   return temp == TftFileSelMenu::Status::OK;
+}
+
+void ProgrammerFileCore::sd_write_with_progress_bar(File *file, uint16_t addr) {
+  uint16_t cur_addr = addr;
+  uint8_t this_page[256];
+
+  m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
+
+  TftProgressIndicator bar(m_tft, ceil((float) file->size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+
+  bar.for_each(
+    [this, &this_page, &file, &cur_addr]TFT_PROGRESS_INDICATOR_LAMBDA {
+      auto len = file->read(this_page, 0xFF);
+      this->m_ee.write(cur_addr, this_page, MIN(len, 0xFF));
+
+      cur_addr += 0x0100; // Next page
+
+      return this->m_tch.is_touching();
+    }
+  );
+
+  m_tft.drawText(10, 110, "Done writing!", TftColor::CYAN);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::sd_verify(uint16_t addr, void *data) {

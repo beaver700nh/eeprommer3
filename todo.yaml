@@ -9,7 +9,8 @@ FIRMWARE:
   last changes before v0.0.1-rc1:
     fix page write
     add EEPROM SDP feature?
-    check for address rollovers
+    fix multi write scrolling
+    fix file write vrf bug
     make progress bars look better:
       unsatisfying off-by-one stuff
     add FileCtrl, auto-selects between file systems

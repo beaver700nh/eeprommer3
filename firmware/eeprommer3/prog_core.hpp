@@ -90,6 +90,9 @@ private:
   Status sd_write();
   Status sd_verify(uint16_t addr, void *data);
 
+  void sd_read_with_progress_bar(File *file);
+  void sd_write_with_progress_bar(File *file, uint16_t addr);
+
   // Returns successfulness; writes file name (max `len` chars) into `fname`, writes status into `res`
   bool get_file_to_write_from(char *fname, uint8_t len, Status *res);
 
