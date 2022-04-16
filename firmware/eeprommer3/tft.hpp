@@ -535,12 +535,15 @@ public:
 
   // Is a template func because lambdas without libstdc++ are annoying.
   // Returns true if loop completed succesfully, false if canceled.
+  // `action` is a lambda like TFT_PROGRESS_INDICATOR_LAMBDA
   template<typename Func>
   bool for_each(Func action) {
+    show();
+
     while (m_cur_val <= m_max_val) {
-      show();
       bool should_quit = action(m_cur_val);
       next();
+      show();
 
       if (should_quit) return false;
     }

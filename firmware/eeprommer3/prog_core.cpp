@@ -166,14 +166,14 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_read() {
   else {
     m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
 
-    TftProgressIndicator bar(m_tft, 127, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+    TftProgressIndicator bar(m_tft, 0x7F, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
     bar.for_each(
       [this, &this_page, &file]TFT_PROGRESS_INDICATOR_LAMBDA {
         uint16_t addr = progress * 0x0100;
 
         this->m_ee.read(addr, addr + 0xFF, this_page);
-        file.write(this_page, 256);
+        file.write(this_page, 0xFF);
 
         return this->m_tch.is_touching();
       }
@@ -216,8 +216,8 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
 
     bar.for_each(
       [this, &this_page, &file, &cur_addr]TFT_PROGRESS_INDICATOR_LAMBDA {
-        auto len = file.read(this_page, 256);
-        this->m_ee.write(cur_addr, this_page, MIN(len, 256));
+        auto len = file.read(this_page, 0xFF);
+        this->m_ee.write(cur_addr, this_page, MIN(len, 0xFF));
 
         cur_addr += 0x0100; // Next page
 
@@ -391,11 +391,30 @@ ProgrammerBaseCore::Status ProgrammerMultiCore::read() {
 }
 
 void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, uint16_t addr2) {
+  uint16_t nbytes = (addr2 - addr1 + 1);
+
   m_tft.fillScreen(TftColor::BLACK);
 
-  m_tft.drawText(10, 252, "Please wait - accessing EEPROM...", TftColor::PURPLE, 2);
+  m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
 
-  m_ee.read(addr1, addr2, data);
+  TftProgressIndicator bar(m_tft, ceil((float) nbytes / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+
+  uint16_t cur_addr_offset = 0x0000;
+
+  bar.for_each(
+    [this, &data, &cur_addr_offset, &addr2]TFT_PROGRESS_INDICATOR_LAMBDA {
+      uint16_t _addr2 = MIN(cur_addr_offset + 0xFF, addr2);
+
+      this->m_ee.read(cur_addr_offset, _addr2, data + cur_addr_offset);
+
+      cur_addr_offset += 0x0100; // Next page
+
+      return this->m_tch.is_touching();
+    }
+  );
+
+  m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
+  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
 void ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
@@ -418,8 +437,10 @@ void ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t ad
 void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
   // Draw frame for the data
   m_tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
-  m_tft.drawThickRect(m_tft.width() / 2 - 147, 50, 295, 166, TftColor::WHITE, 2);
-  m_tft.drawFastVLine(m_tft.width() / 2, 52, 162, TftColor::GRAY);
+  m_tft.drawThickRect(m_tft.width() / 2 - 147, 55, 295, 166, TftColor::WHITE, 2);
+  m_tft.drawFastVLine(m_tft.width() / 2, 57, 162, TftColor::GRAY);
+
+  draw_page_axis_labels();
 
   TftMenu menu;
   menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "\x11"));
@@ -441,20 +462,44 @@ void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t add
   }
 }
 
+void ProgrammerMultiCore::draw_page_axis_labels() {
+  for (uint8_t row = 0x00; row < 0x10; ++row) {
+    uint16_t x1 = m_tft.width() / 2 - 161;
+    uint16_t x2 = m_tft.width() / 2 + 151;
+
+    uint16_t y = m_tft.height() / 2 - 100 + 10 * row;
+
+    m_tft.drawText(x1, y, STRFMT_NOBUF("%1Xx", row), TftColor::DCYAN, 1);
+    m_tft.drawText(x2, y, STRFMT_NOBUF("%1Xx", row), TftColor::DCYAN, 1);
+  }
+
+  for (uint8_t col = 0x00; col < 0x10; ++col) {
+    uint8_t split_offset = (col < 8 ? 0 : 3);
+    uint16_t x = m_tft.width() / 2 - 141 + 18 * col + split_offset;
+
+    m_tft.drawText(x, m_tft.height() / 2 + 64, STRFMT_NOBUF("x%1X", col), TftColor::DCYAN, 1);
+  }
+}
+
 void ProgrammerMultiCore::show_page(
   uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page
 ) {
-  m_tft.fillRect(m_tft.width() / 2 - 145, 52, 145, 162, TftColor::DGRAY);
-  m_tft.fillRect(m_tft.width() / 2 +   1, 52, 145, 162, TftColor::DGRAY);
+  m_tft.fillRect(m_tft.width() / 2 - 145, 57, 145, 162, TftColor::DGRAY);
+  m_tft.fillRect(m_tft.width() / 2 +   1, 57, 145, 162, TftColor::DGRAY);
 
   m_tft.drawTextBg(
-    10, 224, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page),
-    TftColor::PURPLE, TftColor::BLACK, 2
+    10, 256, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page),
+    TftColor::PURPLE, TftColor::BLACK
   );
 
   uint16_t glob_range_start = addr1 >> 8;
   uint16_t glob_page_start  = MAX(((cur_page + glob_range_start)     << 8),     addr1);
   uint16_t glob_page_end    = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
+
+  m_tft.drawTextBg(
+    TftCalc::right(m_tft, 130, 12), 12, STRFMT_NOBUF("Start: %04X", glob_page_start),
+    TftColor::ORANGE, TftColor::BLACK
+  );
 
   for (uint16_t i = glob_page_start; i <= glob_page_end; ++i) {
     uint8_t tft_byte_col = (i & 0x0F);
@@ -464,7 +509,7 @@ void ProgrammerMultiCore::show_page(
 
     uint8_t split_offset = (tft_byte_col < 8 ? 0 : 3);
     uint16_t tft_byte_x = m_tft.width()  / 2 - 141 + 18 * tft_byte_col + br.offset + split_offset;
-    uint16_t tft_byte_y = m_tft.height() / 2 - 105 + 10 * tft_byte_row;
+    uint16_t tft_byte_y = m_tft.height() / 2 - 100 + 10 * tft_byte_row;
 
     m_tft.drawText(tft_byte_x, tft_byte_y, br.text, br.color, 1);
   }

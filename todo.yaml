@@ -8,8 +8,11 @@ SOFTWARE:
 FIRMWARE:
   last changes before v0.0.1-rc1:
     fix page write
+    add EEPROM SDP feature?
     check for address rollovers
-    add progress bar on read range
+    make progress bars look better:
+      unsatisfying off-by-one stuff
+    add FileCtrl, auto-selects between file systems
     put labels (addr) on ReadRange
     switch repr mode on ReadRange
   start work on serial file io

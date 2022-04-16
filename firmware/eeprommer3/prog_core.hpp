@@ -128,6 +128,8 @@ private:
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);                                    // Show whole range on TFT
   void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page); // One page at a time
 
+  void draw_page_axis_labels(); // Draw markers: 00, 10, ..., F0; 00, 01, ..., 0F
+
   void store_file(uint8_t *data, uint16_t len); // Stores data to SD card
 
   // Hex mode shows the data as raw hexadecimal values in white
