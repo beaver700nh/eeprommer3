@@ -85,77 +85,43 @@ ProgrammerBaseCore::Status ProgrammerByteCore::verify(uint16_t addr, void *data)
 /***************************/
 
 ProgrammerFileCore::ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {
-  if (m_sd.is_enabled()) {
-    m_available_file_io |= FileType::SD_CARD_FILE;
-  }
-
-  // TODO: Add test for ACK-ing connected serial
-  // This doesn't work at the moment
-  if (Serial) {
-    m_available_file_io |= FileType::SERIAL_FILE;
-  }
+  // Empty; all work delegated to base ctor
 }
 
-ProgrammerFileCore::FileType ProgrammerFileCore::get_file_type() {
+FileSystem ProgrammerFileCore::ask_fsys() {
   m_tft.fillScreen(TftColor::BLACK);
 
   m_tft.drawText(10, 10, "Select a file type", TftColor::CYAN, 3);
 
   TftChoiceMenu menu(10, 10, 50, 10, 1, 40, true, 0);
   menu.add_btn_calc(m_tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE);
+  menu.add_btn_calc(m_tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE  );
+  menu.add_btn_calc(m_tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );
   menu.add_btn_confirm(m_tft, true);
 
-  if (~m_available_file_io & FileType::SD_CARD_FILE) menu.get_btn(0)->operation(false);
-  if (~m_available_file_io & FileType::SERIAL_FILE)  menu.get_btn(1)->operation(false);
+  uint8_t avail = FileUtil::get_available_file_systems(m_sd);
 
-  uint8_t type = menu.wait_for_value(m_tch, m_tft);
+  if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
+  if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
+
+  uint8_t btn = menu.wait_for_value(m_tch, m_tft);
+  uint8_t btn_cancel = menu.get_num_btns() - 2;
+
+  FileSystem fsys = FileSystem::NONE;
+
+  if (btn != btn_cancel) {
+    switch (btn) {
+    case 0: fsys = FileSystem::ON_SD_CARD; break;
+    case 1: fsys = FileSystem::ON_SERIAL;  break;
+    }
+  }
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return (FileType) type;
-}
-
-ProgrammerBaseCore::Status ProgrammerFileCore::err_no_fsys() {
-  m_tft.drawText(10, 10, "Error",                    TftColor::RED,    3);
-  m_tft.drawText(10, 50, "No file system available", TftColor::PURPLE, 3);
-
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
-
-  return Status::ERR_FILE;
-}
-
-ProgrammerBaseCore::Status ProgrammerFileCore::checked_rw(ProgrammerFileCore::RWFunc sd_func, ProgrammerFileCore::RWFunc ser_func) {
-  if (m_available_file_io == FileType::UNAVAILABLE) {
-    return err_no_fsys();
-  }
-
-  FileType type = get_file_type();
-
-  if (type == FileType::SD_CARD_FILE) {
-    return (this->*sd_func)();
-  }
-  else if (type == FileType::SERIAL_FILE) {
-    return (this->*ser_func)();
-  }
-
-  return Status::ERR_INVALID;
+  return fsys;
 }
 
 ProgrammerBaseCore::Status ProgrammerFileCore::read() {
-  return checked_rw(&ProgrammerFileCore::sd_read, &ProgrammerFileCore::ser_read);
-}
-
-ProgrammerBaseCore::Status ProgrammerFileCore::write() {
-  return checked_rw(&ProgrammerFileCore::sd_write, &ProgrammerFileCore::ser_write);
-}
-
-ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
-  // This function is unused
-  return Status::ERR_INVALID;
-}
-
-ProgrammerBaseCore::Status ProgrammerFileCore::sd_read() {
   Status status = Status::OK;
 
   char fname[64];
@@ -163,24 +129,37 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_read() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  File file = SD.open(fname, O_CREAT | O_WRITE | O_TRUNC);
+  FileSystem fsys = ask_fsys();
+  FileCtrl *file = nullptr;
 
-  if (!file) {
+  uint8_t access = O_CREAT | O_WRITE | O_TRUNC;
+
+  switch (fsys) {
+  case FileSystem::ON_SD_CARD: file = new FileCtrlSd(fname, access); break;
+  case FileSystem::NONE:
     status = Status::ERR_FILE;
-  }
-  else {
-    sd_read_with_progress_bar(&file);
-    file.flush();
+    Util::show_error(m_tft, m_tch, "No file system available!");
+    break;
   }
 
-  file.close();
+  if (status == Status::OK) {
+    if (!file->is_open()) {
+      status = Status::ERR_FILE;
+    }
+    else {
+      read_with_progress_bar(file);
+      file->flush();
+    }
+
+    file->close();
+    delete file;
+  }
 
   m_tft.fillScreen(TftColor::BLACK);
-
   return status;
 }
 
-void ProgrammerFileCore::sd_read_with_progress_bar(File *file) {
+void ProgrammerFileCore::read_with_progress_bar(FileCtrl *file) {
   uint8_t this_page[256];
 
   m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
@@ -202,11 +181,11 @@ void ProgrammerFileCore::sd_read_with_progress_bar(File *file) {
   Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
-ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
+ProgrammerBaseCore::Status ProgrammerFileCore::write() {
   Status status = Status::OK;
 
   char fname[64];
-  if (!get_file_to_write_from(fname, 63, &status)) {
+  if (!get_file_to_write_from(fname, 63, &status, ask_fsys())) {
     m_tft.fillScreen(TftColor::BLACK);
     return status;
   }
@@ -216,24 +195,32 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  File file = SD.open(fname, O_READ);
+  FileSystem fsys = ask_fsys();
+  FileCtrl *file = nullptr;
 
-  if (!file) {
+  switch (fsys) {
+  case FileSystem::ON_SD_CARD: file = new FileCtrlSd(fname, O_READ); break;
+  case FileSystem::NONE:
     status = Status::ERR_FILE;
-  }
-  else if (file.size() > (0x7FFF - addr + 1)) {
-    status = Status::ERR_INVALID;
-
-    m_tft.drawText(10, 10, "Error",           TftColor::CYAN, 3);
-    m_tft.drawText(10, 50, "File too large!", TftColor::RED,  2);
-
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
-  }
-  else {
-    sd_write_with_progress_bar(&file, addr);
+    Util::show_error(m_tft, m_tch, "No file system available!");
+    break;
   }
 
-  file.close();
+  if (status == Status::OK) {
+    if (!file->is_open()) {
+      status = Status::ERR_FILE;
+    }
+    else if (file->size() > (0x7FFF - addr + 1)) {
+      status = Status::ERR_INVALID;
+      Util::show_error(m_tft, m_tch, "File is too large!");
+    }
+    else {
+      write_with_progress_bar(file, addr);
+    }
+
+    file->close();
+    delete file;
+  }
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -244,28 +231,7 @@ ProgrammerBaseCore::Status ProgrammerFileCore::sd_write() {
   return status;
 }
 
-bool ProgrammerFileCore::get_file_to_write_from(char *fname, uint8_t len, Status *res) {
-  TftFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
-  m_tft.fillScreen(TftColor::BLACK);
-
-  if (temp == TftFileSelMenu::Status::CANCELED) {
-    m_tft.drawText(10, 10, "Ok, canceled.", TftColor::CYAN, 3);
-    *res = Status::OK;
-  }
-  else if (temp == TftFileSelMenu::Status::FNAME_TOO_LONG) {
-    m_tft.drawText(10, 10, "File name was too long", TftColor::CYAN, 3);
-    m_tft.drawText(10, 50, "to fit in the buffer.", TftColor::PURPLE, 2);
-    *res = Status::ERR_FILE;
-  }
-
-  if (temp != TftFileSelMenu::Status::OK) {
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
-  }
-
-  return temp == TftFileSelMenu::Status::OK;
-}
-
-void ProgrammerFileCore::sd_write_with_progress_bar(File *file, uint16_t addr) {
+void ProgrammerFileCore::write_with_progress_bar(FileCtrl *file, uint16_t addr) {
   uint16_t cur_addr = addr;
   uint8_t this_page[256];
 
@@ -288,7 +254,35 @@ void ProgrammerFileCore::sd_write_with_progress_bar(File *file, uint16_t addr) {
   Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
-ProgrammerBaseCore::Status ProgrammerFileCore::sd_verify(uint16_t addr, void *data) {
+bool ProgrammerFileCore::get_file_to_write_from(char *fname, uint8_t len, ProgrammerFileCore::Status *res, FileSystem fsys) {
+  switch(fsys) {
+  case FileSystem::ON_SD_CARD: return sd_get_file_to_write_from(fname, len, res);
+  default:                     *res = Status::ERR_INVALID; return false;
+  }
+}
+
+bool ProgrammerFileCore::sd_get_file_to_write_from(char *fname, uint8_t len, ProgrammerFileCore::Status *res) {
+  TftSdFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if (temp == TftSdFileSelMenu::Status::CANCELED) {
+    m_tft.drawText(10, 10, "Ok, canceled.", TftColor::CYAN, 3);
+    *res = Status::OK;
+  }
+  else if (temp == TftSdFileSelMenu::Status::FNAME_TOO_LONG) {
+    m_tft.drawText(10, 10, "File name was too long", TftColor::CYAN, 3);
+    m_tft.drawText(10, 50, "to fit in the buffer.", TftColor::PURPLE, 2);
+    *res = Status::ERR_FILE;
+  }
+
+  if (temp != TftSdFileSelMenu::Status::OK) {
+    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  }
+
+  return temp == TftSdFileSelMenu::Status::OK;
+}
+
+ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   Status status = Status::OK;
 
   File file = SD.open((const char *) data, O_READ);
@@ -834,11 +828,18 @@ void ProgrammerOtherCore::monitor_data_bus() {
   quit_btn.draw(m_tft);
 
 #ifdef DEBUG_MODE
-  while (!quit_btn.is_pressed(m_tch, m_tft)) {
-    uint8_t val = m_ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
-    m_tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
-    delay(500);
-  }
+  // while (!quit_btn.is_pressed(m_tch, m_tft)) {
+  //   uint8_t val = m_ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
+  //   m_tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
+  //   delay(500);
+  // }
+
+  uint8_t temp[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+  };
+
+  m_ee.write(0x0200, temp, 32);
 #else
   // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
 

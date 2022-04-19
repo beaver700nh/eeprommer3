@@ -88,6 +88,15 @@ void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
 
   do {
     write(i, buf[i - addr]);
+    // set_addr_and_oe(i | 0x8000); // ~OE is on to disable output
+    // set_data(i - addr);
+
+    // set_we(false);
+    // _delay_us(Timing::WE_PULSE);
+    // set_we(true);
+    // _delay_us(Timing::WE_HOLD);
+
+    // _delay_ms(25);
   }
   while ((i - addr + 1) < len && ++i);
 

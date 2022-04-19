@@ -45,7 +45,7 @@ bool SdCtrl::is_enabled() {
   return m_enabled;
 }
 
-uint8_t SdCtrl::get_files(const char *dir, FileInfo *out, uint8_t num) {
+uint8_t SdCtrl::get_files(const char *dir, SdFileInfo *out, uint8_t num) {
   File root = SD.open(dir);
   File file;
 

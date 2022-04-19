@@ -6,6 +6,7 @@
 
 #include "ad_array.hpp"
 #include "eeprom.hpp"
+#include "file.hpp"
 #include "input.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
@@ -71,35 +72,19 @@ public:
 ADD_RW_CORE_CLASS_BODY_NO_CTOR(File)
 
 private:
-  enum FileType : int8_t {UNAVAILABLE = -1, SD_CARD_FILE, SERIAL_FILE};
+  FileSystem ask_fsys();
 
-  uint8_t m_available_file_io = FileType::UNAVAILABLE;
+  // Checks if any file system is available
+  bool check_has_fsys();
 
-  FileType get_file_type();
-  Status err_no_fsys();
+  void read_with_progress_bar(FileCtrl *file);
+  void write_with_progress_bar(FileCtrl *file, uint16_t addr);
 
-  /******************************** SD FUNCTIONS ********************************/
+  // Gets file path from file system `fsys`, returns whether was successful
+  // Writes file name (max `len` chars) into `fname`, writes status into `res`
+  bool get_file_to_write_from(char *fname, uint8_t len, Status *res, FileSystem fsys);
 
-  // Helper type for file IO funcs
-  typedef Status (ProgrammerFileCore::*RWFunc)();
-
-  // Checks what file system is available and delegates RWFunc to the correct one
-  Status checked_rw(RWFunc sd_func, RWFunc ser_func);
-
-  Status sd_read();
-  Status sd_write();
-  Status sd_verify(uint16_t addr, void *data);
-
-  void sd_read_with_progress_bar(File *file);
-  void sd_write_with_progress_bar(File *file, uint16_t addr);
-
-  // Returns successfulness; writes file name (max `len` chars) into `fname`, writes status into `res`
-  bool get_file_to_write_from(char *fname, uint8_t len, Status *res);
-
-  /******************************** SERIAL FUNCTIONS ********************************/ // - TODO
-
-  Status ser_read()  { return Status::OK; };
-  Status ser_write() { return Status::OK; };
+  bool sd_get_file_to_write_from(char *fname, uint8_t len, Status *res);
 };
 
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)

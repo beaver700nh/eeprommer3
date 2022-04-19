@@ -472,8 +472,11 @@ public:
     float btn_height, bool btn_height_px, uint8_t initial_choice = 0
   )
     : m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
-    m_btn_height(btn_height), m_btn_height_px(btn_height_px), m_cur_choice(initial_choice) {};
+    m_btn_height(btn_height), m_btn_height_px(btn_height_px) {
+    select(initial_choice);
+  }
 
+  // Function that gets run when user presses a button
   typedef void (*Callback)(TftCtrl &tft, uint8_t btn_id, bool is_confirm);
 
   void set_callback(Callback callback);
@@ -487,6 +490,9 @@ public:
   bool add_btn(TftBtn *btn);
   bool add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
   bool add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
+
+  void set_confirm_btn(uint8_t btn_id);
+
   uint8_t wait_for_value(TouchCtrl &tch, TftCtrl &tft);
 
 protected:

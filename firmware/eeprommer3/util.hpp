@@ -35,6 +35,9 @@ namespace Util {
   // Function to wait for the user to press a button at the bottom of the screen
   void wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text);
 
+  // Function to show an error message screen
+  void show_error(TftCtrl &tft, TouchCtrl &tch, const char *text);
+
   // Function to validate an address
   void validate_addr(uint16_t *addr);
 

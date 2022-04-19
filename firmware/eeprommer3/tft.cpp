@@ -509,12 +509,16 @@ bool TftChoiceMenu::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, ui
 }
 
 bool TftChoiceMenu::add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg, uint16_t bg) {
-  m_confirm_btn = m_num_btns;
+  set_confirm_btn(m_num_btns);
 
   uint16_t y = TftCalc::bottom(tft, 24, (force_bottom ? 10 : m_marg_v));
   uint16_t w = TftCalc::fraction_x(tft, m_marg_h, 1);
 
   return add_btn(new TftBtn(m_marg_h, y, w, 24, "Confirm", fg, bg));
+}
+
+void TftChoiceMenu::set_confirm_btn(uint8_t btn_id) {
+  m_confirm_btn = btn_id;
 }
 
 uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
@@ -524,10 +528,15 @@ uint8_t TftChoiceMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft) {
     uint8_t btn_pressed = wait_for_press(tch, tft);
     (*m_callback)(tft, btn_pressed, btn_pressed == m_confirm_btn);
 
-    if (btn_pressed == m_confirm_btn && get_btn(m_cur_choice)->is_operational()) break;
-
-    select(btn_pressed);
-    update(tft);
+    if (btn_pressed == m_confirm_btn) {
+      if (get_btn(m_cur_choice)->is_operational()) {
+        break;
+      }
+    }
+    else {
+      select(btn_pressed);
+      update(tft);
+    }
   }
 
   return m_cur_choice;

@@ -10,7 +10,7 @@
 #include "file.hpp"
 
 // Fwd decl because of circular dependency
-class FileInfo;
+class SdFileInfo;
 
 class SdCtrl {
 public:
@@ -27,7 +27,7 @@ public:
   bool is_enabled();
 
   // Get names of at most `num` files from `dir` into `out`; return number of file names gotten
-  uint8_t get_files(const char *dir, FileInfo *out, uint8_t num);
+  uint8_t get_files(const char *dir, SdFileInfo *out, uint8_t num);
 
   // Check if `file` is a directory
   bool is_directory(const char *file);

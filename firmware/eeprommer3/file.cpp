@@ -6,17 +6,17 @@
 
 #include "file.hpp"
 
-TftFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
+TftSdFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
   const uint8_t rows = 6, cols = 6;
 
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
-  TftFileSelMenu menu(tft, 10, 10, 50, 10, rows, cols);
+  TftSdFileSelMenu menu(tft, 10, 10, 50, 10, rows, cols);
 
   return menu.wait_for_value(tch, tft, sd, out, len);
 }
 
-TftFileSelMenu::TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
+TftSdFileSelMenu::TftSdFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
   : TftChoiceMenu(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
   m_num_rows = rows;
 
@@ -33,14 +33,14 @@ TftFileSelMenu::TftFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8
   add_btn(new TftBtn(20 + _w, _y, _w, 24, "Cancel",     TftColor::PINKK, TftColor::RED ));
   add_btn_confirm(tft, true);
 
-  m_files = (FileInfo *) malloc(m_num_rows * m_num_cols * sizeof(FileInfo));
+  m_files = (SdFileInfo *) malloc(m_num_rows * m_num_cols * sizeof(SdFileInfo));
 }
 
-TftFileSelMenu::~TftFileSelMenu() {
+TftSdFileSelMenu::~TftSdFileSelMenu() {
   free(m_files);
 }
 
-void TftFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files) {
+void TftSdFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files) {
   uint8_t i;
 
   m_num_files = sd.get_files(path, m_files, max_files);
@@ -66,7 +66,7 @@ void TftFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_
   }
 }
 
-TftFileSelMenu::Status TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
+TftSdFileSelMenu::Status TftSdFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
   char cur_path[max_path_len + 1] = "/";
 
   while (true) {
@@ -101,6 +101,50 @@ TftFileSelMenu::Status TftFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &t
       return Status::OK;
     }
   }
+}
+
+FileCtrlSd::FileCtrlSd(const char *path, uint8_t access) {
+  m_file = SD.open(path, access);
+}
+
+FileCtrlSd::~FileCtrlSd() {
+  m_file.close();
+}
+
+bool FileCtrlSd::is_open() {
+  return m_file.operator bool();
+}
+
+const char *FileCtrlSd::name() {
+  return m_file.name();
+}
+
+uint16_t FileCtrlSd::size() {
+  return m_file.size();
+}
+
+uint8_t FileCtrlSd::read() {
+  return m_file.read();
+}
+
+uint16_t FileCtrlSd::read(uint8_t *buf, uint16_t size) {
+  return m_file.read(buf, size);
+}
+
+void FileCtrlSd::write(uint8_t val) {
+  m_file.write(val);
+}
+
+uint16_t FileCtrlSd::write(const uint8_t *buf, uint16_t size) {
+  return m_file.write(buf, size);
+}
+
+void FileCtrlSd::flush() {
+  m_file.flush();
+}
+
+void FileCtrlSd::close() {
+  m_file.close();
 }
 
 namespace FileUtil {
@@ -154,8 +198,20 @@ namespace FileUtil {
     return result;
   }
 
-  bool go_down_path(char *path, FileInfo *sub_path, uint8_t len) {
+  bool go_down_path(char *path, SdFileInfo *sub_path, uint8_t len) {
     // Delegate to go_down_file() or go_down_dir()
     return (sub_path->is_dir ? go_down_dir : go_down_file)(path, sub_path->name, len);
+  }
+
+  uint8_t get_available_file_systems(SdCtrl &sd) {
+    uint8_t avail = FileSystem::NONE;
+
+    // TODO: implement serial files
+
+    if (sd.is_enabled()) {
+      avail |= FileSystem::ON_SD_CARD;
+    }
+
+    return avail;
   }
 };
