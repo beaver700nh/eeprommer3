@@ -165,10 +165,14 @@ private:
     SET_DATA_DIR,        // Set data bus as input or output
     MONITOR_DATA_BUS,    // Poll and show data bus at an interval
     PRINT_CHARSET,       // Print TFT driver's charset, 0x00-0xFF
+    ACTION_AUX1,         // Customizable auxiliary action
+    ACTION_AUX2,         // Customizable auxiliary action
   };
 
   void do_debug_action(DebugAction action);
   void monitor_data_bus();
+  void debug_action_aux1();
+  void debug_action_aux2();
 };
 
 #undef ADD_RW_CORE_CLASS_DECLARATION

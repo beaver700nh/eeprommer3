@@ -46,7 +46,7 @@ public:
   void set_oe(bool oe);
 
   uint8_t read(uint16_t addr);
-  void write(uint16_t addr, uint8_t data);
+  void write(uint16_t addr, uint8_t data, bool quick = false);
 
   void read(uint16_t addr1, uint16_t addr2, uint8_t *buf);
   void write(uint16_t addr, uint8_t *buf, uint16_t len);
@@ -60,11 +60,11 @@ public:
 
 private:
   enum Timing : uint8_t {
-    ADDR_SETUP = 1,  // in microseconds
-    ADDR_HOLD  = 1,  // in microseconds
-    WE_PULSE   = 1,  // in microseconds
-    WE_HOLD    = 5,  // in microseconds
-    WRITE_TIME = 25, // in milliseconds
+    ADDR_SETUP = 0,  // in microseconds (must be more than 15ns)
+    ADDR_HOLD  = 1,  // in microseconds (actually 50ns)
+    WE_PULSE   = 1,  // in microseconds (actually 100ns)
+    WE_HOLD    = 1,  // in microseconds (actually 50ns)
+    WRITE_TIME = 11, // in milliseconds (actually 10ms)
   };
 
   IoExpCtrl m_exp_0, m_exp_1;

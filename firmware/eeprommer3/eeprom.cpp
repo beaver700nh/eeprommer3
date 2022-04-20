@@ -60,7 +60,7 @@ uint8_t EepromCtrl::read(uint16_t addr) {
   return data;
 }
 
-void EepromCtrl::write(uint16_t addr, uint8_t data) {
+void EepromCtrl::write(uint16_t addr, uint8_t data, bool quick) {
   set_addr_and_oe(addr | 0x8000); // ~OE is on to disable output
   set_data(data);
 
@@ -69,7 +69,9 @@ void EepromCtrl::write(uint16_t addr, uint8_t data) {
   set_we(true);
   _delay_us(Timing::WE_HOLD);
 
-  _delay_ms(Timing::WRITE_TIME);
+  if (!quick) {
+    _delay_ms(Timing::WRITE_TIME);
+  }
 }
 
 void EepromCtrl::read(uint16_t addr1, uint16_t addr2, uint8_t *buf) {
@@ -87,16 +89,11 @@ void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   set_addr_and_oe(0x8000); // ~OE is on to disable output
 
   do {
-    write(i, buf[i - addr]);
-    // set_addr_and_oe(i | 0x8000); // ~OE is on to disable output
-    // set_data(i - addr);
+    auto t1 = micros();
+    write(i, buf[i - addr], true);
+    auto t2 = micros();
 
-    // set_we(false);
-    // _delay_us(Timing::WE_PULSE);
-    // set_we(true);
-    // _delay_us(Timing::WE_HOLD);
-
-    // _delay_ms(25);
+    Serial.println(t2 - t1);
   }
   while ((i - addr + 1) < len && ++i);
 
@@ -112,7 +109,7 @@ void EepromCtrl::write(AddrDataArray *buf) {
   uint16_t i = 0;
 
   while (buf->get_pair(i++, &pair) == true) {
-    write(pair.addr, pair.data);
+    write(pair.addr, pair.data, true);
   }
 
   // Delay to be sure that the next operation is treated as a different operation than this one

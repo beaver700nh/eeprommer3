@@ -7,15 +7,17 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
-    fix page write
+    fix page write:
+      find way to optimize it
+      remember to check 64-byte limit
     add EEPROM SDP feature?
     fix multi write scrolling
     fix file write vrf bug
-    reduce duplication in ProgrammerFileCore
+    clean up:
+      split ask_foo() into ask_screen.?pp files
+      reduce duplication in ProgrammerFileCore
     make progress bars look better:
       unsatisfying off-by-one stuff
-    add FileCtrl, auto-selects between file systems
-    put labels (addr) on ReadRange
     switch repr mode on ReadRange
   start work on serial file io
 

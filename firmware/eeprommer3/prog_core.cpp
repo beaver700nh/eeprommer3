@@ -432,10 +432,11 @@ void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, 
   uint16_t cur_addr_offset = 0x0000;
 
   bar.for_each(
-    [this, &data, &cur_addr_offset, &addr2]TFT_PROGRESS_INDICATOR_LAMBDA {
-      uint16_t _addr2 = MIN(cur_addr_offset + 0xFF, addr2);
+    [this, &data, &cur_addr_offset, &addr1, &addr2]TFT_PROGRESS_INDICATOR_LAMBDA {
+      uint16_t _addr1 = addr1 + cur_addr_offset;
+      uint16_t _addr2 = MIN(_addr1 + 0xFF, addr2);
 
-      this->m_ee.read(cur_addr_offset, _addr2, data + cur_addr_offset);
+      this->m_ee.read(_addr1, _addr2, data + cur_addr_offset);
 
       cur_addr_offset += 0x0100; // Next page
 
@@ -527,7 +528,7 @@ void ProgrammerMultiCore::show_page(
   uint16_t glob_page_end    = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
 
   m_tft.drawTextBg(
-    TftCalc::right(m_tft, 130, 12), 12, STRFMT_NOBUF("Start: %04X", glob_page_start),
+    TftCalc::right(m_tft, 130, 12), 12, STRFMT_NOBUF("%04X - %04X", glob_page_start, glob_page_end),
     TftColor::ORANGE, TftColor::BLACK
   );
 
@@ -752,14 +753,16 @@ ProgrammerBaseCore::Status ProgrammerOtherCore::debug() {
   auto w2 = TftCalc::fraction_x(m_tft, 10, 2);
 
   TftMenu menu;
-  menu.add_btn(new TftBtn(     10,  50, w2, 30, "WE Hi (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
-  menu.add_btn(new TftBtn(w2 + 20,  50, w2, 30, "WE Lo (Enable)",  TftColor::PINKK,          TftColor::RED   ));
-  menu.add_btn(new TftBtn(     10,  90, w1, 30, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
-  menu.add_btn(new TftBtn(     10, 130, w2, 30, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN  ));
-  menu.add_btn(new TftBtn(w2 + 20, 130, w2, 30, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE  ));
-  menu.add_btn(new TftBtn(     10, 170, w2, 30, "Set Data Dir",    TftColor::BLACK,          TftColor::ORANGE));
-  menu.add_btn(new TftBtn(w2 + 20, 170, w2, 30, "Monitor Data",    TftColor::YELLOW,         TftColor::DCYAN ));
-  menu.add_btn(new TftBtn(     10, 210, w1, 30, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
+  menu.add_btn(new TftBtn(     10,  50, w2, 28, "WE Hi (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
+  menu.add_btn(new TftBtn(w2 + 20,  50, w2, 28, "WE Lo (Enable)",  TftColor::PINKK,          TftColor::RED   ));
+  menu.add_btn(new TftBtn(     10,  88, w1, 28, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
+  menu.add_btn(new TftBtn(     10, 126, w2, 28, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN  ));
+  menu.add_btn(new TftBtn(w2 + 20, 126, w2, 28, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE  ));
+  menu.add_btn(new TftBtn(     10, 164, w2, 28, "Set Data Dir",    TftColor::BLACK,          TftColor::ORANGE));
+  menu.add_btn(new TftBtn(w2 + 20, 164, w2, 28, "Monitor Data",    TftColor::YELLOW,         TftColor::DCYAN ));
+  menu.add_btn(new TftBtn(     10, 202, w1, 28, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
+  menu.add_btn(new TftBtn(     10, 240, w2, 28, "Aux1",            TftColor::DGRAY,          TftColor::LGRAY ));
+  menu.add_btn(new TftBtn(w2 + 20, 240, w2, 28, "Aux2",            TftColor::DGRAY,          TftColor::LGRAY ));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
 
   while (true) {
@@ -819,6 +822,12 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
     tft_print_chars(m_tft);
     m_tch.wait_for_press();
   }
+  else if (action == DebugAction::ACTION_AUX1) {
+    debug_action_aux1();
+  }
+  else if (action == DebugAction::ACTION_AUX2) {
+    debug_action_aux2();
+  }
 }
 
 void ProgrammerOtherCore::monitor_data_bus() {
@@ -828,18 +837,11 @@ void ProgrammerOtherCore::monitor_data_bus() {
   quit_btn.draw(m_tft);
 
 #ifdef DEBUG_MODE
-  // while (!quit_btn.is_pressed(m_tch, m_tft)) {
-  //   uint8_t val = m_ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
-  //   m_tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
-  //   delay(500);
-  // }
-
-  uint8_t temp[] = {
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
-  };
-
-  m_ee.write(0x0200, temp, 32);
+  while (!quit_btn.is_pressed(m_tch, m_tft)) {
+    uint8_t val = m_ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
+    m_tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
+    delay(500);
+  }
 #else
   // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
 
@@ -850,6 +852,19 @@ void ProgrammerOtherCore::monitor_data_bus() {
 
   quit_btn.wait_for_press(m_tch, m_tft);
 #endif
+}
+
+void ProgrammerOtherCore::debug_action_aux1() {
+  uint8_t temp[] = {
+    0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+  };
+
+  m_ee.write(0x200, temp, 32);
+}
+
+void ProgrammerOtherCore::debug_action_aux2() {
+  // Unused
 }
 
 ProgrammerBaseCore::Status ProgrammerOtherCore::about() {
