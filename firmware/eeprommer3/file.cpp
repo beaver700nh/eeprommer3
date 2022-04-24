@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "new_delete.hpp"
 #include "tft.hpp"
 #include "sd.hpp"
 
@@ -100,6 +101,15 @@ TftSdFileSelMenu::Status TftSdFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtr
       strncpy(file_path, cur_path, max_path_len);
       return Status::OK;
     }
+  }
+}
+
+FileCtrl *FileCtrl::create_file(FileSystem fsys, const char *path, uint8_t access) {
+  switch (fsys) {
+  case FileSystem::ON_SD_CARD: return new FileCtrlSd(path, access);
+  case FileSystem::NONE:
+  default:
+    return nullptr;
   }
 }
 

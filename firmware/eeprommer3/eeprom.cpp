@@ -6,9 +6,10 @@
 #include <Adafruit_MCP23X17.h>
 #include <Adafruit_BusIO_Register.h>
 
-#include "eeprom.hpp"
-
+#include "new_delete.hpp"
 #include "ad_array.hpp"
+
+#include "eeprom.hpp"
 
 void EepromCtrl::init(uint8_t addr_exp_0, uint8_t addr_exp_1) {
   m_exp_0.begin(addr_exp_0);

@@ -11,6 +11,7 @@
 class TftCtrl;
 class TouchCtrl;
 class SdCtrl;
+class FileCtrl;
 class TftChoiceMenu;
 
 /*
@@ -60,21 +61,24 @@ public:
   FileCtrl() {};
   virtual ~FileCtrl() {};
 
-  virtual bool is_open();
+  virtual bool is_open(); // Tells whether file is open.
 
-  virtual const char *name();
+  virtual const char *name(); // Gets name of file.
 
-  virtual uint16_t size();
+  virtual uint16_t size(); // Gets size of file.
 
-  virtual uint8_t read();
-  virtual uint16_t read(uint8_t *buf, uint16_t size);
+  virtual uint8_t read();                             // Reads a byte from file, return it.
+  virtual uint16_t read(uint8_t *buf, uint16_t size); // Reads `size` bytes from file into `buf`. Returns number of bytes read.
 
-  virtual void write(uint8_t val);
-  virtual uint16_t write(const uint8_t *buf, uint16_t size);
+  virtual void write(uint8_t val);                           // Writes `val` to file.
+  virtual uint16_t write(const uint8_t *buf, uint16_t size); // Writes `size` bytes from `buf` to file. Returns number of bytes written.
 
-  virtual void flush();
+  virtual void flush(); // Ensures that all data is written to file.
 
-  virtual void close();
+  virtual void close(); // Closes the file.
+
+  // Creates a FileCtrl for a file with `access` at `path`. Selects file system using `fsys`.
+  static FileCtrl *create_file(FileSystem fsys, const char *path, uint8_t access);
 };
 
 /*

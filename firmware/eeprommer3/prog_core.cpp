@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "new_delete.hpp"
 #include "eeprom.hpp"
 #include "input.hpp"
 #include "sd.hpp"
@@ -121,36 +122,37 @@ FileSystem ProgrammerFileCore::ask_fsys() {
   return fsys;
 }
 
+ProgrammerBaseCore::Status ProgrammerFileCore::check_valid(FileCtrl *file) {
+  if (file == nullptr) {
+    Util::show_error(m_tft, m_tch, "Can't open file: no filesystem!");
+    return Status::ERR_FILE;
+  }
+
+  if (!file->is_open()) {
+    Util::show_error(m_tft, m_tch, "Failed to open file!");
+    return Status::ERR_FILE;
+  }
+
+  return Status::OK;
+}
+
 ProgrammerBaseCore::Status ProgrammerFileCore::read() {
   Status status = Status::OK;
 
-  char fname[64];
-  ask_str(m_tft, m_tch, "File to read to?", fname, 63);
+  char fpath[64];
+  ask_str(m_tft, m_tch, "File to read to?", fpath, 63);
 
   m_tft.fillScreen(TftColor::BLACK);
 
   FileSystem fsys = ask_fsys();
-  FileCtrl *file = nullptr;
+  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_CREAT | O_WRITE | O_TRUNC);
 
-  uint8_t access = O_CREAT | O_WRITE | O_TRUNC;
-
-  switch (fsys) {
-  case FileSystem::ON_SD_CARD: file = new FileCtrlSd(fname, access); break;
-  case FileSystem::NONE:
-    status = Status::ERR_FILE;
-    Util::show_error(m_tft, m_tch, "No file system available!");
-    break;
-  }
+  status = check_valid(file);
 
   if (status == Status::OK) {
-    if (!file->is_open()) {
-      status = Status::ERR_FILE;
-    }
-    else {
-      read_with_progress_bar(file);
-      file->flush();
-    }
+    read_with_progress_bar(file);
 
+    file->flush();
     file->close();
     delete file;
   }
@@ -183,11 +185,12 @@ void ProgrammerFileCore::read_with_progress_bar(FileCtrl *file) {
 
 ProgrammerBaseCore::Status ProgrammerFileCore::write() {
   Status status = Status::OK;
+  FileSystem fsys = ask_fsys();
 
-  char fname[64];
-  if (!get_file_to_write_from(fname, 63, &status, ask_fsys())) {
+  char fpath[64];
+  if (!get_file_to_write_from(fpath, 63, &status, fsys)) {
     m_tft.fillScreen(TftColor::BLACK);
-    return status;
+    return Status::OK;
   }
 
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
@@ -195,29 +198,20 @@ ProgrammerBaseCore::Status ProgrammerFileCore::write() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  FileSystem fsys = ask_fsys();
-  FileCtrl *file = nullptr;
+  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_RDONLY);
 
-  switch (fsys) {
-  case FileSystem::ON_SD_CARD: file = new FileCtrlSd(fname, O_READ); break;
-  case FileSystem::NONE:
-    status = Status::ERR_FILE;
-    Util::show_error(m_tft, m_tch, "No file system available!");
-    break;
-  }
+  status = check_valid(file);
 
   if (status == Status::OK) {
-    if (!file->is_open()) {
-      status = Status::ERR_FILE;
-    }
-    else if (file->size() > (0x7FFF - addr + 1)) {
+    if (file->size() > (0x7FFF - addr + 1)) {
+      Util::show_error(m_tft, m_tch, "File is too large to fit!");
       status = Status::ERR_INVALID;
-      Util::show_error(m_tft, m_tch, "File is too large!");
     }
     else {
       write_with_progress_bar(file, addr);
     }
 
+    file->flush();
     file->close();
     delete file;
   }
@@ -225,7 +219,7 @@ ProgrammerBaseCore::Status ProgrammerFileCore::write() {
   m_tft.fillScreen(TftColor::BLACK);
 
   if (status == Status::OK) {
-    RETURN_VERIFICATION_OR_VALUE(status, addr, fname);
+    RETURN_VERIFICATION_OR_VALUE(status, addr, fpath);
   }
 
   return status;
@@ -254,15 +248,15 @@ void ProgrammerFileCore::write_with_progress_bar(FileCtrl *file, uint16_t addr) 
   Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
-bool ProgrammerFileCore::get_file_to_write_from(char *fname, uint8_t len, ProgrammerFileCore::Status *res, FileSystem fsys) {
+bool ProgrammerFileCore::get_file_to_write_from(char *out, uint8_t len, ProgrammerFileCore::Status *res, FileSystem fsys) {
   switch(fsys) {
-  case FileSystem::ON_SD_CARD: return sd_get_file_to_write_from(fname, len, res);
+  case FileSystem::ON_SD_CARD: return sd_get_file_to_write_from(out, len, res);
   default:                     *res = Status::ERR_INVALID; return false;
   }
 }
 
-bool ProgrammerFileCore::sd_get_file_to_write_from(char *fname, uint8_t len, ProgrammerFileCore::Status *res) {
-  TftSdFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", fname, 63);
+bool ProgrammerFileCore::sd_get_file_to_write_from(char *out, uint8_t len, ProgrammerFileCore::Status *res) {
+  TftSdFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", out, 63);
   m_tft.fillScreen(TftColor::BLACK);
 
   if (temp == TftSdFileSelMenu::Status::CANCELED) {

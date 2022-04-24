@@ -2,6 +2,8 @@
 
 #include "constants.hpp"
 
+#include "new_delete.hpp"
+
 void *operator new[](size_t size) {
   return malloc(size);
 }

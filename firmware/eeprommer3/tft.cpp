@@ -6,6 +6,7 @@
 #include <MCUFRIEND_kbv.h>
 #include <TouchScreen.h>
 
+#include "new_delete.hpp"
 #include "tft.hpp"
 #include "input.hpp"
 

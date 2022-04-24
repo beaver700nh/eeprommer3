@@ -77,14 +77,17 @@ private:
   // Checks if any file system is available
   bool check_has_fsys();
 
+  // Performs some checks on file, returns resulting status.
+  Status check_valid(FileCtrl *file);
+
   void read_with_progress_bar(FileCtrl *file);
   void write_with_progress_bar(FileCtrl *file, uint16_t addr);
 
-  // Gets file path from file system `fsys`, returns whether was successful
-  // Writes file name (max `len` chars) into `fname`, writes status into `res`
-  bool get_file_to_write_from(char *fname, uint8_t len, Status *res, FileSystem fsys);
+  // Gets file path from file system `fsys`, writes at most `len` chars into `out`, writes status into `res`
+  // Returns true if successful, false otherwise
+  bool get_file_to_write_from(char *out, uint8_t len, Status *res, FileSystem fsys);
 
-  bool sd_get_file_to_write_from(char *fname, uint8_t len, Status *res);
+  bool sd_get_file_to_write_from(char *out, uint8_t len, Status *res);
 };
 
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)

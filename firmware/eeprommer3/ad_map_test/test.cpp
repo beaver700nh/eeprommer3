@@ -1,17 +1,17 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "../ad_map.hpp"
+#include "../ad_array.hpp"
 
-void print_pair(const char *id, AddrDataMapPair &pair) {
+void print_pair(const char *id, AddrDataArrayPair &pair) {
   printf("%s {\naddr: %04X,\ndata: %02X\n}\n", id, pair.addr, pair.data);
 }
 
-void print_map(const char *id, AddrDataMap &map) {
+void print_map(const char *id, AddrDataArray &map) {
   printf("%s {\nlen: %d,\ndata: [\n", id, map.get_len());
 
   for (int i = 0; i < map.get_len(); ++i) {
-    AddrDataMapPair temp;
+    AddrDataArrayPair temp;
     map.get_pair(i, &temp);
 
     char buf[10];
@@ -24,9 +24,9 @@ void print_map(const char *id, AddrDataMap &map) {
 }
 
 int main() {
-  AddrDataMapPair p1 = {0x5555, 0xAA};
-  AddrDataMapPair p2 = {p1};
-  AddrDataMapPair *q2 = &p2;
+  AddrDataArrayPair p1 = {0x5555, 0xAA};
+  AddrDataArrayPair p2 = {p1};
+  AddrDataArrayPair *q2 = &p2;
 
   p2.addr += 2;
   p2.data -= 2;
@@ -35,7 +35,7 @@ int main() {
   print_pair("p2", p2);
 
   {
-    AddrDataMap map;
+    AddrDataArray map;
     print_map("m1", map);
 
     map.remove(0);
@@ -71,13 +71,13 @@ int main() {
     map.extend(3);
     print_map("m12", map);
 
-    map.set_pair(3, (AddrDataMapPair) {0x1234, 0xFF});
+    map.set_pair(3, (AddrDataArrayPair) {0x1234, 0xFF});
     print_map("m13", map);
 
-    map.set_pair(1, (AddrDataMapPair) {0x4321, 0x55});
+    map.set_pair(1, (AddrDataArrayPair) {0x4321, 0x55});
     print_map("m14", map);
 
-    map.set_pair(2, (AddrDataMapPair) {0x5555, 0xAA});
+    map.set_pair(2, (AddrDataArrayPair) {0x5555, 0xAA});
     print_map("m15", map);
 
     {

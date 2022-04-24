@@ -1,5 +1,9 @@
 #include "constants.hpp"
 
+#ifdef ARDUINO
+#include "new_delete.hpp"
+#endif
+
 #include "ad_array.hpp"
 
 AddrDataArray::~AddrDataArray() {
