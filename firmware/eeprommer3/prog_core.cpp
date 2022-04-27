@@ -11,8 +11,10 @@
 
 #include "prog_core.hpp"
 
+using Status = ProgrammerBaseCore::Status;
+
 // Dummy function for unimplemented actions
-ProgrammerBaseCore::Status ProgrammerBaseCore::nop() {
+Status ProgrammerBaseCore::nop() {
   return Status::OK;
 }
 
@@ -20,7 +22,7 @@ ProgrammerBaseCore::Status ProgrammerBaseCore::nop() {
 /******** BYTE CORE ********/
 /***************************/
 
-ProgrammerBaseCore::Status ProgrammerByteCore::read() {
+Status ProgrammerByteCore::read() {
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
   Util::validate_addr(&addr);
 
@@ -41,7 +43,7 @@ ProgrammerBaseCore::Status ProgrammerByteCore::read() {
   return Status::OK;
 }
 
-ProgrammerBaseCore::Status ProgrammerByteCore::write() {
+Status ProgrammerByteCore::write() {
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
   Util::validate_addr(&addr);
 
@@ -63,7 +65,7 @@ ProgrammerBaseCore::Status ProgrammerByteCore::write() {
   RETURN_VERIFICATION_OR_OK(addr, (void *) &data);
 }
 
-ProgrammerBaseCore::Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
+Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
   uint8_t actual = m_ee.read(addr);
 
   if (actual != *(uint8_t *) data) {
@@ -90,8 +92,6 @@ ProgrammerFileCore::ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(C
 }
 
 FileSystem ProgrammerFileCore::ask_fsys() {
-  m_tft.fillScreen(TftColor::BLACK);
-
   m_tft.drawText(10, 10, "Select a file type", TftColor::CYAN, 3);
 
   TftChoiceMenu menu(10, 10, 50, 10, 1, 40, true, 0);
@@ -108,21 +108,16 @@ FileSystem ProgrammerFileCore::ask_fsys() {
   uint8_t btn = menu.wait_for_value(m_tch, m_tft);
   uint8_t btn_cancel = menu.get_num_btns() - 2;
 
-  FileSystem fsys = FileSystem::NONE;
-
   if (btn != btn_cancel) {
     switch (btn) {
-    case 0: fsys = FileSystem::ON_SD_CARD; break;
-    case 1: fsys = FileSystem::ON_SERIAL;  break;
+    case 0:  return FileSystem::ON_SD_CARD;
+    case 1:  return FileSystem::ON_SERIAL;
+    default: return FileSystem::NONE;
     }
   }
-
-  m_tft.fillScreen(TftColor::BLACK);
-
-  return fsys;
 }
 
-ProgrammerBaseCore::Status ProgrammerFileCore::check_valid(FileCtrl *file) {
+Status ProgrammerFileCore::check_valid(FileCtrl *file) {
   if (file == nullptr) {
     Util::show_error(m_tft, m_tch, "Can't open file: no filesystem!");
     return Status::ERR_FILE;
@@ -136,7 +131,7 @@ ProgrammerBaseCore::Status ProgrammerFileCore::check_valid(FileCtrl *file) {
   return Status::OK;
 }
 
-ProgrammerBaseCore::Status ProgrammerFileCore::read() {
+Status ProgrammerFileCore::read() {
   Status status = Status::OK;
 
   char fpath[64];
@@ -145,28 +140,33 @@ ProgrammerBaseCore::Status ProgrammerFileCore::read() {
   m_tft.fillScreen(TftColor::BLACK);
 
   FileSystem fsys = ask_fsys();
-  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_CREAT | O_WRITE | O_TRUNC);
+  status = (fsys == FileSystem::NONE ? Status::OK : read_to_fsys(fpath, fsys));
 
-  status = check_valid(file);
+  m_tft.fillScreen(TftColor::BLACK);
+  return status;
+}
+
+Status ProgrammerFileCore::read_to_fsys(const char *fpath, FileSystem fsys) {
+  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_CREAT | O_WRITE | O_TRUNC);
+  Status status = check_valid(file);
 
   if (status == Status::OK) {
-    read_with_progress_bar(file);
+    do_read_operation(file);
 
     file->flush();
     file->close();
     delete file;
   }
 
-  m_tft.fillScreen(TftColor::BLACK);
   return status;
 }
 
-void ProgrammerFileCore::read_with_progress_bar(FileCtrl *file) {
+void ProgrammerFileCore::do_read_operation(FileCtrl *file) {
   uint8_t this_page[256];
 
-  m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
+  m_tft.drawText(10, 10, "Reading EEPROM to file...", TftColor::CYAN, 3);
 
-  TftProgressIndicator bar(m_tft, 0x7F, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  TftProgressIndicator bar(m_tft, 0x80, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
   bar.for_each(
     [this, &this_page, &file]TFT_PROGRESS_INDICATOR_LAMBDA {
@@ -183,14 +183,20 @@ void ProgrammerFileCore::read_with_progress_bar(FileCtrl *file) {
   Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
-ProgrammerBaseCore::Status ProgrammerFileCore::write() {
+Status ProgrammerFileCore::write() {
   Status status = Status::OK;
   FileSystem fsys = ask_fsys();
 
-  char fpath[64];
-  if (!get_file_to_write_from(fpath, 63, &status, fsys)) {
+  if (fsys == FileSystem::NONE) {
     m_tft.fillScreen(TftColor::BLACK);
     return Status::OK;
+  }
+
+  char fpath[64];
+
+  if (!get_file_to_write_from(fpath, 63, &status, fsys)) {
+    m_tft.fillScreen(TftColor::BLACK);
+    return status;
   }
 
   uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
@@ -198,23 +204,7 @@ ProgrammerBaseCore::Status ProgrammerFileCore::write() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_RDONLY);
-
-  status = check_valid(file);
-
-  if (status == Status::OK) {
-    if (file->size() > (0x7FFF - addr + 1)) {
-      Util::show_error(m_tft, m_tch, "File is too large to fit!");
-      status = Status::ERR_INVALID;
-    }
-    else {
-      write_with_progress_bar(file, addr);
-    }
-
-    file->flush();
-    file->close();
-    delete file;
-  }
+  status = write_from_fsys(fpath, fsys, addr);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -225,13 +215,34 @@ ProgrammerBaseCore::Status ProgrammerFileCore::write() {
   return status;
 }
 
-void ProgrammerFileCore::write_with_progress_bar(FileCtrl *file, uint16_t addr) {
+Status ProgrammerFileCore::write_from_fsys(const char *fpath, FileSystem fsys, uint16_t addr) {
+  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_RDONLY);
+  Status status = check_valid(file);
+
+  if (status == Status::OK) {
+    if (file->size() > (0x7FFF - addr + 1)) {
+      Util::show_error(m_tft, m_tch, "File is too large to fit!");
+      status = Status::ERR_INVALID;
+    }
+    else {
+      do_write_operation(file, addr);
+    }
+
+    file->flush();
+    file->close();
+    delete file;
+  }
+
+  return status;
+}
+
+void ProgrammerFileCore::do_write_operation(FileCtrl *file, uint16_t addr) {
   uint16_t cur_addr = addr;
   uint8_t this_page[256];
 
-  m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
+  m_tft.drawText(10, 10, "Writing file to EEPROM...", TftColor::CYAN, 3);
 
-  TftProgressIndicator bar(m_tft, ceil((float) file->size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  TftProgressIndicator bar(m_tft, ceil((float) file->size() / 256.0), 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
   bar.for_each(
     [this, &this_page, &file, &cur_addr]TFT_PROGRESS_INDICATOR_LAMBDA {
@@ -248,14 +259,16 @@ void ProgrammerFileCore::write_with_progress_bar(FileCtrl *file, uint16_t addr) 
   Util::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
-bool ProgrammerFileCore::get_file_to_write_from(char *out, uint8_t len, ProgrammerFileCore::Status *res, FileSystem fsys) {
+bool ProgrammerFileCore::get_file_to_write_from(char *out, uint8_t len, Status *res, FileSystem fsys) {
   switch(fsys) {
   case FileSystem::ON_SD_CARD: return sd_get_file_to_write_from(out, len, res);
-  default:                     *res = Status::ERR_INVALID; return false;
+  default:
+    *res = Status::ERR_INVALID;
+    return false;
   }
 }
 
-bool ProgrammerFileCore::sd_get_file_to_write_from(char *out, uint8_t len, ProgrammerFileCore::Status *res) {
+bool ProgrammerFileCore::sd_get_file_to_write_from(char *out, uint8_t len, Status *res) {
   TftSdFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", out, 63);
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -276,7 +289,7 @@ bool ProgrammerFileCore::sd_get_file_to_write_from(char *out, uint8_t len, Progr
   return temp == TftSdFileSelMenu::Status::OK;
 }
 
-ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
+Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   Status status = Status::OK;
 
   File file = SD.open((const char *) data, O_READ);
@@ -321,7 +334,7 @@ ProgrammerBaseCore::Status ProgrammerFileCore::verify(uint16_t addr, void *data)
 /******** VECTOR CORE ********/
 /*****************************/
 
-ProgrammerBaseCore::Status ProgrammerVectorCore::read() {
+Status ProgrammerVectorCore::read() {
   Vector vec = ask_vector(m_tft, m_tch);
   vec.update(m_ee);
 
@@ -340,7 +353,7 @@ ProgrammerBaseCore::Status ProgrammerVectorCore::read() {
   return Status::OK;
 }
 
-ProgrammerBaseCore::Status ProgrammerVectorCore::write() {
+Status ProgrammerVectorCore::write() {
   Vector vec = ask_vector(m_tft, m_tch);
   vec.update(m_ee);
 
@@ -364,7 +377,7 @@ ProgrammerBaseCore::Status ProgrammerVectorCore::write() {
   RETURN_VERIFICATION_OR_OK(vec.m_addr, (void *) &new_val)
 }
 
-ProgrammerBaseCore::Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
+Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
   uint16_t actual = (m_ee.read(addr + 1) << 8) | m_ee.read(addr);
 
   if (actual != *(uint16_t *) data) {
@@ -386,7 +399,7 @@ ProgrammerBaseCore::Status ProgrammerVectorCore::verify(uint16_t addr, void *dat
 /******** MULTIBYTE CORE ********/
 /********************************/
 
-ProgrammerBaseCore::Status ProgrammerMultiCore::read() {
+Status ProgrammerMultiCore::read() {
   uint16_t addr1 = ask_val<uint16_t>(m_tft, m_tch, "Start address?");
   m_tft.fillScreen(TftColor::BLACK);
   uint16_t addr2 = ask_val<uint16_t>(m_tft, m_tch, "End address?");
@@ -573,7 +586,7 @@ void ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
   file.close();
 }
 
-ProgrammerBaseCore::Status ProgrammerMultiCore::write() {
+Status ProgrammerMultiCore::write() {
   AddrDataArray buf;
 
   uint16_t _y = TftCalc::bottom(m_tft, 24, 10);
@@ -704,7 +717,7 @@ void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
   buf->append((AddrDataArrayPair) {addr, data});
 }
 
-ProgrammerBaseCore::Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
+Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
   auto *buf = (AddrDataArray *) data;
 
   for (uint16_t i = 0; i < buf->get_len(); ++i) {
@@ -734,7 +747,7 @@ ProgrammerBaseCore::Status ProgrammerMultiCore::verify(uint16_t addr, void *data
 /******** OTHER CORE - MISC ********/
 /***********************************/
 
-ProgrammerBaseCore::Status ProgrammerOtherCore::paint() {
+Status ProgrammerOtherCore::paint() {
   tft_draw_test(m_tch, m_tft);
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -742,7 +755,7 @@ ProgrammerBaseCore::Status ProgrammerOtherCore::paint() {
   return Status::OK;
 }
 
-ProgrammerBaseCore::Status ProgrammerOtherCore::debug() {
+Status ProgrammerOtherCore::debug() {
   auto w1 = TftCalc::fraction_x(m_tft, 10, 1);
   auto w2 = TftCalc::fraction_x(m_tft, 10, 2);
 
@@ -861,7 +874,7 @@ void ProgrammerOtherCore::debug_action_aux2() {
   // Unused
 }
 
-ProgrammerBaseCore::Status ProgrammerOtherCore::about() {
+Status ProgrammerOtherCore::about() {
   m_tft.drawText( 10,  10, "About",                    TftColor::CYAN,   3);
   m_tft.drawText( 10,  50, "eeprommer3",               TftColor::PURPLE, 2);
   m_tft.drawText(142,  50, "- hardware/firmware side", TftColor::BLUE,   2);

@@ -7,18 +7,20 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
-    finish FileCtrl stuff
     fix multi write scrolling
-    check ask_fsys returned cancel
     clean up:
-      put reused lambdas into variables in Util
-      split ask_foo() into ask_screen.?pp files:
+      put reused lambdas into variables in Util [wip]
+      ask_foo() work:
+        split into ask_screen.?pp files
         make ask_addr() in prog_core.cpp
+        fix ask_file() to check fsys
       reduce duplication in ProgrammerFileCore
     make progress bars look better:
       unsatisfying off-by-one stuff
+      optimize drawing?
     switch repr mode on ReadRange
-  start work on serial file io
+  start work on serial file io:
+    add FileCtrlSerial
   add EEPROM SDP feature?
   fix page write (low priority):
     find way to optimize it

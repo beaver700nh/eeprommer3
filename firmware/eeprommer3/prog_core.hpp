@@ -80,8 +80,11 @@ private:
   // Performs some checks on file, returns resulting status.
   Status check_valid(FileCtrl *file);
 
-  void read_with_progress_bar(FileCtrl *file);
-  void write_with_progress_bar(FileCtrl *file, uint16_t addr);
+  Status read_to_fsys(const char *fpath, FileSystem fsys);
+  Status write_from_fsys(const char *fpath, FileSystem fsys, uint16_t addr);
+
+  void do_read_operation(FileCtrl *file);
+  void do_write_operation(FileCtrl *file, uint16_t addr);
 
   // Gets file path from file system `fsys`, writes at most `len` chars into `out`, writes status into `res`
   // Returns true if successful, false otherwise

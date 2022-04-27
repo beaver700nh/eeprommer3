@@ -64,19 +64,14 @@
   TftCalc::fraction_x((tft), 10, 1), 24, \
   (text)
 
-// Prints value of `var` over Serial if debug mode is enabled
+// Prints text over Serial if debug mode is enabled
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
 #ifdef DEBUG_MODE
 #define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
-#else
-#define SER_DEBUG_PRINT(var, type)
-#endif
-
-// Prints `text` over Serial if debug mode is enabled
-#ifdef DEBUG_MODE
 #define SER_LOG_PRINT(text, ...) (Serial.print(F("*!* - SER_LOG_PRINT: ")), PRINTF_NOBUF(Serial, text, ##__VA_ARGS__), Serial.println())
 #else
-#define SER_LOG_PRINT
+#define SER_DEBUG_PRINT(var, type)
+#define SER_LOG_PRINT(text, ...)
 #endif
 
 #define TYPED_CONTROLLERS     TftCtrl &tft, TouchCtrl &tch, EepromCtrl &ee, SdCtrl &sd
@@ -90,7 +85,7 @@
 // Tells whether screen is being touched
 #define LAMBDA_IS_TCHING_TFT [this]() -> bool { return this->m_tch.is_touching(); }
 // Tells whether buttons is being pressed
-#define LAMBDA_IS_TCHING_BTN(btn, tch, tft) [&]() -> bool { return (btn)->is_pressed(tch, tft); }
+#define LAMBDA_IS_TCHING_BTN(btn, tch, tft) [&]() -> bool { return (btn)->is_pressed((tch), (tft)); }
 
 /*****************************************/
 /** Constants ****************************/

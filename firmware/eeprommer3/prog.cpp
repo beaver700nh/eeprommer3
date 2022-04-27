@@ -110,14 +110,15 @@ void Programmer::run() {
 
     SER_LOG_PRINT("Executing action #%d: %s.", cur_choice, m_menu.get_btn(cur_choice)->get_text());
 
+    ProgrammerBaseCore::Status status_code = ProgrammerBaseCore::Status::ERR_INVALID;
+
     auto the_core = m_cores[cur_choice];
     auto the_action = action_map[cur_choice];
 
-    ProgrammerBaseCore::Status status_code = (
-      cur_choice < NUM_ACTIONS ?
-      (the_core->*the_action)() :
-      ProgrammerBaseCore::Status::ERR_INVALID
-    );
+    // Run the action function if available
+    if (cur_choice < NUM_ACTIONS) {
+      status_code = (the_core->*the_action)();
+    }
 
     SER_LOG_PRINT("Action returned status code %d.", status_code);
 

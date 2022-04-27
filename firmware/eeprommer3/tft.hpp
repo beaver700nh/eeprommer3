@@ -546,7 +546,7 @@ public:
   bool for_each(Func action) {
     show();
 
-    while (m_cur_val <= m_max_val) {
+    while (m_cur_val < m_max_val) {
       bool should_quit = action(m_cur_val);
       next();
       show();
