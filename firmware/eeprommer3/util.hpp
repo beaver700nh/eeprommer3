@@ -43,6 +43,8 @@ namespace Util {
 
   // Function to validate two addresses (and make sure first is not greater than second)
   void validate_addrs(uint16_t *addr1, uint16_t *addr2);
+
+  
 };
 
 #endif
