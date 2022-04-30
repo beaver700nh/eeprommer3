@@ -8,6 +8,7 @@
 #include "input.hpp"
 #include "eeprom.hpp"
 #include "sd.hpp"
+#include "tft_util.hpp"
 
 #include "prog.hpp"
 
@@ -124,7 +125,7 @@ void Programmer::run() {
 
     show_status(status_code);
 
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
     m_tft.fillScreen(TftColor::BLACK);
   }

@@ -8,6 +8,8 @@
 #include "prog.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "tft_util.hpp"
+#include "util.hpp"
 
 SdCtrl::Status initialize();
 void draw_intro(uint16_t x, uint16_t y, TftBtn *skip_btn);
@@ -46,7 +48,7 @@ void setup() {
     else                                            tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
   }
 
-  Util::skippable_delay(2000, LAMBDA_IS_TCHING_BTN(&skip_btn, tch, tft));
+  Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(skip_btn, tch, tft));
 
   Serial.println(F("Hello, world!"));
   Serial.println();
@@ -74,7 +76,7 @@ SdCtrl::Status initialize() {
 
 void draw_intro(uint16_t x, uint16_t y, TftBtn *skip_btn) {
   if (sd.is_enabled()) {
-    tft.drawRGBBitmapFromFile(x, y, "startup.bin", 320, 240, true, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
+    tft.drawRGBBitmapFromFile(x, y, "startup.bin", 320, 240, true, TftUtil::Lambdas::is_tching_btn(*skip_btn, tch, tft));
   }
   else {
     tft.drawThickRect(x, y, 320, 240, TftColor::CYAN, 4);
@@ -88,7 +90,7 @@ void draw_intro(uint16_t x, uint16_t y, TftBtn *skip_btn) {
 
     tft.drawText(x + 10, y + 190, "Loading...", TftColor::PURPLE, 3);
 
-    Util::skippable_delay(2000, LAMBDA_IS_TCHING_BTN(skip_btn, tch, tft));
+    Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(*skip_btn, tch, tft));
   }
 }
 

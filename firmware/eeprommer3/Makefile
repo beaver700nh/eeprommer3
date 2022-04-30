@@ -39,3 +39,6 @@ del:
 
 search:
 	grep -n $(PATTERN) *.?pp
+
+love:
+	echo "not war"

@@ -9,11 +9,11 @@ FIRMWARE:
   last changes before v0.0.1-rc1:
     fix multi write scrolling
     clean up:
-      put reused lambdas into variables in Util [wip]
       ask_foo() work:
         split into ask_screen.?pp files
         make ask_addr() in prog_core.cpp
         fix ask_file() to check fsys
+      split some gui stuff into other files
       reduce duplication in ProgrammerFileCore
     make progress bars look better:
       unsatisfying off-by-one stuff

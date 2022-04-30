@@ -78,15 +78,6 @@
 #define INIT_LIST_CONTROLLERS m_tft(tft),   m_tch(tch),     m_ee(ee),       m_sd(sd)
 #define CONTROLLERS           tft,          tch,            ee,             sd
 
-/*
- * Lambdas for use in Util::skippable_delay()
- */
-
-// Tells whether screen is being touched
-#define LAMBDA_IS_TCHING_TFT [this]() -> bool { return this->m_tch.is_touching(); }
-// Tells whether buttons is being pressed
-#define LAMBDA_IS_TCHING_BTN(btn, tch, tft) [&]() -> bool { return (btn)->is_pressed((tch), (tft)); }
-
 /*****************************************/
 /** Constants ****************************/
 /*****************************************/

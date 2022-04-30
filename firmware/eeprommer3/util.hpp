@@ -4,9 +4,6 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-class TftCtrl;
-class TouchCtrl;
-
 #undef swap
 
 // A namespace with various miscellaneous utility functions
@@ -32,19 +29,11 @@ namespace Util {
     return false;
   }
 
-  // Function to wait for the user to press a button at the bottom of the screen
-  void wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text);
-
-  // Function to show an error message screen
-  void show_error(TftCtrl &tft, TouchCtrl &tch, const char *text);
-
   // Function to validate an address
   void validate_addr(uint16_t *addr);
 
   // Function to validate two addresses (and make sure first is not greater than second)
   void validate_addrs(uint16_t *addr1, uint16_t *addr2);
-
-  
 };
 
 #endif

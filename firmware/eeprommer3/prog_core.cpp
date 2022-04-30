@@ -8,6 +8,7 @@
 #include "tft.hpp"
 #include "file.hpp"
 #include "vector.hpp"
+#include "tft_util.hpp"
 
 #include "prog_core.hpp"
 
@@ -36,7 +37,7 @@ Status ProgrammerByteCore::read() {
   m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
   m_tft.drawText(20, 170, STRFMT_NOBUF("CHR: %c",        data),               TftColor::YELLOW, 2);
 
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -58,7 +59,7 @@ Status ProgrammerByteCore::write() {
   m_tft.drawText(10,  73, "to",                                TftColor::DGREEN, 3);
   m_tft.drawText(10, 100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -73,7 +74,7 @@ Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", *(uint8_t *) data), TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual),            TftColor::MAGENTA, 3);
 
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -112,19 +113,20 @@ FileSystem ProgrammerFileCore::ask_fsys() {
     switch (btn) {
     case 0:  return FileSystem::ON_SD_CARD;
     case 1:  return FileSystem::ON_SERIAL;
-    default: return FileSystem::NONE;
     }
   }
+
+  return FileSystem::NONE;
 }
 
 Status ProgrammerFileCore::check_valid(FileCtrl *file) {
   if (file == nullptr) {
-    Util::show_error(m_tft, m_tch, "Can't open file: no filesystem!");
+    TftUtil::show_error(m_tft, m_tch, "Can't open file: no filesystem!");
     return Status::ERR_FILE;
   }
 
   if (!file->is_open()) {
-    Util::show_error(m_tft, m_tch, "Failed to open file!");
+    TftUtil::show_error(m_tft, m_tch, "Failed to open file!");
     return Status::ERR_FILE;
   }
 
@@ -180,7 +182,7 @@ void ProgrammerFileCore::do_read_operation(FileCtrl *file) {
   );
 
   m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
 Status ProgrammerFileCore::write() {
@@ -221,7 +223,7 @@ Status ProgrammerFileCore::write_from_fsys(const char *fpath, FileSystem fsys, u
 
   if (status == Status::OK) {
     if (file->size() > (0x7FFF - addr + 1)) {
-      Util::show_error(m_tft, m_tch, "File is too large to fit!");
+      TftUtil::show_error(m_tft, m_tch, "File is too large to fit!");
       status = Status::ERR_INVALID;
     }
     else {
@@ -256,7 +258,7 @@ void ProgrammerFileCore::do_write_operation(FileCtrl *file, uint16_t addr) {
   );
 
   m_tft.drawText(10, 110, "Done writing!", TftColor::CYAN);
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
 bool ProgrammerFileCore::get_file_to_write_from(char *out, uint8_t len, Status *res, FileSystem fsys) {
@@ -283,7 +285,7 @@ bool ProgrammerFileCore::sd_get_file_to_write_from(char *out, uint8_t len, Statu
   }
 
   if (temp != TftSdFileSelMenu::Status::OK) {
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
   }
 
   return temp == TftSdFileSelMenu::Status::OK;
@@ -320,7 +322,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   );
 
   m_tft.drawText(10, 110, "Done verifying!", TftColor::CYAN);
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   // `complete` is true if the loop finished normally
   if (!complete) status = Status::ERR_VERIFY;
@@ -346,7 +348,7 @@ Status ProgrammerVectorCore::read() {
   m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
   m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
 
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -370,7 +372,7 @@ Status ProgrammerVectorCore::write() {
   m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
   m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
 
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -385,7 +387,7 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
     m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", *(uint16_t *) data), TftColor::PURPLE,  3);
     m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual),             TftColor::MAGENTA, 3);
 
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -452,7 +454,7 @@ void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, 
   );
 
   m_tft.drawText(10, 110, "Done reading!", TftColor::CYAN);
-  Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
 void ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
@@ -732,7 +734,7 @@ Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
       m_tft.drawText(15,  77, STRFMT_NOBUF("Actual:   %02X", real_data), TftColor::MAGENTA, 3);
       m_tft.drawText(15, 104, STRFMT_NOBUF("Address: %04X",  pair.addr), TftColor::ORANGE,  2);
 
-      Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+      TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
       m_tft.fillScreen(TftColor::BLACK);
 
@@ -806,7 +808,7 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
     m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
     m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(m_ee.get_data())), TftColor::YELLOW, 2);
 
-    Util::wait_bottom_btn(m_tft, m_tch, "Continue");
+    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
   }
   else if (action == DebugAction::WRITE_DATA_BUS) {
     m_ee.set_data(
@@ -884,7 +886,7 @@ Status ProgrammerOtherCore::about() {
   m_tft.drawText( 10, 180, "access to SD card connected on SPI bus", TftColor::LGRAY);
   m_tft.drawText( 10, 240, "Made by beaver700nh (GitHub) 2021-2022", TftColor::DGRAY);
 
-  Util::wait_bottom_btn(m_tft, m_tch, "OK");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, "OK");
 
   m_tft.fillScreen(TftColor::BLACK);
 
