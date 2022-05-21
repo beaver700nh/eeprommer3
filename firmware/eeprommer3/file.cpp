@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "gui.hpp"
 #include "new_delete.hpp"
-#include "tft.hpp"
 #include "sd.hpp"
+#include "tft.hpp"
 
 #include "file.hpp"
 

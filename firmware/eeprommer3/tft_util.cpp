@@ -2,7 +2,7 @@
 #include "constants.hpp"
 
 #include "tft.hpp"
-#include "input.hpp"
+#include "touch.hpp"
 
 #include "tft_util.hpp"
 

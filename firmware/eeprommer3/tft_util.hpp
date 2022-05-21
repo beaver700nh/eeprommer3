@@ -4,8 +4,9 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "gui.hpp"
 #include "tft.hpp"
-#include "input.hpp"
+#include "touch.hpp"
 
 namespace TftUtil {
   // Function to wait for the user to press a button at the bottom of the screen
@@ -14,10 +15,9 @@ namespace TftUtil {
   // Function to show an error message screen
   void show_error(TftCtrl &tft, TouchCtrl &tch, const char *text);
 
-
   /*
-    * Some reused lambdas
-    */
+   * Some reused lambdas
+   */
   namespace Lambdas {
     // Tells whether screen is being touched
     auto is_tching_tft = [](TouchCtrl &tch) {

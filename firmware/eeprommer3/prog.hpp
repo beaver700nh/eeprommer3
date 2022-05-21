@@ -4,11 +4,12 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include "tft.hpp"
-#include "input.hpp"
 #include "eeprom.hpp"
-#include "sd.hpp"
+#include "gui.hpp"
 #include "prog_core.hpp"
+#include "sd.hpp"
+#include "tft.hpp"
+#include "touch.hpp"
 
 // Fwd decl because of circular dependency
 class ProgrammerBaseCore;

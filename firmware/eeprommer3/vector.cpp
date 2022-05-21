@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "dialog.hpp"
 #include "eeprom.hpp"
 #include "tft.hpp"
-#include "input.hpp"
+#include "touch.hpp"
 
 #include "vector.hpp"
 

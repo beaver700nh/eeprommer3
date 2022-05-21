@@ -6,7 +6,7 @@
 
 #include "eeprom.hpp"
 #include "tft.hpp"
-#include "input.hpp"
+#include "touch.hpp"
 
 // Vector is a helper class for vector-related actions.
 struct Vector {

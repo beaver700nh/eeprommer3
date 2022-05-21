@@ -3,12 +3,13 @@
 
 #include <SD.h>
 
-#include "new_delete.hpp"
-#include "tft.hpp"
-#include "input.hpp"
 #include "eeprom.hpp"
+#include "gui.hpp"
+#include "new_delete.hpp"
 #include "sd.hpp"
+#include "tft.hpp"
 #include "tft_util.hpp"
+#include "touch.hpp"
 
 #include "prog.hpp"
 

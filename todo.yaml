@@ -8,11 +8,9 @@ SOFTWARE:
 FIRMWARE:
   last changes before v0.0.1-rc1:
     fix multi write scrolling
+    fix ask_file() to check fsys
+    fix anything that seems broken
     clean up:
-      ask_foo() work:
-        split into ask_screen.?pp files
-        make ask_addr() in prog_core.cpp
-        fix ask_file() to check fsys
       split some gui stuff into other files
       reduce duplication in ProgrammerFileCore
     make progress bars look better:

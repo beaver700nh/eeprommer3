@@ -4,8 +4,10 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include "tft.hpp"
+#include "gui.hpp"
 #include "sd.hpp"
+#include "tft.hpp"
+#include "touch.hpp"
 
 // Fwd decls just in case (circular dependencies)
 class TftCtrl;

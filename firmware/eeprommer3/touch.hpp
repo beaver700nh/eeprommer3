@@ -1,5 +1,5 @@
-#ifndef INPUT_HPP
-#define INPUT_HPP
+#ifndef TOUCH_HPP
+#define TOUCH_HPP
 
 #include <Arduino.h>
 #include "constants.hpp"
@@ -8,6 +8,7 @@
 
 #include "tft.hpp"
 
+// Forward declaration because of circular dependency
 class TftCtrl;
 
 /*

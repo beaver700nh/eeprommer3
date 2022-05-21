@@ -1,16 +1,25 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include "new_delete.hpp"
+#include "dialog.hpp"
 #include "eeprom.hpp"
-#include "input.hpp"
+#include "file.hpp"
+#include "new_delete.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
-#include "file.hpp"
-#include "vector.hpp"
 #include "tft_util.hpp"
+#include "touch.hpp"
+#include "vector.hpp"
 
 #include "prog_core.hpp"
+
+#define RETURN_VERIFICATION_OR_VALUE(value, ...) \
+  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?"); \
+  m_tft.fillScreen(TftColor::BLACK); \
+  \
+  return (should_verify ? verify(__VA_ARGS__) : value);
+
+#define RETURN_VERIFICATION_OR_OK(...) RETURN_VERIFICATION_OR_VALUE(Status::OK, __VA_ARGS__)
 
 using Status = ProgrammerBaseCore::Status;
 
@@ -24,8 +33,7 @@ Status ProgrammerBaseCore::nop() {
 /***************************/
 
 Status ProgrammerByteCore::read() {
-  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
-  Util::validate_addr(&addr);
+  uint16_t addr = ask_addr(m_tft, m_tch, "Type an address:");
 
   uint8_t data = m_ee.read(addr);
 
@@ -45,9 +53,7 @@ Status ProgrammerByteCore::read() {
 }
 
 Status ProgrammerByteCore::write() {
-  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
-  Util::validate_addr(&addr);
-
+  uint16_t addr = ask_addr(m_tft, m_tch, "Type an address:");
   m_tft.fillScreen(TftColor::BLACK);
   uint8_t data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
 
@@ -201,8 +207,7 @@ Status ProgrammerFileCore::write() {
     return status;
   }
 
-  uint16_t addr = ask_val<uint16_t>(m_tft, m_tch, "Where to write in EEPROM?");
-  Util::validate_addr(&addr);
+  uint16_t addr = ask_addr(m_tft, m_tch, "Where to write in EEPROM?");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -402,9 +407,9 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
 /********************************/
 
 Status ProgrammerMultiCore::read() {
-  uint16_t addr1 = ask_val<uint16_t>(m_tft, m_tch, "Start address?");
+  uint16_t addr1 = ask_addr(m_tft, m_tch, "Start address?");
   m_tft.fillScreen(TftColor::BLACK);
-  uint16_t addr2 = ask_val<uint16_t>(m_tft, m_tch, "End address?");
+  uint16_t addr2 = ask_addr(m_tft, m_tch, "End address?");
 
   Util::validate_addrs(&addr1, &addr2);
 
@@ -709,12 +714,10 @@ bool ProgrammerMultiCore::poll_menus_and_react(
 
 void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
   m_tft.fillScreen(TftColor::BLACK);
-  auto addr = ask_val<uint16_t>(m_tft, m_tch, "Type an address:");
+  auto addr = ask_addr(m_tft, m_tch, "Type an address:");
   m_tft.fillScreen(TftColor::BLACK);
   auto data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
   m_tft.fillScreen(TftColor::BLACK);
-
-  Util::validate_addr(&addr);
 
   buf->append((AddrDataArrayPair) {addr, data});
 }
@@ -769,7 +772,8 @@ Status ProgrammerOtherCore::debug() {
   menu.add_btn(new TftBtn(w2 + 20, 126, w2, 28, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE  ));
   menu.add_btn(new TftBtn(     10, 164, w2, 28, "Set Data Dir",    TftColor::BLACK,          TftColor::ORANGE));
   menu.add_btn(new TftBtn(w2 + 20, 164, w2, 28, "Monitor Data",    TftColor::YELLOW,         TftColor::DCYAN ));
-  menu.add_btn(new TftBtn(     10, 202, w1, 28, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
+  menu.add_btn(new TftBtn(     10, 202, w2, 28, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
+  menu.add_btn(new TftBtn(w2 + 20, 202, w2, 28, "Show Colors",     TftColor::PINKK,          TftColor::PURPLE));
   menu.add_btn(new TftBtn(     10, 240, w2, 28, "Aux1",            TftColor::DGRAY,          TftColor::LGRAY ));
   menu.add_btn(new TftBtn(w2 + 20, 240, w2, 28, "Aux2",            TftColor::DGRAY,          TftColor::LGRAY ));
   menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
@@ -830,6 +834,9 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
   else if (action == DebugAction::PRINT_CHARSET) {
     tft_print_chars(m_tft);
     m_tch.wait_for_press();
+  }
+  else if (action == DebugAction::SHOW_COLORS) {
+    tft_show_colors(m_tft);
   }
   else if (action == DebugAction::ACTION_AUX1) {
     debug_action_aux1();
@@ -892,3 +899,13 @@ Status ProgrammerOtherCore::about() {
 
   return Status::OK;
 }
+
+uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char* msg) {
+  uint16_t addr = ask_val<uint16_t>(tft, tch, msg);
+  Util::validate_addr(&addr);
+
+  return addr;
+}
+
+#undef RETURN_VERIFICATION_OR_VALUE
+#undef RETURN_VERIFICATION_OR_OK

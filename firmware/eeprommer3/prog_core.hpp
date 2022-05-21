@@ -7,9 +7,10 @@
 #include "ad_array.hpp"
 #include "eeprom.hpp"
 #include "file.hpp"
-#include "input.hpp"
+#include "gui.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "touch.hpp"
 
 #define ADD_RW_CORE_CLASS_DECLARATION(name) class Programmer##name##Core : public ProgrammerBaseCore
 
@@ -171,6 +172,7 @@ private:
     SET_DATA_DIR,        // Set data bus as input or output
     MONITOR_DATA_BUS,    // Poll and show data bus at an interval
     PRINT_CHARSET,       // Print TFT driver's charset, 0x00-0xFF
+    SHOW_COLORS,         // Show all colors supported by program
     ACTION_AUX1,         // Customizable auxiliary action
     ACTION_AUX2,         // Customizable auxiliary action
   };
@@ -185,12 +187,7 @@ private:
 #undef ADD_RW_CORE_CLASS_BODY
 #undef ADD_RW_CORE_CLASS_BODY_NO_CTOR
 
-#define RETURN_VERIFICATION_OR_VALUE(value, ...) \
-  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?"); \
-  m_tft.fillScreen(TftColor::BLACK); \
-  \
-  return (should_verify ? verify(__VA_ARGS__) : value);
-
-#define RETURN_VERIFICATION_OR_OK(...) RETURN_VERIFICATION_OR_VALUE(Status::OK, __VA_ARGS__)
+// Helper function to get an address; same as ask_val<uint16_t> but has built-in validation
+uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt);
 
 #endif

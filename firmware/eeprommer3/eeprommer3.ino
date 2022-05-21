@@ -5,6 +5,7 @@
 
 #include "comm.hpp"
 #include "eeprom.hpp"
+#include "gui.hpp"
 #include "prog.hpp"
 #include "sd.hpp"
 #include "tft.hpp"

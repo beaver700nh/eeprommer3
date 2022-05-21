@@ -3,8 +3,8 @@
 
 #include <TouchScreen.h>
 
-#include "input.hpp"
 #include "tft.hpp"
+#include "touch.hpp"
 
 bool TouchCtrl::is_valid_pressure(int16_t pressure, int16_t max_pressure) {
   return pressure > 10 && (max_pressure < 0 || pressure < max_pressure);
