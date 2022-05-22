@@ -111,13 +111,15 @@ private:
   File m_file;
 };
 
+namespace Gui {
+
 /*
- * Yet another `TftXXXMenu`, this one to ask user to select a file from an SD card. Inherits from `TftChoiceMenu`.
+ * Yet another `MenuXXX`, this one to ask user to select a file from an SD card.
  */
-class TftSdFileSelMenu : public TftChoiceMenu {
+class MenuSdFileSel : public MenuChoice {
 public:
-  TftSdFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols);
-  ~TftSdFileSelMenu();
+  MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols);
+  ~MenuSdFileSel();
 
   enum Status : uint8_t {
     OK,             // No errors
@@ -132,11 +134,8 @@ public:
 
   /*
    * Waits for user to select a file.
-   *
-   * Returns Status::CANCELED if user pressed `Cancel` button.
-   * Returns Status::FNAME_TOO_LONG if resulting path is `max_path_len` chars or longer.
-   *
-   * If all conditions are met, return Status::OK and set `file_path` to path to file that user selected.
+   * Returns Status::CANCELED if `Cancel` button pressed; Status::FNAME_TOO_LONG if path len >= `max_path_len`.
+   * Returns Status::OK if everything fine; sets `file_path` = path to selected file.
    */
   Status wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len);
 
@@ -165,7 +164,13 @@ private:
   uint8_t m_num_rows;
 };
 
+};
+
+namespace Dialog {
+
 // Ask user to select a file on SD card. Writes path into `out`. Return a Status based on user's choice.
-TftSdFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len);
+Gui::MenuSdFileSel::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len);
+
+};
 
 #endif

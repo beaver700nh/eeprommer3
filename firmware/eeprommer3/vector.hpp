@@ -27,7 +27,11 @@ struct Vector {
   inline static const char *NAMES[3] = {"NMI", "RESET", "IRQ"};
 };
 
+namespace Dialog {
+
 // Helper function to ask user to select a 6502 jump vector
 Vector ask_vector(TftCtrl &tft, TouchCtrl &tch);
+
+};
 
 #endif

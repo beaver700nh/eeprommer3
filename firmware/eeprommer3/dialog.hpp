@@ -8,14 +8,20 @@
 #include "touch.hpp"
 
 /*
- * This is a helper function to ask the user for an arbitrarily-sized integer using a `TftHexSelMenu`.
+ * This file contains functions for asking the user for input using Gui::* classes.
+ */
+
+namespace Dialog {
+
+/*
+ * This is a helper function to ask the user for an arbitrarily-sized integer using a `MenuHexInput`.
  * Type `T` is an integer type that determines the kind of integer for which the user is asked.
  */
 template<typename T>
-T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
+T ask_int(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
-  TftHexSelMenu<T> menu(tft, T_DEBOUNCE, 10, 10, 50, 17);
+  Gui::MenuHexInput<T> menu(tft, T_DEBOUNCE, 10, 10, 50, 17);
   menu.draw(tft);
 
   while (true) { // Loop to get a val
@@ -32,7 +38,7 @@ T ask_val(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
 }
 
 /*
- * This is a function to ask the user to pick from one of `num` choices using a `TftChoiceMenu`.
+ * This is a function to ask the user to pick from one of `num` choices using a `MenuChoice`.
  *
  * This function is variadic, so be careful that you provide a valid `num`.
  * Vararg format: text, fg, bg
@@ -42,15 +48,15 @@ uint8_t ask_choice(
 );
 
 /*
- * This is a function to ask the user a yes or no question, using a `TftYesNoMenu`.
+ * This is a function to ask the user a yes or no question, using a `MenuYesNo`.
  */
 bool ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t initial_choice = -1);
 
 /*
- * This is a helper function to ask the user for an arbitrarily-sized string, using a `TftStringMenu`.
+ * This is a helper function to ask the user for an arbitrarily-sized string, using a `MenuStrInput`.
  */
 void ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len);
 
-// Code goes here
+};
 
 #endif

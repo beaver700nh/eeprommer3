@@ -8,7 +8,7 @@
 
 #include "vector.hpp"
 
-Vector ask_vector(TftCtrl &tft, TouchCtrl &tch) {
+Vector Dialog::ask_vector(TftCtrl &tft, TouchCtrl &tch) {
   return Vector(
     ask_choice(
       tft, tch, "Which vector?", 3, 54, 1, 3,

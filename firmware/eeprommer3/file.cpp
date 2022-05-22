@@ -8,18 +8,18 @@
 
 #include "file.hpp"
 
-TftSdFileSelMenu::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
+Gui::MenuSdFileSel::Status Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
   const uint8_t rows = 6, cols = 6;
 
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
-  TftSdFileSelMenu menu(tft, 10, 10, 50, 10, rows, cols);
+  Gui::MenuSdFileSel menu(tft, 10, 10, 50, 10, rows, cols);
 
   return menu.wait_for_value(tch, tft, sd, out, len);
 }
 
-TftSdFileSelMenu::TftSdFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
-  : TftChoiceMenu(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
+Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
+  : MenuChoice(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
   m_num_rows = rows;
 
   for (uint8_t j = 0; j < m_num_rows; ++j) {
@@ -31,18 +31,18 @@ TftSdFileSelMenu::TftSdFileSelMenu(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, u
 
   uint16_t _y = TftCalc::bottom(tft, 24, 44), _w = TftCalc::fraction_x(tft, 10, 2);
 
-  add_btn(new TftBtn(10,      _y, _w, 24, "Parent Dir", TftColor::CYAN,  TftColor::BLUE));
-  add_btn(new TftBtn(20 + _w, _y, _w, 24, "Cancel",     TftColor::PINKK, TftColor::RED ));
+  add_btn(new Gui::Btn(10,      _y, _w, 24, "Parent Dir", TftColor::CYAN,  TftColor::BLUE));
+  add_btn(new Gui::Btn(20 + _w, _y, _w, 24, "Cancel",     TftColor::PINKK, TftColor::RED ));
   add_btn_confirm(tft, true);
 
   m_files = (SdFileInfo *) malloc(m_num_rows * m_num_cols * sizeof(SdFileInfo));
 }
 
-TftSdFileSelMenu::~TftSdFileSelMenu() {
+Gui::MenuSdFileSel::~MenuSdFileSel() {
   free(m_files);
 }
 
-void TftSdFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files) {
+void Gui::MenuSdFileSel::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files) {
   uint8_t i;
 
   m_num_files = sd.get_files(path, m_files, max_files);
@@ -68,17 +68,17 @@ void TftSdFileSelMenu::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t ma
   }
 }
 
-TftSdFileSelMenu::Status TftSdFileSelMenu::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
+Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
   char cur_path[max_path_len + 1] = "/";
 
   while (true) {
-    tft.fillRect(0, m_marg_v, tft.width(), tft.height() - m_marg_v, TftColor::BLACK);
+    tft.fillRect(0, m_marg_v - 3, tft.width(), tft.height() - m_marg_v + 6, TftColor::BLACK);
 
     deselect_all();
     select(0);
 
     use_files_in_dir(sd, cur_path, m_num_rows * m_num_cols);
-    uint8_t btn_id = TftChoiceMenu::wait_for_value(tch, tft);
+    uint8_t btn_id = MenuChoice::wait_for_value(tch, tft);
 
     if (btn_id == get_num_btns() - 2) {
       return Status::CANCELED;

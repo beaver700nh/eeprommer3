@@ -14,7 +14,7 @@
 #include "prog_core.hpp"
 
 #define RETURN_VERIFICATION_OR_VALUE(value, ...) \
-  bool should_verify = ask_yesno(m_tft, m_tch, "Verify data?"); \
+  bool should_verify = Dialog::ask_yesno(m_tft, m_tch, "Verify data?"); \
   m_tft.fillScreen(TftColor::BLACK); \
   \
   return (should_verify ? verify(__VA_ARGS__) : value);
@@ -33,7 +33,7 @@ Status ProgrammerBaseCore::nop() {
 /***************************/
 
 Status ProgrammerByteCore::read() {
-  uint16_t addr = ask_addr(m_tft, m_tch, "Type an address:");
+  uint16_t addr = Dialog::ask_addr(m_tft, m_tch, "Type an address:");
 
   uint8_t data = m_ee.read(addr);
 
@@ -53,9 +53,9 @@ Status ProgrammerByteCore::read() {
 }
 
 Status ProgrammerByteCore::write() {
-  uint16_t addr = ask_addr(m_tft, m_tch, "Type an address:");
+  uint16_t addr = Dialog::ask_addr(m_tft, m_tch, "Type an address:");
   m_tft.fillScreen(TftColor::BLACK);
-  uint8_t data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
+  uint8_t data = Dialog::ask_int<uint8_t>(m_tft, m_tch, "Type the data:");
 
   m_ee.write(addr, data);
 
@@ -114,13 +114,13 @@ Status ProgrammerFileCore::check_valid(FileCtrl *file) {
 
 Status ProgrammerFileCore::read() {
   Status status = Status::OK;
-  FileSystem fsys = ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
+  FileSystem fsys = Dialog::ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
   m_tft.fillScreen(TftColor::BLACK);
 
   if (fsys == FileSystem::NONE) return Status::OK;
 
   char fpath[64];
-  ask_str(m_tft, m_tch, "File to read to?", fpath, 63);
+  Dialog::ask_str(m_tft, m_tch, "File to read to?", fpath, 63);
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -151,10 +151,10 @@ void ProgrammerFileCore::do_read_operation(FileCtrl *file) {
 
   m_tft.drawText(10, 10, "Reading EEPROM to file...", TftColor::CYAN, 3);
 
-  TftProgressIndicator bar(m_tft, 0x80, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(m_tft, 0x80, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
   bar.for_each(
-    [this, &this_page, &file]TFT_PROGRESS_INDICATOR_LAMBDA {
+    [this, &this_page, &file]GUI_PROGRESS_INDICATOR_LAMBDA {
       uint16_t addr = progress << 8;
 
       this->m_ee.read(addr, addr + 0xFF, this_page);
@@ -170,7 +170,7 @@ void ProgrammerFileCore::do_read_operation(FileCtrl *file) {
 
 Status ProgrammerFileCore::write() {
   Status status = Status::OK;
-  FileSystem fsys = ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
+  FileSystem fsys = Dialog::ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
   m_tft.fillScreen(TftColor::BLACK);
 
   if (fsys == FileSystem::NONE) return Status::OK;
@@ -182,7 +182,7 @@ Status ProgrammerFileCore::write() {
     return status;
   }
 
-  uint16_t addr = ask_addr(m_tft, m_tch, "Where to write in EEPROM?");
+  uint16_t addr = Dialog::ask_addr(m_tft, m_tch, "Where to write in EEPROM?");
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -224,10 +224,10 @@ void ProgrammerFileCore::do_write_operation(FileCtrl *file, uint16_t addr) {
 
   m_tft.drawText(10, 10, "Writing file to EEPROM...", TftColor::CYAN, 3);
 
-  TftProgressIndicator bar(m_tft, ceil((float) file->size() / 256.0), 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(m_tft, ceil((float) file->size() / 256.0), 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
   bar.for_each(
-    [this, &this_page, &file, &cur_addr]TFT_PROGRESS_INDICATOR_LAMBDA {
+    [this, &this_page, &file, &cur_addr]GUI_PROGRESS_INDICATOR_LAMBDA {
       auto len = file->read(this_page, 0xFF);
       this->m_ee.write(cur_addr, this_page, MIN(len, 0xFF));
 
@@ -251,24 +251,24 @@ bool ProgrammerFileCore::get_file_to_write_from(char *out, uint8_t len, Status *
 }
 
 bool ProgrammerFileCore::sd_get_file_to_write_from(char *out, uint8_t len, Status *res) {
-  TftSdFileSelMenu::Status temp = ask_file(m_tft, m_tch, m_sd, "File to write from?", out, 63);
+  Gui::MenuSdFileSel::Status temp = Dialog::ask_file(m_tft, m_tch, m_sd, "File to write from?", out, 63);
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (temp == TftSdFileSelMenu::Status::CANCELED) {
+  if (temp == Gui::MenuSdFileSel::Status::CANCELED) {
     m_tft.drawText(10, 10, "Ok, canceled.", TftColor::CYAN, 3);
     *res = Status::OK;
   }
-  else if (temp == TftSdFileSelMenu::Status::FNAME_TOO_LONG) {
+  else if (temp == Gui::MenuSdFileSel::Status::FNAME_TOO_LONG) {
     m_tft.drawText(10, 10, "File name was too long", TftColor::CYAN, 3);
     m_tft.drawText(10, 50, "to fit in the buffer.", TftColor::PURPLE, 2);
     *res = Status::ERR_FILE;
   }
 
-  if (temp != TftSdFileSelMenu::Status::OK) {
+  if (temp != Gui::MenuSdFileSel::Status::OK) {
     TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
   }
 
-  return temp == TftSdFileSelMenu::Status::OK;
+  return temp == Gui::MenuSdFileSel::Status::OK;
 }
 
 Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
@@ -283,10 +283,10 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
 
   m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying `%s' at %04X...", (const char *) data, addr), TftColor::CYAN);
 
-  TftProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
   bool complete = bar.for_each(
-    [this, &expectation, &reality, &file, &addr]TFT_PROGRESS_INDICATOR_LAMBDA {
+    [this, &expectation, &reality, &file, &addr]GUI_PROGRESS_INDICATOR_LAMBDA {
       auto nbytes = file.read(expectation, 256);
       this->m_ee.read(addr, addr + nbytes, reality);
 
@@ -317,7 +317,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
 /*****************************/
 
 Status ProgrammerVectorCore::read() {
-  Vector vec = ask_vector(m_tft, m_tch);
+  Vector vec = Dialog::ask_vector(m_tft, m_tch);
   vec.update(m_ee);
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -336,12 +336,12 @@ Status ProgrammerVectorCore::read() {
 }
 
 Status ProgrammerVectorCore::write() {
-  Vector vec = ask_vector(m_tft, m_tch);
+  Vector vec = Dialog::ask_vector(m_tft, m_tch);
   vec.update(m_ee);
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  uint16_t new_val = ask_val<uint16_t>(m_tft, m_tch, "Type the new value:");
+  uint16_t new_val = Dialog::ask_int<uint16_t>(m_tft, m_tch, "Type the new value:");
   m_ee.write(vec.m_addr,     new_val & 0xFF);
   m_ee.write(vec.m_addr + 1, new_val >> 8);
 
@@ -382,9 +382,9 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
 /********************************/
 
 Status ProgrammerMultiCore::read() {
-  uint16_t addr1 = ask_addr(m_tft, m_tch, "Start address?");
+  uint16_t addr1 = Dialog::ask_addr(m_tft, m_tch, "Start address?");
   m_tft.fillScreen(TftColor::BLACK);
-  uint16_t addr2 = ask_addr(m_tft, m_tch, "End address?");
+  uint16_t addr2 = Dialog::ask_addr(m_tft, m_tch, "End address?");
 
   Util::validate_addrs(&addr1, &addr2);
 
@@ -416,12 +416,12 @@ void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, 
 
   m_tft.drawText(10, 10, "Working... Progress:", TftColor::CYAN, 3);
 
-  TftProgressIndicator bar(m_tft, ceil((float) nbytes / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(m_tft, ceil((float) nbytes / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
   uint16_t cur_addr_offset = 0x0000;
 
   bar.for_each(
-    [this, &data, &cur_addr_offset, &addr1, &addr2]TFT_PROGRESS_INDICATOR_LAMBDA {
+    [this, &data, &cur_addr_offset, &addr1, &addr2]GUI_PROGRESS_INDICATOR_LAMBDA {
       uint16_t _addr1 = addr1 + cur_addr_offset;
       uint16_t _addr2 = MIN(_addr1 + 0xFF, addr2);
 
@@ -440,7 +440,7 @@ void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, 
 void ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
   uint16_t nbytes = (addr2 - addr1 + 1);
 
-  uint8_t viewing_method = ask_choice(
+  uint8_t viewing_method = Dialog::ask_choice(
     m_tft, m_tch, "Select viewing method:", 1, 30, 0, 3,
     "Show as Raw Hexadecimal",   TftColor::BLACK,  TftColor::ORANGE,
     "Show Printable Characters", TftColor::LGREEN, TftColor::DGREEN,
@@ -462,10 +462,10 @@ void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t add
 
   draw_page_axis_labels();
 
-  TftMenu menu;
-  menu.add_btn(new TftBtn(15,                 60, 40, 150, 15, 68, "\x11"));
-  menu.add_btn(new TftBtn(m_tft.width() - 55, 60, 40, 150, 15, 68, "\x10"));
-  menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Continue")));
+  Gui::Menu menu;
+  menu.add_btn(new Gui::Btn(15,                 60, 40, 150, 15, 68, "\x11"));
+  menu.add_btn(new Gui::Btn(m_tft.width() - 55, 60, 40, 150, 15, 68, "\x10"));
+  menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, "Continue")));
   menu.draw(m_tft);
 
   uint8_t cur_page = 0;
@@ -557,7 +557,7 @@ inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_chars(
 
 void ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
   char fname[64];
-  ask_str(m_tft, m_tch, "What filename?", fname, 63);
+  Dialog::ask_str(m_tft, m_tch, "What filename?", fname, 63);
 
   m_tft.fillScreen(TftColor::BLACK);
   m_tft.drawText(10, 10, "Please wait...", TftColor::PURPLE);
@@ -573,19 +573,19 @@ Status ProgrammerMultiCore::write() {
 
   uint16_t _y = TftCalc::bottom(m_tft, 24, 10);
 
-  TftMenu menu;
-  menu.add_btn(new TftBtn(10,                            74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1e",     TftColor::WHITE, TftColor::DGRAY));
-  menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10), 74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1f",     TftColor::WHITE, TftColor::DGRAY));
-  menu.add_btn(new TftBtn(10,                            40, TftCalc::fraction_x(m_tft, 10, 1), 24, "Add Pair", TftColor::WHITE, TftColor::PURPLE));
-  menu.add_btn(new TftBtn(10,                            _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Done",     TftColor::RED,   TftColor::PINKK));
-  menu.add_btn(new TftBtn(m_tft.width() / 2 + 5,         _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Cancel",   TftColor::CYAN,  TftColor::BLUE));
+  Gui::Menu menu;
+  menu.add_btn(new Gui::Btn(10,                            74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1e",     TftColor::WHITE, TftColor::DGRAY));
+  menu.add_btn(new Gui::Btn(TftCalc::right(m_tft, 24, 10), 74, 24, TftCalc::fraction_y(m_tft, 59, 1), "\x1f",     TftColor::WHITE, TftColor::DGRAY));
+  menu.add_btn(new Gui::Btn(10,                            40, TftCalc::fraction_x(m_tft, 10, 1), 24, "Add Pair", TftColor::WHITE, TftColor::PURPLE));
+  menu.add_btn(new Gui::Btn(10,                            _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Done",     TftColor::RED,   TftColor::PINKK));
+  menu.add_btn(new Gui::Btn(m_tft.width() / 2 + 5,         _y, TftCalc::fraction_x(m_tft, 10, 2), 24, "Cancel",   TftColor::CYAN,  TftColor::BLUE));
 
-  TftMenu del_btns;
+  Gui::Menu del_btns;
 
   const uint8_t num_pairs = 7;
 
   for (uint8_t i = 0; i < num_pairs; ++i) {
-    del_btns.add_btn(new TftBtn(TftCalc::right(m_tft, 18, 44), 76 + 30 * i, 18, 18, "x", TftColor::YELLOW, TftColor::RED));
+    del_btns.add_btn(new Gui::Btn(TftCalc::right(m_tft, 18, 44), 76 + 30 * i, 18, 18, "x", TftColor::YELLOW, TftColor::RED));
   }
 
   uint16_t scroll = 0;
@@ -612,7 +612,7 @@ Status ProgrammerMultiCore::write() {
 
 void ProgrammerMultiCore::draw_pairs(
   uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
+  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, Gui::Menu &del_btns
 ) {
   // Clear the pairs area
   m_tft.fillRect(margin_l, margin_u, m_tft.width() - margin_l - margin_r, m_tft.height() - margin_u - margin_d, TftColor::BLACK);
@@ -655,7 +655,7 @@ void ProgrammerMultiCore::draw_pairs(
 }
 
 bool ProgrammerMultiCore::poll_menus_and_react(
-  TftMenu &menu, TftMenu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
+  Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
 ) {
   int16_t pressed, deleted;
 
@@ -689,9 +689,9 @@ bool ProgrammerMultiCore::poll_menus_and_react(
 
 void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
   m_tft.fillScreen(TftColor::BLACK);
-  auto addr = ask_addr(m_tft, m_tch, "Type an address:");
+  auto addr = Dialog::ask_addr(m_tft, m_tch, "Type an address:");
   m_tft.fillScreen(TftColor::BLACK);
-  auto data = ask_val<uint8_t>(m_tft, m_tch, "Type the data:");
+  auto data = Dialog::ask_int<uint8_t>(m_tft, m_tch, "Type the data:");
   m_tft.fillScreen(TftColor::BLACK);
 
   buf->append((AddrDataArrayPair) {addr, data});
@@ -739,19 +739,19 @@ Status ProgrammerOtherCore::debug() {
   auto w1 = TftCalc::fraction_x(m_tft, 10, 1);
   auto w2 = TftCalc::fraction_x(m_tft, 10, 2);
 
-  TftMenu menu;
-  menu.add_btn(new TftBtn(     10,  50, w2, 28, "WE Hi (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
-  menu.add_btn(new TftBtn(w2 + 20,  50, w2, 28, "WE Lo (Enable)",  TftColor::PINKK,          TftColor::RED   ));
-  menu.add_btn(new TftBtn(     10,  88, w1, 28, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
-  menu.add_btn(new TftBtn(     10, 126, w2, 28, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN  ));
-  menu.add_btn(new TftBtn(w2 + 20, 126, w2, 28, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE  ));
-  menu.add_btn(new TftBtn(     10, 164, w2, 28, "Set Data Dir",    TftColor::BLACK,          TftColor::ORANGE));
-  menu.add_btn(new TftBtn(w2 + 20, 164, w2, 28, "Monitor Data",    TftColor::YELLOW,         TftColor::DCYAN ));
-  menu.add_btn(new TftBtn(     10, 202, w2, 28, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
-  menu.add_btn(new TftBtn(w2 + 20, 202, w2, 28, "Show Colors",     TftColor::PINKK,          TftColor::PURPLE));
-  menu.add_btn(new TftBtn(     10, 240, w2, 28, "Aux1",            TftColor::DGRAY,          TftColor::LGRAY ));
-  menu.add_btn(new TftBtn(w2 + 20, 240, w2, 28, "Aux2",            TftColor::DGRAY,          TftColor::LGRAY ));
-  menu.add_btn(new TftBtn(BOTTOM_BTN(m_tft, "Close")));
+  Gui::Menu menu;
+  menu.add_btn(new Gui::Btn(     10,  50, w2, 28, "WE Hi (Disable)", TO_565(0x7F, 0xFF, 0x7F), TftColor::DGREEN));
+  menu.add_btn(new Gui::Btn(w2 + 20,  50, w2, 28, "WE Lo (Enable)",  TftColor::PINKK,          TftColor::RED   ));
+  menu.add_btn(new Gui::Btn(     10,  88, w1, 28, "Set Address/OE",  TftColor::BLACK,          TftColor::YELLOW));
+  menu.add_btn(new Gui::Btn(     10, 126, w2, 28, "Read Data Bus",   TftColor::BLUE,           TftColor::CYAN  ));
+  menu.add_btn(new Gui::Btn(w2 + 20, 126, w2, 28, "Write Data Bus",  TftColor::CYAN,           TftColor::BLUE  ));
+  menu.add_btn(new Gui::Btn(     10, 164, w2, 28, "Set Data Dir",    TftColor::BLACK,          TftColor::ORANGE));
+  menu.add_btn(new Gui::Btn(w2 + 20, 164, w2, 28, "Monitor Data",    TftColor::YELLOW,         TftColor::DCYAN ));
+  menu.add_btn(new Gui::Btn(     10, 202, w2, 28, "Print Charset",   TftColor::PINKK,          TftColor::PURPLE));
+  menu.add_btn(new Gui::Btn(w2 + 20, 202, w2, 28, "Show Colors",     TftColor::PINKK,          TftColor::PURPLE));
+  menu.add_btn(new Gui::Btn(     10, 240, w2, 28, "Aux1",            TftColor::DGRAY,          TftColor::LGRAY ));
+  menu.add_btn(new Gui::Btn(w2 + 20, 240, w2, 28, "Aux2",            TftColor::DGRAY,          TftColor::LGRAY ));
+  menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, "Close")));
 
   while (true) {
     m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
@@ -780,7 +780,7 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
   }
   else if (action == DebugAction::SET_ADDR_BUS_AND_OE) { 
     m_ee.set_addr_and_oe(
-      ask_val<uint16_t>(m_tft, m_tch, "Type the value:")
+      Dialog::ask_int<uint16_t>(m_tft, m_tch, "Type the value:")
     );
   }
   else if (action == DebugAction::READ_DATA_BUS) {
@@ -791,12 +791,12 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
   }
   else if (action == DebugAction::WRITE_DATA_BUS) {
     m_ee.set_data(
-      ask_val<uint8_t>(m_tft, m_tch, "Type the value:")
+      Dialog::ask_int<uint8_t>(m_tft, m_tch, "Type the value:")
     );
   }
   else if (action == DebugAction::SET_DATA_DIR) {
     m_ee.set_ddr(
-      ask_choice(
+      Dialog::ask_choice(
         m_tft, m_tch, "Which direction?", 1, 45, 0, 2,
         "Input",        TftColor::CYAN,   TftColor::BLUE,
         "Output",       TftColor::PINKK,  TftColor::RED
@@ -824,7 +824,7 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
 void ProgrammerOtherCore::monitor_data_bus() {
   m_ee.set_ddr(false);
 
-  TftBtn quit_btn(BOTTOM_BTN(m_tft, "Quit"));
+  Gui::Btn quit_btn(BOTTOM_BTN(m_tft, "Quit"));
   quit_btn.draw(m_tft);
 
 #ifdef DEBUG_MODE
@@ -875,17 +875,17 @@ Status ProgrammerOtherCore::about() {
   return Status::OK;
 }
 
-uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
-  uint16_t addr = ask_val<uint16_t>(tft, tch, prompt);
+uint16_t Dialog::ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
+  uint16_t addr = ask_int<uint16_t>(tft, tch, prompt);
   Util::validate_addr(&addr);
 
   return addr;
 }
 
-FileSystem ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd) {
+FileSystem Dialog::ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd) {
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
-  TftChoiceMenu menu(10, 10, 50, 10, 1, 40, true, 0);
+  Gui::MenuChoice menu(10, 10, 50, 10, 1, 40, true, 0);
   menu.add_btn_calc(tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
   menu.add_btn_calc(tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE  );
   menu.add_btn_calc(tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );

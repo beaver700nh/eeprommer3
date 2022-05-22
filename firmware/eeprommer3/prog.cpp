@@ -82,7 +82,7 @@ void Programmer::init() {
   m_menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY);
   m_menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY);
 
-  m_menu.add_btn(new TftBtn(TftCalc::right(m_tft, 24, 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
+  m_menu.add_btn(new Gui::Btn(TftCalc::right(m_tft, 24, 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
 
   m_menu.add_btn_confirm(m_tft, true);
 

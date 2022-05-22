@@ -38,7 +38,7 @@ del:
 	rm $$name.hpp
 
 search:
-	grep -n $(PATTERN) *.?pp
+	grep -n '$(PATTERN)' *.?pp
 
 love:
 	echo "not war"

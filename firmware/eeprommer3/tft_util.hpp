@@ -25,7 +25,7 @@ namespace TftUtil {
     };
 
     // Tells whether buttons is being pressed
-    auto is_tching_btn = [](TftBtn &btn, TouchCtrl &tch,  TftCtrl &tft) {
+    auto is_tching_btn = [](Gui::Btn &btn, TouchCtrl &tch,  TftCtrl &tft) {
       return [&]() -> bool { return btn.is_pressed(tch, tft); };
     };
   };

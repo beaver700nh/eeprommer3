@@ -10,22 +10,24 @@
  * This file contains classes for GUI elements such as buttons and menus.
  */
 
+namespace Gui {
+
 /*
- * `TftBtn` stores its own data, can detect if it is pressed, and can draw itself to the TFT screen.
+ * Class that stores some metadata, can detect if it is pressed, and can draw itself to the TFT screen.
  */
-class TftBtn {
+class Btn {
 public:
   // Default constructor; does nothing.
-  TftBtn() {};
+  Btn() {};
 
   // Full constructor.
-  TftBtn(
+  Btn(
     uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty,
     const char *text, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
   // Partial constructor; enables auto centering, eliminating need for `tx` and `ty`.
-  TftBtn(
+  Btn(
     uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text,
     uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
@@ -110,17 +112,17 @@ private:
 };
 
 /*
- * `TftMenu` makes creating menus easier; it's basically just a group of `TftBtn`s with some helpful functions included.
+ * `Menu` makes creating menus easier; it's basically just a group of `Btn`s with some helpful functions included.
  */
-class TftMenu {
+class Menu {
 public:
-  TftMenu() {};
-  virtual ~TftMenu();
+  Menu() {};
+  virtual ~Menu();
 
-  bool add_btn(TftBtn *btn);
+  bool add_btn(Btn *btn);
   bool rm_btn(uint8_t btn_idx);
-  bool set_btn(uint8_t btn_idx, TftBtn *btn);
-  TftBtn *get_btn(uint8_t btn_idx);
+  bool set_btn(uint8_t btn_idx, Btn *btn);
+  Btn *get_btn(uint8_t btn_idx);
   bool purge_btn(uint8_t btn_idx);
   void purge_btns();
 
@@ -135,16 +137,16 @@ public:
   void deselect_all();
 
 protected:
-  TftBtn **m_btns = nullptr;
+  Btn **m_btns = nullptr;
   uint8_t m_num_btns = 0;
 };
 
 /*
- * `TftKeyboardLayout` is a class for storing layouts of `TftKeyboardMenu`s.
+ * `KeyboardLayout` is a class for storing layouts of `MenuKeyboard`s.
  */
-class TftKeyboardLayout {
+class KeyboardLayout {
 public:
-  TftKeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width) : m_layout(layout), m_length(length), m_width(width) {};
+  KeyboardLayout(const uint8_t *layout, uint8_t length, uint8_t width) : m_layout(layout), m_length(length), m_width(width) {};
 
   const uint8_t *get_layout();
 
@@ -163,24 +165,24 @@ private:
 
 // Functions to get pre-set layouts of HexSel- and String- Menus
 
-TftKeyboardLayout &get_glob_kbd_hex_layout();
-TftKeyboardLayout &get_glob_kbd_str_layout();
+KeyboardLayout &get_glob_kbd_hex_layout();
+KeyboardLayout &get_glob_kbd_str_layout();
 
 /*
- * `TftKeyboardMenu` is an ABC specialization of `TftMenu` for getting aggregate values such as
+ * `MenuKeyboard` is an ABC specialization of `Menu` for getting aggregate values such as
  * strings and numbers from the user via the use of a keyboard.
  * 
  * THIS IS A BASE CLASS AND CANNOT BE USED DIRECTLY -- USE A SUBCLASS INSTEAD!
  */
-class TftKeyboardMenu : public TftMenu {
+class MenuKeyboard : public Menu {
 public:
   // IMPORTANT - Does not initialize internal value string, do not forget to do so
   // height of button = calculated width of button * param `btn_height`
-  TftKeyboardMenu(
-    TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, TftKeyboardLayout &layout, float btn_height = 1.2
+  MenuKeyboard(
+    TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, KeyboardLayout &layout, float btn_height = 1.2
   );
 
-  ~TftKeyboardMenu();
+  ~MenuKeyboard();
 
   void update_val(char c);
   void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg);
@@ -192,7 +194,7 @@ public:
   // Placeholder: only checks for debounce
   bool handle_key(uint8_t key);
 
-  TftKeyboardLayout &get_layout();
+  KeyboardLayout &get_layout();
 
   // REMEMBER TO OVERRIDE BUFFER LENGTH IN CHILD CLASS!
   inline virtual const uint8_t BUF_LEN() {
@@ -205,23 +207,21 @@ protected:
   unsigned long m_t_last_press = 0;
   uint16_t m_t_debounce;
 
-  TftKeyboardLayout &m_layout;
+  KeyboardLayout &m_layout;
 
   uint16_t m_pad_v, m_pad_h, m_marg_v, m_marg_h;
 };
 
 /*
- * `TftHexSelMenu` is a `TftKeyboardMenu` but specialized for inputting numbers in hexadecimal.
- *
- * Type `T` is an integer type and determines what
- * numbers can be inputted.
+ * `MenuHexInput` is a `MenuKeyboard` but specialized for inputting numbers in hexadecimal.
+ * Type `T` is an integer type and determines what numbers can be inputted.
  */
 template <typename T>
-class TftHexSelMenu : public TftKeyboardMenu {
+class MenuHexInput : public MenuKeyboard {
 public:
   // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
-  TftHexSelMenu(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
-    : TftKeyboardMenu(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
+  MenuHexInput(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
+    : MenuKeyboard(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
     m_val = (char *) malloc(BUF_LEN() * sizeof(char));
 
     for (uint8_t i = 0; i < BUF_LEN(); ++i) {
@@ -245,11 +245,11 @@ public:
       return;
     }
 
-    TftKeyboardMenu::update_val(c);
+    MenuKeyboard::update_val(c);
   }
 
   void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
-    TftKeyboardMenu::show_val(tft, x, y, BUF_LEN(), size, fg, bg);
+    MenuKeyboard::show_val(tft, x, y, BUF_LEN(), size, fg, bg);
   }
 
   T get_int_val() {
@@ -271,7 +271,7 @@ public:
   }
 
   bool handle_key(uint8_t key) {
-    if (!TftKeyboardMenu::handle_key(key)) return false;
+    if (!MenuKeyboard::handle_key(key)) return false;
 
     update_val(IN_RANGE(key, 0, 10) ? key + '0' : key + 'A' - 10);
     return true;
@@ -283,11 +283,11 @@ public:
 };
 
 /*
- * `TftStringMenu` is a `TftKeyboardMenu` but specialized for inputting strings.
+ * `MenuStrInput` is a `MenuKeyboard` but specialized for inputting strings.
  */
-class TftStringMenu : public TftKeyboardMenu {
+class MenuStrInput : public MenuKeyboard {
 public:
-  TftStringMenu(TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
+  MenuStrInput(TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
 
   void update_val(char c);
 
@@ -308,13 +308,13 @@ private:
 };
 
 /*
- * `TftChoiceMenu` is a `TftMenu` specialized to choose one option from a selection of choices. It also supports
+ * `MenuChoice` is a `Menu` specialized to choose one option from a selection of choices. It also supports
  * having button layouts be automatically calculated based on the parameters of padding and margin passed in the constructor.
  */
-class TftChoiceMenu : public TftMenu {
+class MenuChoice : public Menu {
 public:
   // `btn_height_px`: true = `btn_height` uses px, false = multiplied with btn width
-  TftChoiceMenu(
+  MenuChoice(
     uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t num_cols,
     float btn_height, bool btn_height_px, uint8_t initial_choice = 0
   )
@@ -334,7 +334,7 @@ public:
 
   void update(TftCtrl &tft);
 
-  bool add_btn(TftBtn *btn);
+  bool add_btn(Btn *btn);
   bool add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
   bool add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
 
@@ -361,26 +361,26 @@ protected:
 };
 
 /*
- * `TftYesNoMenu` is a `TftChoiceMenu` specialized to only has the options "Yes" and "No".
+ * `MenuYesNo` is a `MenuChoice` specialized to only have the options "Yes" and "No".
  * It also automatically adds the "Confirm" button upon construction.
  */
-class TftYesNoMenu : public TftChoiceMenu {
+class MenuYesNo : public MenuChoice {
 public:
-  TftYesNoMenu(
+  MenuYesNo(
     TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice = 0
   );
 };
 
 // Should return true to request cancel of loop.
-#define TFT_PROGRESS_INDICATOR_LAMBDA (uint8_t progress) -> bool
+#define GUI_PROGRESS_INDICATOR_LAMBDA (uint8_t progress) -> bool
 
 /*
- * `TftProgressIndicator` is a class to show a progress amount on a `TftCtrl` as a fraction, a percentange, and a progress bar.
+ * `ProgressIndicator` is a class to show a progress amount on a `TftCtrl` as a fraction, a percentange, and a progress bar.
  * It will try to only take up as much space as it is allotted in the constructor.
  */
-class TftProgressIndicator {
+class ProgressIndicator {
 public:
-  TftProgressIndicator(
+  ProgressIndicator(
     TftCtrl &tft, uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
     uint16_t color_frac = TftColor::DGREEN, uint16_t color_perc = TftColor::BLUE,
     uint16_t color_bar1 = TftColor::DRED, uint16_t color_bar2 = TftColor::WHITE
@@ -413,6 +413,8 @@ private:
   uint16_t m_max_val, m_cur_val = 0;
   uint16_t m_x, m_y, m_w, m_h;
   uint16_t m_color_frac, m_color_perc, m_color_bar1, m_color_bar2;
+};
+
 };
 
 #endif

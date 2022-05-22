@@ -44,7 +44,7 @@ public:
 
 #undef FUNC
 
-  TftChoiceMenu m_menu;
+  Gui::MenuChoice m_menu;
   bool initialized;
 
   TftCtrl &m_tft;

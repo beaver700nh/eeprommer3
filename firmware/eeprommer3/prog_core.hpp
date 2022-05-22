@@ -133,13 +133,11 @@ private:
   // Helper that draws the pairs to be written to EEPROM
   void draw_pairs(
     uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, TftMenu &del_btns
+    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, Gui::Menu &del_btns
   );
 
   // Helper that polls `menu` and reacts to it: deletes/adds buttons, scrolls menu, and writes to EEPROM as requested
-  bool poll_menus_and_react(
-    TftMenu &menu, TftMenu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
-  );
+  bool poll_menus_and_react(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll);
 
   // Helper function of poll_menus_and_react() that requests and adds a pair to `buf`
   void add_pair_from_user(AddrDataArray *buf);
@@ -182,10 +180,14 @@ private:
 #undef ADD_RW_CORE_CLASS_BODY
 #undef ADD_RW_CORE_CLASS_BODY_NO_CTOR
 
+namespace Dialog {
+
 // Helper function to get an address; same as ask_val<uint16_t> but has built-in validation
 uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt);
 
 // Helper function to choose a file system out of all the ones that are detected
 FileSystem ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd);
+
+};
 
 #endif

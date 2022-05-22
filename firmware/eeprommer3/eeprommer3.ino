@@ -13,7 +13,7 @@
 #include "util.hpp"
 
 SdCtrl::Status initialize();
-void draw_intro(uint16_t x, uint16_t y, TftBtn *skip_btn);
+void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn);
 void mainprog();
 
 void check_packet();
@@ -31,7 +31,7 @@ void setup() {
   uint16_t intro_x = (tft.width() - 320) / 2;
   uint16_t intro_y = (tft.height() - 240) / 2 - 17;
 
-  TftBtn skip_btn(80, intro_y + 250, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
+  Gui::Btn skip_btn(80, intro_y + 250, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
   skip_btn.draw(tft);
 
   draw_intro(intro_x, intro_y, &skip_btn);
@@ -75,7 +75,7 @@ SdCtrl::Status initialize() {
   return res;
 }
 
-void draw_intro(uint16_t x, uint16_t y, TftBtn *skip_btn) {
+void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn) {
   if (sd.is_enabled()) {
     tft.drawRGBBitmapFromFile(x, y, "startup.bin", 320, 240, true, TftUtil::Lambdas::is_tching_btn(*skip_btn, tch, tft));
   }
