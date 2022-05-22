@@ -98,33 +98,6 @@ ProgrammerFileCore::ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(C
   // Empty; all work delegated to base ctor
 }
 
-FileSystem ProgrammerFileCore::ask_fsys() {
-  m_tft.drawText(10, 10, "Select a file type", TftColor::CYAN, 3);
-
-  TftChoiceMenu menu(10, 10, 50, 10, 1, 40, true, 0);
-  menu.add_btn_calc(m_tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
-  menu.add_btn_calc(m_tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE  );
-  menu.add_btn_calc(m_tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );
-  menu.add_btn_confirm(m_tft, true);
-
-  uint8_t avail = FileUtil::get_available_file_systems(m_sd);
-
-  if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
-  if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
-
-  uint8_t btn = menu.wait_for_value(m_tch, m_tft);
-  uint8_t btn_cancel = menu.get_num_btns() - 2;
-
-  if (btn != btn_cancel) {
-    switch (btn) {
-    case 0:  return FileSystem::ON_SD_CARD;
-    case 1:  return FileSystem::ON_SERIAL;
-    }
-  }
-
-  return FileSystem::NONE;
-}
-
 Status ProgrammerFileCore::check_valid(FileCtrl *file) {
   if (file == nullptr) {
     TftUtil::show_error(m_tft, m_tch, "Can't open file: no filesystem!");
@@ -141,16 +114,20 @@ Status ProgrammerFileCore::check_valid(FileCtrl *file) {
 
 Status ProgrammerFileCore::read() {
   Status status = Status::OK;
+  FileSystem fsys = ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
+  m_tft.fillScreen(TftColor::BLACK);
+
+  if (fsys == FileSystem::NONE) return Status::OK;
 
   char fpath[64];
   ask_str(m_tft, m_tch, "File to read to?", fpath, 63);
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  FileSystem fsys = ask_fsys();
-  status = (fsys == FileSystem::NONE ? Status::OK : read_to_fsys(fpath, fsys));
+  status = read_to_fsys(fpath, fsys);
 
   m_tft.fillScreen(TftColor::BLACK);
+
   return status;
 }
 
@@ -193,12 +170,10 @@ void ProgrammerFileCore::do_read_operation(FileCtrl *file) {
 
 Status ProgrammerFileCore::write() {
   Status status = Status::OK;
-  FileSystem fsys = ask_fsys();
+  FileSystem fsys = ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
+  m_tft.fillScreen(TftColor::BLACK);
 
-  if (fsys == FileSystem::NONE) {
-    m_tft.fillScreen(TftColor::BLACK);
-    return Status::OK;
-  }
+  if (fsys == FileSystem::NONE) return Status::OK;
 
   char fpath[64];
 
@@ -900,11 +875,38 @@ Status ProgrammerOtherCore::about() {
   return Status::OK;
 }
 
-uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char* msg) {
-  uint16_t addr = ask_val<uint16_t>(tft, tch, msg);
+uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
+  uint16_t addr = ask_val<uint16_t>(tft, tch, prompt);
   Util::validate_addr(&addr);
 
   return addr;
+}
+
+FileSystem ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd) {
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+
+  TftChoiceMenu menu(10, 10, 50, 10, 1, 40, true, 0);
+  menu.add_btn_calc(tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
+  menu.add_btn_calc(tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE  );
+  menu.add_btn_calc(tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );
+  menu.add_btn_confirm(tft, true);
+
+  uint8_t avail = FileUtil::get_available_file_systems(sd);
+
+  if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
+  if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
+
+  uint8_t btn = menu.wait_for_value(tch, tft);
+  uint8_t btn_cancel = menu.get_num_btns() - 2;
+
+  if (btn != btn_cancel) {
+    switch (btn) {
+    case 0: return FileSystem::ON_SD_CARD;
+    case 1: return FileSystem::ON_SERIAL;
+    }
+  }
+
+  return FileSystem::NONE;
 }
 
 #undef RETURN_VERIFICATION_OR_VALUE

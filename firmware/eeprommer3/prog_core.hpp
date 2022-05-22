@@ -73,11 +73,6 @@ public:
 ADD_RW_CORE_CLASS_BODY_NO_CTOR(File)
 
 private:
-  FileSystem ask_fsys();
-
-  // Checks if any file system is available
-  bool check_has_fsys();
-
   // Performs some checks on file, returns resulting status.
   Status check_valid(FileCtrl *file);
 
@@ -189,5 +184,8 @@ private:
 
 // Helper function to get an address; same as ask_val<uint16_t> but has built-in validation
 uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt);
+
+// Helper function to choose a file system out of all the ones that are detected
+FileSystem ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd);
 
 #endif
