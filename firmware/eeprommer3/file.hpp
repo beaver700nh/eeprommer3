@@ -63,24 +63,29 @@ public:
   FileCtrl() {};
   virtual ~FileCtrl() {};
 
-  virtual bool is_open(); // Tells whether file is open.
+  virtual bool is_open();
 
-  virtual const char *name(); // Gets name of file.
+  virtual const char *name();
 
-  virtual uint16_t size(); // Gets size of file.
+  virtual uint16_t size();
 
-  virtual uint8_t read();                             // Reads a byte from file, return it.
+  virtual uint8_t read();
   virtual uint16_t read(uint8_t *buf, uint16_t size); // Reads `size` bytes from file into `buf`. Returns number of bytes read.
 
-  virtual void write(uint8_t val);                           // Writes `val` to file.
+  virtual void write(uint8_t val);
   virtual uint16_t write(const uint8_t *buf, uint16_t size); // Writes `size` bytes from `buf` to file. Returns number of bytes written.
 
   virtual void flush(); // Ensures that all data is written to file.
 
-  virtual void close(); // Closes the file.
+  virtual void close();
 
   // Creates a FileCtrl for a file with `access` at `path`. Selects file system using `fsys`.
   static FileCtrl *create_file(FileSystem fsys, const char *path, uint8_t access);
+
+  // Checks if a file was opened correctly
+  static bool check_valid(FileCtrl *file);
+
+  FileSystem fsys = FileSystem::NONE;
 };
 
 /*
@@ -168,8 +173,24 @@ private:
 
 namespace Dialog {
 
-// Ask user to select a file on SD card. Writes path into `out`. Return a Status based on user's choice.
-Gui::MenuSdFileSel::Status ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len);
+enum AskFileStatus : uint8_t {
+  OK,             // No errors
+  CANCELED,       // User pressed "Cancel"
+  FNAME_TOO_LONG, // Filename was too long to fit in buffer
+  FSYS_INVALID,   // Selected filesystem does not exist
+};
+
+// Asks user for path to any file on any available file system. Puts resulting status into `status`. Returns a FileCtrl* for the file.
+FileCtrl *ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist, SdCtrl &sd);
+
+// Asks user for a path to a file on SD card. Writes path into `out`. Returns a status based on user's choice.
+AskFileStatus ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, bool must_exist, SdCtrl &sd);
+
+// Asks user to select an existing file on SD card. Writes path into `out`. Returns a status based on user's choice.
+Gui::MenuSdFileSel::Status ask_sel_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, SdCtrl &sd);
+
+// Asks user to select a file system out of all the ones that are detected.
+FileSystem ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd);
 
 };
 

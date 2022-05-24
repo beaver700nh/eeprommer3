@@ -1,5 +1,5 @@
-#ifndef PFSD_CORE_HPP
-#define PFSD_CORE_HPP
+#ifndef PROG_CORE_HPP
+#define PROG_CORE_HPP
 
 #include <Arduino.h>
 #include "constants.hpp"
@@ -12,21 +12,13 @@
 #include "tft.hpp"
 #include "touch.hpp"
 
-#define ADD_RW_CORE_CLASS_DECLARATION(name) class Programmer##name##Core : public ProgrammerBaseCore
-
-#define ADD_RW_CORE_CLASS_BODY_NO_CTOR(name) \
+#define ADD_RWV_METHODS \
   public: \
     Status read(); \
     Status write(); \
   \
   protected: \
     Status verify(uint16_t addr, void *data);
-
-#define ADD_RW_CORE_CLASS_BODY(name) \
-  public: \
-    Programmer##name##Core(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {}; \
-  \
-  ADD_RW_CORE_CLASS_BODY_NO_CTOR(name)
 
 /*
  * ProgrammerBaseCore is an ABC that contains functions for manipulating EEPROM
@@ -61,42 +53,42 @@ public:
 /*************************************************/
 
 /*** Manipulates a single byte at a time ***/
-ADD_RW_CORE_CLASS_DECLARATION(Byte) {
-ADD_RW_CORE_CLASS_BODY(Byte)
+class ProgrammerByteCore : public ProgrammerBaseCore {
+public:
+  ProgrammerByteCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+
+  ADD_RWV_METHODS
 };
 
 /*** Reads files to and from EEPROM ***/
-ADD_RW_CORE_CLASS_DECLARATION(File) {
+class ProgrammerFileCore : public ProgrammerBaseCore {
 public:
-  ProgrammerFileCore(TYPED_CONTROLLERS);
+  ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
 
-ADD_RW_CORE_CLASS_BODY_NO_CTOR(File)
+  ADD_RWV_METHODS
 
 private:
-  // Performs some checks on file, returns resulting status.
-  Status check_valid(FileCtrl *file);
+  bool read_to_file(FileCtrl *file);
+  void read_operation(FileCtrl *file);
 
-  Status read_to_fsys(const char *fpath, FileSystem fsys);
-  Status write_from_fsys(const char *fpath, FileSystem fsys, uint16_t addr);
-
-  void do_read_operation(FileCtrl *file);
-  void do_write_operation(FileCtrl *file, uint16_t addr);
-
-  // Gets file path from file system `fsys`, writes at most `len` chars into `out`, writes status into `res`
-  // Returns true if successful, false otherwise
-  bool get_file_to_write_from(char *out, uint8_t len, Status *res, FileSystem fsys);
-
-  bool sd_get_file_to_write_from(char *out, uint8_t len, Status *res);
+  bool write_from_file(FileCtrl *file, uint16_t addr);
+  void write_operation(FileCtrl *file, uint16_t addr);
 };
 
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)
-ADD_RW_CORE_CLASS_DECLARATION(Vector) {
-ADD_RW_CORE_CLASS_BODY(Vector)
+class ProgrammerVectorCore : public ProgrammerBaseCore {
+public:
+  ProgrammerVectorCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+
+  ADD_RWV_METHODS
 };
 
 // Reads ranges and writes arrays of pairs
-ADD_RW_CORE_CLASS_DECLARATION(Multi) {
-ADD_RW_CORE_CLASS_BODY(Multi)
+class ProgrammerMultiCore : public ProgrammerBaseCore {
+public:
+  ProgrammerMultiCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+
+  ADD_RWV_METHODS
 
 private:
   /******************************** READ RANGE HELPERS ********************************/
@@ -184,9 +176,6 @@ namespace Dialog {
 
 // Helper function to get an address; same as ask_val<uint16_t> but has built-in validation
 uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt);
-
-// Helper function to choose a file system out of all the ones that are detected
-FileSystem ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd);
 
 };
 

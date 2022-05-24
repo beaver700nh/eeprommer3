@@ -7,6 +7,12 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
+    fix file write verify segfault/crash
+    CLEANING:
+      add overview file to explain relations between files/classes
+      turn TftUtil::show_error into Dialog::show_dialog():
+        replaces some `tft.drawText()`s
+        create TftUtil::DlgErrLevel enum
     fix multi write scrolling
     fix anything that seems broken
     update ProgFileCore to use `fsys`s

@@ -94,59 +94,38 @@ Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
 /******** FILE CORE ********/
 /***************************/
 
-ProgrammerFileCore::ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {
-  // Empty; all work delegated to base ctor
-}
-
-Status ProgrammerFileCore::check_valid(FileCtrl *file) {
-  if (file == nullptr) {
-    TftUtil::show_error(m_tft, m_tch, "Can't open file: no filesystem!");
-    return Status::ERR_FILE;
-  }
-
-  if (!file->is_open()) {
-    TftUtil::show_error(m_tft, m_tch, "Failed to open file!");
-    return Status::ERR_FILE;
-  }
-
-  return Status::OK;
-}
-
 Status ProgrammerFileCore::read() {
-  Status status = Status::OK;
-  FileSystem fsys = Dialog::ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
+  using AFStatus = Dialog::AskFileStatus;
+  
+  AFStatus fstatus;
+  FileCtrl *file = Dialog::ask_file(m_tft, m_tch, "Select file to read to:", O_CREAT | O_TRUNC | O_WRITE, &fstatus, false, m_sd);
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (fsys == FileSystem::NONE) return Status::OK;
+  if (fstatus != AFStatus::OK) return (fstatus == AFStatus::CANCELED ? Status::OK : Status::ERR_FILE);
 
-  char fpath[64];
-  Dialog::ask_str(m_tft, m_tch, "File to read to?", fpath, 63);
-
-  m_tft.fillScreen(TftColor::BLACK);
-
-  status = read_to_fsys(fpath, fsys);
-
-  m_tft.fillScreen(TftColor::BLACK);
-
-  return status;
-}
-
-Status ProgrammerFileCore::read_to_fsys(const char *fpath, FileSystem fsys) {
-  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_CREAT | O_WRITE | O_TRUNC);
-  Status status = check_valid(file);
-
-  if (status == Status::OK) {
-    do_read_operation(file);
-
-    file->flush();
-    file->close();
+  if (!FileCtrl::check_valid(file)) {
     delete file;
+    return Status::ERR_FILE;
   }
 
-  return status;
+  bool success = read_to_file(file);
+  file->close();
+  delete file;
+
+  m_tft.fillScreen(TftColor::BLACK);
+
+  return (success ? Status::OK : Status::ERR_FILE);
 }
 
-void ProgrammerFileCore::do_read_operation(FileCtrl *file) {
+bool ProgrammerFileCore::read_to_file(FileCtrl *file) {
+  read_operation(file);
+
+  file->flush();
+
+  return true;
+}
+
+void ProgrammerFileCore::read_operation(FileCtrl *file) {
   uint8_t this_page[256];
 
   m_tft.drawText(10, 10, "Reading EEPROM to file...", TftColor::CYAN, 3);
@@ -169,56 +148,56 @@ void ProgrammerFileCore::do_read_operation(FileCtrl *file) {
 }
 
 Status ProgrammerFileCore::write() {
-  Status status = Status::OK;
-  FileSystem fsys = Dialog::ask_fsys(m_tft, m_tch, "Select a file type:", m_sd);
+  using AFStatus = Dialog::AskFileStatus;
+  
+  AFStatus fstatus;
+  FileCtrl *file = Dialog::ask_file(m_tft, m_tch, "Select file to write from:", O_RDONLY, &fstatus, true, m_sd);
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (fsys == FileSystem::NONE) return Status::OK;
+  if (fstatus != AFStatus::OK) return (fstatus == AFStatus::CANCELED ? Status::OK : Status::ERR_FILE);
 
-  char fpath[64];
-
-  if (!get_file_to_write_from(fpath, 63, &status, fsys)) {
-    m_tft.fillScreen(TftColor::BLACK);
-    return status;
+  if (!FileCtrl::check_valid(file)) {
+    delete file;
+    return Status::ERR_FILE;
   }
 
   uint16_t addr = Dialog::ask_addr(m_tft, m_tch, "Where to write in EEPROM?");
-
   m_tft.fillScreen(TftColor::BLACK);
 
-  status = write_from_fsys(fpath, fsys, addr);
-
+  bool success = write_from_file(file, addr);
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (status == Status::OK) {
-    RETURN_VERIFICATION_OR_VALUE(status, addr, fpath);
-  }
+  if (!success) return Status::ERR_INVALID;
+
+  bool should_verify = Dialog::ask_yesno(m_tft, m_tch, "Verify data?");
+  m_tft.fillScreen(TftColor::BLACK);
+
+  Status status = Status::OK;
+  if (should_verify) status = verify(addr, file);
+
+  file->close();
+  delete file;
 
   return status;
 }
 
-Status ProgrammerFileCore::write_from_fsys(const char *fpath, FileSystem fsys, uint16_t addr) {
-  FileCtrl *file = FileCtrl::create_file(fsys, fpath, O_RDONLY);
-  Status status = check_valid(file);
+bool ProgrammerFileCore::write_from_file(FileCtrl *file, uint16_t addr) {
+  bool ret = true;
 
-  if (status == Status::OK) {
-    if (file->size() > (0x7FFF - addr + 1)) {
-      TftUtil::show_error(m_tft, m_tch, "File is too large to fit!");
-      status = Status::ERR_INVALID;
-    }
-    else {
-      do_write_operation(file, addr);
-    }
-
-    file->flush();
-    file->close();
-    delete file;
+  if (file->size() > (0x7FFF - addr + 1)) {
+    TftUtil::show_error(m_tft, m_tch, "File is too large to fit!");
+    ret = false;
+  }
+  else {
+    write_operation(file, addr);
   }
 
-  return status;
+  file->flush();
+
+  return ret;
 }
 
-void ProgrammerFileCore::do_write_operation(FileCtrl *file, uint16_t addr) {
+void ProgrammerFileCore::write_operation(FileCtrl *file, uint16_t addr) {
   uint16_t cur_addr = addr;
   uint8_t this_page[256];
 
@@ -241,53 +220,22 @@ void ProgrammerFileCore::do_write_operation(FileCtrl *file, uint16_t addr) {
   TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
-bool ProgrammerFileCore::get_file_to_write_from(char *out, uint8_t len, Status *res, FileSystem fsys) {
-  switch(fsys) {
-  case FileSystem::ON_SD_CARD: return sd_get_file_to_write_from(out, len, res);
-  default:
-    *res = Status::ERR_INVALID;
-    return false;
-  }
-}
-
-bool ProgrammerFileCore::sd_get_file_to_write_from(char *out, uint8_t len, Status *res) {
-  Gui::MenuSdFileSel::Status temp = Dialog::ask_file(m_tft, m_tch, m_sd, "File to write from?", out, 63);
-  m_tft.fillScreen(TftColor::BLACK);
-
-  if (temp == Gui::MenuSdFileSel::Status::CANCELED) {
-    m_tft.drawText(10, 10, "Ok, canceled.", TftColor::CYAN, 3);
-    *res = Status::OK;
-  }
-  else if (temp == Gui::MenuSdFileSel::Status::FNAME_TOO_LONG) {
-    m_tft.drawText(10, 10, "File name was too long", TftColor::CYAN, 3);
-    m_tft.drawText(10, 50, "to fit in the buffer.", TftColor::PURPLE, 2);
-    *res = Status::ERR_FILE;
-  }
-
-  if (temp != Gui::MenuSdFileSel::Status::OK) {
-    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
-  }
-
-  return temp == Gui::MenuSdFileSel::Status::OK;
-}
-
 Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
-  Status status = Status::OK;
-
-  File file = SD.open((const char *) data, O_READ);
+  auto *file = (FileCtrl *) data;
 
   uint8_t expectation[256];
   uint8_t reality[256];
 
   if (!file) return Status::ERR_FILE;
 
-  m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying `%s' at %04X...", (const char *) data, addr), TftColor::CYAN);
+  m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying `%s' at %04X...", file->name(), addr), TftColor::CYAN);
 
-  Gui::ProgressIndicator bar(m_tft, ceil((float) file.size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(m_tft, ceil((float) file->size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
+  // `complete` is true if the loop finished normally
   bool complete = bar.for_each(
     [this, &expectation, &reality, &file, &addr]GUI_PROGRESS_INDICATOR_LAMBDA {
-      auto nbytes = file.read(expectation, 256);
+      auto nbytes = file->read(expectation, 256);
       this->m_ee.read(addr, addr + nbytes, reality);
 
       if (memcmp(expectation, reality, nbytes) != 0) {
@@ -304,12 +252,9 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   m_tft.drawText(10, 110, "Done verifying!", TftColor::CYAN);
   TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
-  // `complete` is true if the loop finished normally
-  if (!complete) status = Status::ERR_VERIFY;
-
-  file.close();
+  file->close();
   m_tft.fillScreen(TftColor::BLACK);
-  return status;
+  return (complete ? Status::OK : Status::ERR_VERIFY);
 }
 
 /*****************************/
@@ -880,33 +825,6 @@ uint16_t Dialog::ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt) {
   Util::validate_addr(&addr);
 
   return addr;
-}
-
-FileSystem Dialog::ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd) {
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
-
-  Gui::MenuChoice menu(10, 10, 50, 10, 1, 40, true, 0);
-  menu.add_btn_calc(tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
-  menu.add_btn_calc(tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE  );
-  menu.add_btn_calc(tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );
-  menu.add_btn_confirm(tft, true);
-
-  uint8_t avail = FileUtil::get_available_file_systems(sd);
-
-  if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
-  if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
-
-  uint8_t btn = menu.wait_for_value(tch, tft);
-  uint8_t btn_cancel = menu.get_num_btns() - 2;
-
-  if (btn != btn_cancel) {
-    switch (btn) {
-    case 0: return FileSystem::ON_SD_CARD;
-    case 1: return FileSystem::ON_SERIAL;
-    }
-  }
-
-  return FileSystem::NONE;
 }
 
 #undef RETURN_VERIFICATION_OR_VALUE

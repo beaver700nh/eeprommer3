@@ -1,22 +1,14 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "dialog.hpp"
 #include "gui.hpp"
 #include "new_delete.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "tft_util.hpp"
 
 #include "file.hpp"
-
-Gui::MenuSdFileSel::Status Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, SdCtrl &sd, const char *prompt, char *out, uint8_t len) {
-  const uint8_t rows = 6, cols = 6;
-
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
-
-  Gui::MenuSdFileSel menu(tft, 10, 10, 50, 10, rows, cols);
-
-  return menu.wait_for_value(tch, tft, sd, out, len);
-}
 
 Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
   : MenuChoice(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
@@ -105,6 +97,88 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
   }
 }
 
+FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist, SdCtrl &sd) {
+  FileSystem fsys = ask_fsys(tft, tch, "Select a file type:", sd);
+  tft.fillScreen(TftColor::BLACK);
+
+  char fpath[64];
+
+  switch(fsys) {
+  case FileSystem::NONE:
+    *status = AskFileStatus::CANCELED;
+    return nullptr;
+
+  case FileSystem::ON_SD_CARD:
+    *status = ask_fpath_sd(tft, tch, prompt, fpath, 63, must_exist, sd);
+    return FileCtrl::create_file(fsys, fpath, access);
+
+  default:
+    *status = AskFileStatus::FSYS_INVALID;
+    TftUtil::show_error(tft, tch, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
+    return nullptr;
+  }
+}
+
+Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, bool must_exist, SdCtrl &sd) {
+  using FSStatus = Gui::MenuSdFileSel::Status;
+
+  FSStatus substatus = (
+    must_exist ?
+    ask_sel_fpath_sd(tft, tch, prompt, out, len, sd) :
+    (ask_str(tft, tch, prompt, out, len), FSStatus::OK)
+  );
+
+  tft.fillScreen(TftColor::BLACK);
+
+  if (substatus == FSStatus::CANCELED) {
+    tft.drawText(10, 10, "Ok",                         TftColor::CYAN,   3);
+    tft.drawText(10, 50, "The operation is canceled.", TftColor::PURPLE, 2);
+    TftUtil::wait_bottom_btn(tft, tch, "Continue");
+  }
+  else if (substatus == FSStatus::FNAME_TOO_LONG) {
+    TftUtil::show_error(tft, tch, "File name was too long\nto fit in the buffer.");
+  }
+
+  return (AskFileStatus) substatus;
+}
+
+Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, SdCtrl &sd) {
+  constexpr uint8_t rows = 6, cols = 6;
+
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+
+  Gui::MenuSdFileSel menu(tft, 10, 10, 50, 10, rows, cols);
+
+  return menu.wait_for_value(tch, tft, sd, out, len);
+}
+
+FileSystem Dialog::ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd) {
+  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+
+  Gui::MenuChoice menu(10, 10, 50, 10, 1, 40, true, 0);
+  menu.add_btn_calc(tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
+  menu.add_btn_calc(tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE  );
+  menu.add_btn_calc(tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );
+  menu.add_btn_confirm(tft, true);
+
+  uint8_t avail = FileUtil::get_available_file_systems(sd);
+
+  if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
+  if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
+
+  uint8_t btn = menu.wait_for_value(tch, tft);
+  uint8_t btn_cancel = menu.get_num_btns() - 2;
+
+  if (btn != btn_cancel) {
+    switch (btn) {
+    case 0: return FileSystem::ON_SD_CARD;
+    case 1: return FileSystem::ON_SERIAL;
+    }
+  }
+
+  return FileSystem::NONE;
+}
+
 FileCtrl *FileCtrl::create_file(FileSystem fsys, const char *path, uint8_t access) {
   switch (fsys) {
   case FileSystem::ON_SD_CARD: return new FileCtrlSd(path, access);
@@ -114,8 +188,13 @@ FileCtrl *FileCtrl::create_file(FileSystem fsys, const char *path, uint8_t acces
   }
 }
 
+bool FileCtrl::check_valid(FileCtrl *file) {
+  return (file != nullptr) && (file->is_open());
+}
+
 FileCtrlSd::FileCtrlSd(const char *path, uint8_t access) {
   m_file = SD.open(path, access);
+  fsys = FileSystem::ON_SD_CARD;
 }
 
 FileCtrlSd::~FileCtrlSd() {
@@ -158,71 +237,69 @@ void FileCtrlSd::close() {
   m_file.close();
 }
 
-namespace FileUtil {
-  bool go_up_dir(char *path) {
-    // Empty path is treated as root dir
-    if (strlen(path) == 0) return false;
+bool FileUtil::go_up_dir(char *path) {
+  // Empty path is treated as root dir
+  if (strlen(path) == 0) return false;
 
-    bool success = true;
+  bool success = true;
 
-    char *_path = strdup(path);
-    char *end = _path + strlen(_path);
+  char *_path = strdup(path);
+  char *end = _path + strlen(_path);
 
-    // Remove trailing '/' from copy of `path`
-    *(end - 1) = '\0';
+  // Remove trailing '/' from copy of `path`
+  *(end - 1) = '\0';
 
-    char *new_end = strrchr(_path, '/');
+  char *new_end = strrchr(_path, '/');
 
-    if (new_end == nullptr) {
-      success = false;
-    }
-    else {
-      memset(new_end + 1, '\0', end - new_end - 2);
-      strcpy(path, _path);
-    }
-
-    free(_path);
-    return success;
+  if (new_end == nullptr) {
+    success = false;
+  }
+  else {
+    memset(new_end + 1, '\0', end - new_end - 2);
+    strcpy(path, _path);
   }
 
-  bool go_down_file(char *path, const char *file, uint8_t len) {
-    if (strlen(path) + strlen(file) >= len) {
-      // Doesn't fit, fail
-      return false;
-    }
+  free(_path);
+  return success;
+}
 
-    strcat(path, file);
-    return true;
+bool FileUtil::go_down_file(char *path, const char *file, uint8_t len) {
+  if (strlen(path) + strlen(file) >= len) {
+    // Doesn't fit, fail
+    return false;
   }
 
-  bool go_down_dir(char *path, const char *dir, uint8_t len) {
-    // Paste a trailing slash onto `dir`
-    auto *temp = (char *) malloc((strlen(dir) + 1) * sizeof(char));
-    strcpy(temp, dir);
-    strcat(temp, "/");
+  strcat(path, file);
+  return true;
+}
 
-    // Delegates to go_down_file but passes `dir` with a trailing slash
-    bool result = go_down_file(path, temp, len);
+bool FileUtil::go_down_dir(char *path, const char *dir, uint8_t len) {
+  // Paste a trailing slash onto `dir`
+  auto *temp = (char *) malloc((strlen(dir) + 1) * sizeof(char));
+  strcpy(temp, dir);
+  strcat(temp, "/");
 
-    free(temp);
+  // Delegates to go_down_file but passes `dir` with a trailing slash
+  bool result = go_down_file(path, temp, len);
 
-    return result;
+  free(temp);
+
+  return result;
+}
+
+bool FileUtil::go_down_path(char *path, SdFileInfo *sub_path, uint8_t len) {
+  // Delegate to go_down_file() or go_down_dir()
+  return (sub_path->is_dir ? go_down_dir : go_down_file)(path, sub_path->name, len);
+}
+
+uint8_t FileUtil::get_available_file_systems(SdCtrl &sd) {
+  uint8_t avail = FileSystem::NONE;
+
+  // TODO: implement serial files
+
+  if (sd.is_enabled()) {
+    avail |= FileSystem::ON_SD_CARD;
   }
 
-  bool go_down_path(char *path, SdFileInfo *sub_path, uint8_t len) {
-    // Delegate to go_down_file() or go_down_dir()
-    return (sub_path->is_dir ? go_down_dir : go_down_file)(path, sub_path->name, len);
-  }
-
-  uint8_t get_available_file_systems(SdCtrl &sd) {
-    uint8_t avail = FileSystem::NONE;
-
-    // TODO: implement serial files
-
-    if (sd.is_enabled()) {
-      avail |= FileSystem::ON_SD_CARD;
-    }
-
-    return avail;
-  }
-};
+  return avail;
+}
