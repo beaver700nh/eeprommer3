@@ -12,9 +12,6 @@ namespace TftUtil {
   // Function to wait for the user to press a button at the bottom of the screen
   void wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text);
 
-  // Function to show an error message screen
-  void show_error(TftCtrl &tft, TouchCtrl &tch, const char *text);
-
   /*
    * Some reused lambdas
    */
@@ -25,7 +22,7 @@ namespace TftUtil {
     };
 
     // Tells whether buttons is being pressed
-    auto is_tching_btn = [](Gui::Btn &btn, TouchCtrl &tch,  TftCtrl &tft) {
+    auto is_tching_btn = [](Gui::Btn &btn, TouchCtrl &tch, TftCtrl &tft) {
       return [&]() -> bool { return btn.is_pressed(tch, tft); };
     };
   };

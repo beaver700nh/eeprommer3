@@ -2,10 +2,12 @@
 #include "constants.hpp"
 
 #include "dialog.hpp"
+#include "error.hpp"
 #include "gui.hpp"
 #include "new_delete.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "tft_calc.hpp"
 #include "tft_util.hpp"
 
 #include "file.hpp"
@@ -114,7 +116,7 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
 
   default:
     *status = AskFileStatus::FSYS_INVALID;
-    TftUtil::show_error(tft, tch, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
+    Dialog::show_error(tft, tch, ErrorLevel::ERROR, "Invalid Filesystem", STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
     return nullptr;
   }
 }
@@ -131,12 +133,10 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const c
   tft.fillScreen(TftColor::BLACK);
 
   if (substatus == FSStatus::CANCELED) {
-    tft.drawText(10, 10, "Ok",                         TftColor::CYAN,   3);
-    tft.drawText(10, 50, "The operation is canceled.", TftColor::PURPLE, 2);
-    TftUtil::wait_bottom_btn(tft, tch, "Continue");
+    Dialog::show_error(tft, tch, ErrorLevel::INFO, "Canceled", "The operation\nhas been canceled.");
   }
   else if (substatus == FSStatus::FNAME_TOO_LONG) {
-    TftUtil::show_error(tft, tch, "File name was too long\nto fit in the buffer.");
+    Dialog::show_error(tft, tch, ErrorLevel::ERROR, "String Overflow", "File name was too long\nto fit in the buffer.");
   }
 
   return (AskFileStatus) substatus;

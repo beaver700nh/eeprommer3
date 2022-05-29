@@ -3,10 +3,12 @@
 
 #include "dialog.hpp"
 #include "eeprom.hpp"
+#include "error.hpp"
 #include "file.hpp"
 #include "new_delete.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "tft_calc.hpp"
 #include "tft_util.hpp"
 #include "touch.hpp"
 #include "vector.hpp"
@@ -38,14 +40,21 @@ Status ProgrammerByteCore::read() {
   uint8_t data = m_ee.read(addr);
 
   m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10,  10, STRFMT_NOBUF("Value at address %04X:", addr),       TftColor::CYAN,   3);
-  m_tft.drawText(20,  50, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(data)), TftColor::YELLOW, 2);
-  m_tft.drawText(20,  80, STRFMT_NOBUF("OCT: %03o",      data),               TftColor::YELLOW, 2);
-  m_tft.drawText(20, 110, STRFMT_NOBUF("HEX: %02X",      data),               TftColor::YELLOW, 2);
-  m_tft.drawText(20, 140, STRFMT_NOBUF("DEC: %-3d",      data),               TftColor::YELLOW, 2);
-  m_tft.drawText(20, 170, STRFMT_NOBUF("CHR: %c",        data),               TftColor::YELLOW, 2);
 
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  char title[64];
+  STRFMT_BUFLEN(title, 63, "Value at addr %04X", addr);
+
+  Dialog::show_error(
+    m_tft, m_tch, ErrorLevel::INFO, title,
+    STRFMT_NOBUF(
+      "BIN: " BYTE_FMT "\n"
+      "OCT: %03o\n"
+      "HEX: %02X\n"
+      "DEC: %-3d\n"
+      "CHR: %c",
+      BYTE_FMT_VAL(data), data, data, data, data
+    )
+  );
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -60,12 +69,15 @@ Status ProgrammerByteCore::write() {
   m_ee.write(addr, data);
 
   m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10,  10, "Wrote",                             TftColor::DGREEN, 3);
-  m_tft.drawText(10,  37, STRFMT_NOBUF("data %02X", data),     TftColor::GREEN,  4);
-  m_tft.drawText(10,  73, "to",                                TftColor::DGREEN, 3);
-  m_tft.drawText(10, 100, STRFMT_NOBUF("address %04X.", addr), TftColor::GREEN,  4);
 
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  Dialog::show_error(
+    m_tft, m_tch, ErrorLevel::INFO, "Done",
+    STRFMT_NOBUF(
+      "Wrote data %02X\n"
+      "to address %04X.",
+      data, addr
+    )
+  );
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -76,11 +88,14 @@ Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
   uint8_t actual = m_ee.read(addr);
 
   if (actual != *(uint8_t *) data) {
-    m_tft.drawText(10, 10, "Result:",                                         TftColor::ORANGE,  4);
-    m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %02X", *(uint8_t *) data), TftColor::PURPLE,  3);
-    m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %02X", actual),            TftColor::MAGENTA, 3);
-
-    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+    Dialog::show_error(
+      m_tft, m_tch, ErrorLevel::INFO, "Mismatch",
+      STRFMT_NOBUF(
+        "Expected: %02X\n"
+        "Actual:   %02X",
+        *(uint8_t *) data, actual
+      )
+    );
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -185,7 +200,12 @@ bool ProgrammerFileCore::write_from_file(FileCtrl *file, uint16_t addr) {
   bool ret = true;
 
   if (file->size() > (0x7FFF - addr + 1)) {
-    TftUtil::show_error(m_tft, m_tch, "File is too large to fit!");
+    Dialog::show_error(
+      m_tft, m_tch, ErrorLevel::WARNING, "EEPROM Overflow",
+      "File would be too large\n"
+      "to fit into EEPROM there!\n"
+      "Aborted."
+    );
     ret = false;
   }
   else {
@@ -267,13 +287,19 @@ Status ProgrammerVectorCore::read() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  m_tft.drawText( 10,  10, STRFMT_NOBUF("Value of %s vector:", Vector::NAMES[vec.m_id]), TftColor::CYAN,   3);
-  m_tft.drawText(320,  50, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1),      TftColor::BLUE,   2);
-  m_tft.drawText( 16,  50, STRFMT_NOBUF("HEX: %04X", vec.m_val),                         TftColor::YELLOW, 2);
-  m_tft.drawText( 16,  80, STRFMT_NOBUF("BIN: " BYTE_FMT, BYTE_FMT_VAL(vec.m_hi)),       TftColor::YELLOW, 2);
-  m_tft.drawText( 16, 110, STRFMT_NOBUF(".... " BYTE_FMT, BYTE_FMT_VAL(vec.m_lo)),       TftColor::YELLOW, 2);
+  char title[64];
+  STRFMT_BUFLEN(title, 63, "Value of %s", Vector::NAMES[vec.m_id]);
 
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  Dialog::show_error(
+    m_tft, m_tch, ErrorLevel::INFO, title,
+    STRFMT_NOBUF(
+      "Addr: %04X-%04X\n"
+      "HEX: %04X\n"
+      "BIN: " BYTE_FMT "\n"
+      ".... " BYTE_FMT,
+      vec.m_addr, vec.m_addr + 1, vec.m_val, BYTE_FMT_VAL(vec.m_hi), BYTE_FMT_VAL(vec.m_lo)
+    )
+  );
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -291,13 +317,16 @@ Status ProgrammerVectorCore::write() {
   m_ee.write(vec.m_addr + 1, new_val >> 8);
 
   m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10,  10, "Wrote",                                                 TftColor::DGREEN, 3);
-  m_tft.drawText(10,  37, STRFMT_NOBUF("value %04X", new_val),                     TftColor::GREEN,  4);
-  m_tft.drawText(10,  73, "to",                                                    TftColor::DGREEN, 3);
-  m_tft.drawText(10, 100, STRFMT_NOBUF("vector %s.", Vector::NAMES[vec.m_id]),     TftColor::GREEN,  4);
-  m_tft.drawText(10, 136, STRFMT_NOBUF("(%04X-%04X)", vec.m_addr, vec.m_addr + 1), TftColor::DGREEN, 2);
 
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  Dialog::show_error(
+    m_tft, m_tch, ErrorLevel::INFO, "Done",
+    STRFMT_NOBUF(
+      "Wrote value %04X\n"
+      "to vector %s\n"
+      "at %04X-%04X.",
+      new_val, Vector::NAMES[vec.m_id], vec.m_addr, vec.m_addr + 1
+    )
+  );
 
   m_tft.fillScreen(TftColor::BLACK);
 
@@ -308,9 +337,14 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
   uint16_t actual = (m_ee.read(addr + 1) << 8) | m_ee.read(addr);
 
   if (actual != *(uint16_t *) data) {
-    m_tft.drawText(10, 10, "Mismatch found!",                                  TftColor::ORANGE,  4);
-    m_tft.drawText(15, 50, STRFMT_NOBUF("Expected: %04X", *(uint16_t *) data), TftColor::PURPLE,  3);
-    m_tft.drawText(15, 77, STRFMT_NOBUF("Actual:   %04X", actual),             TftColor::MAGENTA, 3);
+    Dialog::show_error(
+      m_tft, m_tch, ErrorLevel::ERROR, "Mismatch",
+      STRFMT_NOBUF(
+        "Expected: %04X\n"
+        "Actual:   %04X",
+        *(uint16_t *) data, actual
+      )
+    );
 
     TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 
@@ -652,12 +686,15 @@ Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
     uint8_t real_data = m_ee.read(pair.addr);
 
     if (pair.data != real_data) {
-      m_tft.drawText(10,  10, "Mismatch found!",                         TftColor::CYAN,    3);
-      m_tft.drawText(15,  50, STRFMT_NOBUF("Expected: %02X", pair.data), TftColor::PURPLE,  3);
-      m_tft.drawText(15,  77, STRFMT_NOBUF("Actual:   %02X", real_data), TftColor::MAGENTA, 3);
-      m_tft.drawText(15, 104, STRFMT_NOBUF("Address: %04X",  pair.addr), TftColor::ORANGE,  2);
-
-      TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+      Dialog::show_error(
+        m_tft, m_tch, ErrorLevel::ERROR, "Mismatch",
+        STRFMT_NOBUF(
+          "Expected: %02X\n"
+          "Actual:   %02X"
+          "Address:  %04X",
+          pair.data, real_data, pair.addr
+        )
+      );
 
       m_tft.fillScreen(TftColor::BLACK);
 
@@ -729,10 +766,10 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
     );
   }
   else if (action == DebugAction::READ_DATA_BUS) {
-    m_tft.drawText(10, 10, "Value:", TftColor::CYAN, 4);
-    m_tft.drawText(10, 50, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(m_ee.get_data())), TftColor::YELLOW, 2);
-
-    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+    Dialog::show_error(
+      m_tft, m_tch, ErrorLevel::INFO, "Value",
+      STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(m_ee.get_data()))
+    );
   }
   else if (action == DebugAction::WRITE_DATA_BUS) {
     m_ee.set_data(
@@ -775,16 +812,19 @@ void ProgrammerOtherCore::monitor_data_bus() {
 #ifdef DEBUG_MODE
   while (!quit_btn.is_pressed(m_tch, m_tft)) {
     uint8_t val = m_ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
+
     m_tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
     delay(500);
   }
 #else
   // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
 
-  m_tft.drawText(10,  10, "Error:",                 TftColor::RED,    3);
-  m_tft.drawText(10,  50, "Data bus monitor",       TftColor::ORANGE, 3);
-  m_tft.drawText(10,  90, "is not supported",       TftColor::ORANGE, 3);
-  m_tft.drawText(10, 130, "(DEBUG_MODE disabled!)", TftColor::PURPLE, 2);
+  Dialog::show_error(
+    m_tft, m_tch, ErrorLevel::ERROR, "Not Supported",
+    "Data bus monitor is not\n"
+    "supported because DEBUG_MODE\n"
+    "is disabled."
+  );
 
   quit_btn.wait_for_press(m_tch, m_tft);
 #endif

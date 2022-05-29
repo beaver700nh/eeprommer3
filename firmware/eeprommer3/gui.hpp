@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "tft_calc.hpp"
+#include "tft.hpp"
 #include "touch.hpp"
 
 /*

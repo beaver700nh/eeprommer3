@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "tft.hpp"
+#include "tft_calc.hpp"
+#include "tft_util.hpp"
 #include "touch.hpp"
 
 #include "gui.hpp"

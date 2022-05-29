@@ -7,6 +7,8 @@
 #include "gui.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "tft_calc.hpp"
+#include "tft_util.hpp"
 #include "touch.hpp"
 
 // Fwd decls just in case (circular dependencies)

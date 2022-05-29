@@ -4,10 +4,12 @@
 #include <SD.h>
 
 #include "eeprom.hpp"
+#include "error.hpp"
 #include "gui.hpp"
 #include "new_delete.hpp"
 #include "sd.hpp"
 #include "tft.hpp"
+#include "tft_calc.hpp"
 #include "tft_util.hpp"
 #include "touch.hpp"
 
@@ -44,7 +46,7 @@ Programmer::~Programmer() {
 void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
   if (is_confirm) return;
 
-  static const char *helps[] = {
+  static const char *helps[] {
     "Read a byte from EEPROM.",
     "Write a byte to EEPROM.",
     "Read entire EEPROM to a file.",
@@ -126,29 +128,27 @@ void Programmer::run() {
 
     show_status(status_code);
 
-    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
-
     m_tft.fillScreen(TftColor::BLACK);
   }
 }
 
 void Programmer::show_status(ProgrammerBaseCore::Status code) {
-  m_tft.drawText(10, 10, "Result:", TftColor::CYAN, 4);
-
-  constexpr uint8_t NUM_DETAILS = 5;
-
-  const char *details_buf[NUM_DETAILS] = {
-    "No errors.",
-    "Invalid action.",
-    "Failed to open file.",
-    "Verification failed.",
-    "Failed to allocate memory.",
+  static const char *details[] = {
+    "There were no errors.",
+    "Attempted to perform\nan invalid action.",
+    "Unable to open file.",
+    "Verification failed.\nContent read did not match\nwhat was written.",
+    "Memory allocation failed.\n(malloc() probably\nreturned null)",
   };
 
-  const char  *str_repr = (code == ProgrammerBaseCore::Status::OK ? "Success!" : "Failed!");
-  uint16_t   color_repr = (code ? TftColor::RED : TftColor::GREEN);
-  const char *text_repr = (code < NUM_DETAILS ? details_buf[code] : "Unknown reason.");
+  bool success = (code == ProgrammerBaseCore::Status::OK);
 
-  m_tft.drawText(15, 50, str_repr, color_repr, 3);
-  m_tft.drawText(15, 80, text_repr, TftColor::PURPLE, 2);
+  const char *success_str   = (success ? "Success!" : "Failed!");
+  uint16_t    success_color = (success ? TftColor::GREEN : TftColor::RED);
+
+  const char *code_text  = (code < ARR_LEN(details) ? details[code] : "Unknown reason.");
+
+  m_tft.drawText(15, TftCalc::bottom(m_tft, 16, 44), success_str, success_color, 2);
+
+  Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, "Result", code_text);
 }

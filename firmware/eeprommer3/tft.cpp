@@ -40,60 +40,6 @@ void TftCtrl::drawText(const char *text) {
   print(text);
 }
 
-namespace TftCalc {
-  uint16_t t_center_x(uint16_t box, const char *text, uint8_t size) {
-    return (box + size - strlen(text) * 6 * size) / 2;
-  }
-
-  uint16_t t_center_x(TftCtrl &tft, const char *text, uint8_t size) {
-    return t_center_x(tft.width(), text, size);
-  }
-
-  uint16_t t_center_x_l(uint16_t box, uint8_t len, uint8_t size) {
-    return (box + size - len * 6 * size) / 2;
-  }
-
-  uint16_t t_center_x_l(TftCtrl &tft, uint8_t len, uint8_t size) {
-    return t_center_x_l(tft.width(), len, size);
-  }
-
-  uint16_t t_center_y(uint16_t box, uint8_t size) {
-    return (box - size * 8) / 2;
-  }
-
-  uint16_t t_center_y(TftCtrl &tft, uint8_t size) {
-    return t_center_y(tft.height(), size);
-  }
-
-  uint16_t fraction(uint16_t box, uint16_t margin, uint8_t denom) {
-    return (box - (denom + 1) * margin) / denom;
-  }
-
-  uint16_t fraction_x(TftCtrl &tft, uint16_t margin, uint8_t denom) {
-    return fraction(tft.width(), margin, denom);
-  }
-
-  uint16_t fraction_y(TftCtrl &tft, uint16_t margin, uint8_t denom) {
-    return fraction(tft.height(), margin, denom);
-  }
-
-  uint16_t right(uint16_t box, uint16_t width, uint16_t margin) {
-    return box - margin - width;
-  }
-
-  uint16_t right(TftCtrl &tft, uint16_t width, uint16_t margin) {
-    return right(tft.width(), margin, width);
-  }
-
-  uint16_t bottom(uint16_t box, uint16_t height, uint16_t margin) {
-    return box - margin - height;
-  }
-
-  uint16_t bottom(TftCtrl &tft, uint16_t height, uint16_t margin) {
-    return bottom(tft.height(), height, margin);
-  }
-};
-
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
   while (true) {
     TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
