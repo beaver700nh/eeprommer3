@@ -133,7 +133,7 @@ void Programmer::run() {
 }
 
 void Programmer::show_status(ProgrammerBaseCore::Status code) {
-  static const char *details[] = {
+  static const char *details[] {
     "There were no errors.",
     "Attempted to perform\nan invalid action.",
     "Unable to open file.",

@@ -15,7 +15,7 @@ void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *t
   auto color = ErrorLevel::COLORS[lvl];
 
   char tag[16];
-  STRFMT_BUFLEN(tag, 15, "[%s]", name);
+  snprintf(tag, 15, "[%s]", name);
 
   tft.drawText(TftCalc::right(tft, TftCalc::t_width(tag, 2), 10), 10, tag, color, 2);
 

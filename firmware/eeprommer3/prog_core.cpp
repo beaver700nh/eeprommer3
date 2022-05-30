@@ -42,7 +42,7 @@ Status ProgrammerByteCore::read() {
   m_tft.fillScreen(TftColor::BLACK);
 
   char title[64];
-  STRFMT_BUFLEN(title, 63, "Value at addr %04X", addr);
+  snprintf(title, 63, "Value at addr %04X", addr);
 
   Dialog::show_error(
     m_tft, m_tch, ErrorLevel::INFO, title,
@@ -288,7 +288,7 @@ Status ProgrammerVectorCore::read() {
   m_tft.fillScreen(TftColor::BLACK);
 
   char title[64];
-  STRFMT_BUFLEN(title, 63, "Value of %s", Vector::NAMES[vec.m_id]);
+  snprintf(title, 63, "Value of %s", Vector::NAMES[vec.m_id]);
 
   Dialog::show_error(
     m_tft, m_tch, ErrorLevel::INFO, title,
@@ -831,7 +831,7 @@ void ProgrammerOtherCore::monitor_data_bus() {
 }
 
 void ProgrammerOtherCore::debug_action_aux1() {
-  uint8_t temp[] = {
+  uint8_t temp[] {
     0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
     1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
   };

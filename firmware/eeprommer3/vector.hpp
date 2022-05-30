@@ -24,7 +24,7 @@ struct Vector {
   uint8_t m_lo, m_hi;
   uint16_t m_val;
 
-  inline static const char *NAMES[3] = {"NMI", "RESET", "IRQ"};
+  inline static const char *NAMES[3] {"NMI", "RESET", "IRQ"};
 };
 
 namespace Dialog {

@@ -8,6 +8,7 @@
 #include "new_delete.hpp"
 
 #include "tft.hpp"
+#include "tft_calc.hpp"
 
 void TftCtrl::init(uint16_t driver_id, uint8_t orientation) {
   reset();
@@ -32,7 +33,7 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
 }
 
 void TftCtrl::drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t color, uint16_t bg, uint8_t size) {
-  fillRect(x, y, size * (6 * strlen(text) - 1), size * 8, bg);
+  fillRect(x, y, TftCalc::t_width(text, size), size * 8, bg);
   drawText(x, y, text, color, size);
 }
 
@@ -69,7 +70,7 @@ void tft_print_chars(TftCtrl &tft) {
 void tft_show_colors(TftCtrl &tft) {
   using namespace TftColor;
 
-  static const uint16_t colors[] = {
+  static const uint16_t colors[] {
     DRED, RED, ORANGE, YELLOW, LIME,
     LGREEN, GREEN, OLIVE, DGREEN,
     DCYAN, CYAN, BLUE, DBLUE,
@@ -77,7 +78,7 @@ void tft_show_colors(TftCtrl &tft) {
     BLACK, DGRAY, GRAY, LGRAY, WHITE,
   };
 
-  static const char *names[] = {
+  static const char *names[] {
     "Dark Red", "Red", "Orange", "Yellow", "Lime",
     "Light Green", "Green", "Olive", "Dark Green",
     "Dark Cyan", "Cyan", "Blue", "Dark Blue",

@@ -27,13 +27,13 @@ public:
   void run();
   void show_status(ProgrammerBaseCore::Status code);
 
-  static constexpr uint8_t NUM_ACTIONS = 12;
+  static constexpr uint8_t NUM_ACTIONS = 11;
 
   ProgrammerBaseCore *m_cores[NUM_ACTIONS];
 
 #define FUNC(type, name) (ProgrammerBaseCore::Func) &Programmer##type##Core::name
 
-  ProgrammerBaseCore::Func action_map[NUM_ACTIONS] = {
+  ProgrammerBaseCore::Func action_map[NUM_ACTIONS] {
     FUNC(Byte,   read ), FUNC(Byte,   write),
     FUNC(File,   read ), FUNC(File,   write),
     FUNC(Vector, read ), FUNC(Vector, write),

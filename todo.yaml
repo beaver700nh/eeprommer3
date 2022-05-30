@@ -10,7 +10,7 @@ FIRMWARE:
     fix file write verify segfault/crash
     fix multi write scrolling
     fix anything that seems broken:
-      test more throughly
+      test more thoroughly
       find and fix double screen clears
     update ProgFileCore to use `fsys`s
     create get_file_to_read_to() or similar

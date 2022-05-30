@@ -504,7 +504,7 @@ void Gui::ProgressIndicator::show() {
   m_tft.fillRect(m_x + 2, m_y + 2, progress, m_h - 4, m_color_bar2);
 
   m_tft.drawText(tx, ty, text, m_color_frac);
-  tx += (strlen(text) - 6) * 12;
+  tx += TftCalc::t_width(strlen(text) - 6, 2); // 6 spaces
   m_tft.drawText(tx, ty, STRFMT_NOBUF("(%03d%%)", uint8_t(fraction * 100.0)), m_color_perc);
 }
 
