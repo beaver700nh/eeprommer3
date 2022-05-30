@@ -108,6 +108,7 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
   switch(fsys) {
   case FileSystem::NONE:
     *status = AskFileStatus::CANCELED;
+    Dialog::show_error(tft, tch, ErrorLevel::INFO, "Canceled", "The operation\nhas been canceled.");
     return nullptr;
 
   case FileSystem::ON_SD_CARD:

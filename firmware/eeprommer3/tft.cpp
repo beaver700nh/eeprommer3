@@ -42,13 +42,26 @@ void TftCtrl::drawText(const char *text) {
 }
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
+  static const uint16_t color = TftColor::LGRAY;
+
+  TSPoint old;
+  unsigned long last = 0;
+
   while (true) {
     TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
 
     if (p.x < 3) break;
 
     if (TouchCtrl::is_valid_pressure(p.z)) {
-      tft.fillCircle(p.x, p.y, 3, TftColor::RED);
+      if (last == 0 || millis() - last > 50) {
+        tft.drawPixel(p.x, p.y, color);
+      }
+      else {
+        tft.drawLine(old.x, old.y, p.x, p.y, color);
+      }
+
+      old = p;
+      last = millis();
     }
   }
 }

@@ -540,7 +540,7 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
     Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, "Canceled", "Operation was canceled.");
   }
   else if (substatus == AFStatus::FNAME_TOO_LONG) {
-    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, "String Overflow", "File name was too long\nto fit in buffer.");
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, "String Overflow", "File name was too long\nto fit in the buffer.");
     status = Status::ERR_FILE;
   }
   else if (substatus == AFStatus::FSYS_INVALID) {

@@ -7,16 +7,13 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
+    fix memory bug (leak?) with ask_file
     fix file write verify segfault/crash
     fix read range
     fix multi write scrolling
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
-    update ProgFileCore to use `fsys`s
-    create get_file_to_read_to() or similar
-    deal in `FileCtrl`s instead of file paths
-    clean up prog_core if possible
     make progress bars look better:
       unsatisfying off-by-one stuff
       optimize drawing?

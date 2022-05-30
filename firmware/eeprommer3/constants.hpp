@@ -98,7 +98,7 @@
 #define TS_MINY 944
 #define TS_MAXY 90
 
-#define T_DEBOUNCE 240
+#define T_DEBOUNCE 200
 
 #define MCP_GPA(n) (n)
 #define MCP_GPB(n) (8 + (n))
