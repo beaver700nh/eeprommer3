@@ -127,7 +127,7 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const c
   FSStatus substatus = (
     must_exist ?
     ask_sel_fpath_sd(tft, tch, prompt, out, len, sd) :
-    (ask_str(tft, tch, prompt, out, len), FSStatus::OK)
+    (ask_str        (tft, tch, prompt, out, len), FSStatus::OK)
   );
 
   tft.fillScreen(TftColor::BLACK);

@@ -123,24 +123,17 @@ Status ProgrammerFileCore::read() {
     return Status::ERR_FILE;
   }
 
-  bool success = read_to_file(file);
+  read_operation_core(file);
+  file->flush();
   file->close();
   delete file;
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  return (success ? Status::OK : Status::ERR_FILE);
+  return Status::OK;
 }
 
-bool ProgrammerFileCore::read_to_file(FileCtrl *file) {
-  read_operation(file);
-
-  file->flush();
-
-  return true;
-}
-
-void ProgrammerFileCore::read_operation(FileCtrl *file) {
+void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
   uint8_t this_page[256];
 
   m_tft.drawText(10, 10, "Reading EEPROM to file...", TftColor::CYAN, 3);
@@ -182,7 +175,10 @@ Status ProgrammerFileCore::write() {
   bool success = write_from_file(file, addr);
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (!success) return Status::ERR_INVALID;
+  if (!success) {
+    delete file;
+    return Status::ERR_INVALID;
+  }
 
   bool should_verify = Dialog::ask_yesno(m_tft, m_tch, "Verify data?");
   m_tft.fillScreen(TftColor::BLACK);
@@ -197,8 +193,6 @@ Status ProgrammerFileCore::write() {
 }
 
 bool ProgrammerFileCore::write_from_file(FileCtrl *file, uint16_t addr) {
-  bool ret = true;
-
   if (file->size() > (0x7FFF - addr + 1)) {
     Dialog::show_error(
       m_tft, m_tch, ErrorLevel::WARNING, "EEPROM Overflow",
@@ -206,18 +200,14 @@ bool ProgrammerFileCore::write_from_file(FileCtrl *file, uint16_t addr) {
       "to fit into EEPROM there!\n"
       "Aborted."
     );
-    ret = false;
-  }
-  else {
-    write_operation(file, addr);
+    return false;
   }
 
-  file->flush();
-
-  return ret;
+  write_operation_core(file, addr);
+  return true;
 }
 
-void ProgrammerFileCore::write_operation(FileCtrl *file, uint16_t addr) {
+void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
   uint16_t cur_addr = addr;
   uint8_t this_page[256];
 
@@ -243,28 +233,23 @@ void ProgrammerFileCore::write_operation(FileCtrl *file, uint16_t addr) {
 Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   auto *file = (FileCtrl *) data;
 
-  uint8_t expectation[256];
-  uint8_t reality[256];
-
-  if (!file) return Status::ERR_FILE;
+  uint8_t expected[256], reality[256];
 
   m_tft.drawText(10, 10, STRFMT_NOBUF("Verifying `%s' at %04X...", file->name(), addr), TftColor::CYAN);
 
   Gui::ProgressIndicator bar(m_tft, ceil((float) file->size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(m_tft, 10, 1), 40);
 
-  // `complete` is true if the loop finished normally
   bool complete = bar.for_each(
-    [this, &expectation, &reality, &file, &addr]GUI_PROGRESS_INDICATOR_LAMBDA {
-      auto nbytes = file->read(expectation, 256);
+    [this, &expected, &reality, &file, &addr]GUI_PROGRESS_INDICATOR_LAMBDA {
+      auto nbytes = file->read(expected, 256);
       this->m_ee.read(addr, addr + nbytes, reality);
 
-      if (memcmp(expectation, reality, nbytes) != 0) {
+      if (memcmp(expected, reality, nbytes) != 0) {
         this->m_tft.drawText(10, 150, STRFMT_NOBUF("Mismatch between %04X and %04X!", addr, addr + 0xFF), TftColor::RED);
         return true; // Request to quit loop
       }
 
       addr += 0x0100; // Next page
-
       return false;
     }
   );
@@ -375,20 +360,20 @@ Status ProgrammerMultiCore::read() {
     return Status::ERR_MEMORY;
   }
 
-  read_with_progress_bar(data, addr1, addr2);
+  read_operation_core(data, addr1, addr2);
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  handle_data(data, addr1, addr2);
+  Status status = handle_data(data, addr1, addr2);
 
   m_tft.fillScreen(TftColor::BLACK);
 
   free(data);
 
-  return Status::OK;
+  return status;
 }
 
-void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, uint16_t addr2) {
+void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uint16_t addr2) {
   uint16_t nbytes = (addr2 - addr1 + 1);
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -416,21 +401,23 @@ void ProgrammerMultiCore::read_with_progress_bar(uint8_t *data, uint16_t addr1, 
   TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
 }
 
-void ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
+Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
   uint16_t nbytes = (addr2 - addr1 + 1);
 
   uint8_t viewing_method = Dialog::ask_choice(
     m_tft, m_tch, "Select viewing method:", 1, 30, 0, 3,
     "Show as Raw Hexadecimal",   TftColor::BLACK,  TftColor::ORANGE,
     "Show Printable Characters", TftColor::LGREEN, TftColor::DGREEN,
-    "Write Data to a File",      TftColor::CYAN,  TftColor::BLUE
+    "Write Data to a File",      TftColor::CYAN,   TftColor::BLUE
   );
 
   m_tft.fillScreen(TftColor::BLACK);
 
   if      (viewing_method == 0) show_range(data, addr1, addr2, &multi_byte_repr_hex);
   else if (viewing_method == 1) show_range(data, addr1, addr2, &multi_byte_repr_chars);
-  else if (viewing_method == 2) store_file(data, nbytes);
+  else if (viewing_method == 2) return store_file(data, nbytes);
+
+  return Status::OK;
 }
 
 void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
@@ -534,17 +521,35 @@ inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_chars(
   return repr;
 }
 
-void ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
-  char fname[64];
-  Dialog::ask_str(m_tft, m_tch, "What filename?", fname, 63);
+Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
+  using AFStatus = Dialog::AskFileStatus;
 
-  m_tft.fillScreen(TftColor::BLACK);
-  m_tft.drawText(10, 10, "Please wait...", TftColor::PURPLE);
+  Status status = Status::OK;
+  AFStatus substatus;
+  FileCtrl *file = Dialog::ask_file(m_tft, m_tch, "Where to store data?", O_WRITE | O_CREAT | O_TRUNC, &substatus, false, m_sd);
 
-  File file = SD.open(fname, O_WRITE | O_TRUNC | O_CREAT);
-  file.write(data, len);
-  file.flush();
-  file.close();
+  if (substatus == AFStatus::OK) {
+    m_tft.fillScreen(TftColor::BLACK);
+    m_tft.drawText(10, 10, "Please wait...", TftColor::PURPLE);
+
+    file->write(data, len);
+    file->flush();
+    file->close();
+  }
+  else if (substatus == AFStatus::CANCELED) {
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, "Canceled", "Operation was canceled.");
+  }
+  else if (substatus == AFStatus::FNAME_TOO_LONG) {
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, "String Overflow", "File name was too long\nto fit in buffer.");
+    status = Status::ERR_FILE;
+  }
+  else if (substatus == AFStatus::FSYS_INVALID) {
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, "Invalid Filesystem", "The selected filesystem\ndoes not exist.");
+    status = Status::ERR_FILE;
+  }
+
+  delete file;
+  return status;
 }
 
 Status ProgrammerMultiCore::write() {

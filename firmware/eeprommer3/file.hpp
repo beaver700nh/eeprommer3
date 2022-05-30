@@ -182,7 +182,7 @@ enum AskFileStatus : uint8_t {
   FSYS_INVALID,   // Selected filesystem does not exist
 };
 
-// Asks user for path to any file on any available file system. Puts resulting status into `status`. Returns a FileCtrl* for the file.
+// Asks user for path to any file on any available file system. Puts resulting status into `status`. Returns a FileCtrl * for the file.
 FileCtrl *ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist, SdCtrl &sd);
 
 // Asks user for a path to a file on SD card. Writes path into `out`. Returns a status based on user's choice.

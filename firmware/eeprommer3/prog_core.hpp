@@ -68,11 +68,10 @@ public:
   ADD_RWV_METHODS
 
 private:
-  bool read_to_file(FileCtrl *file);
-  void read_operation(FileCtrl *file);
+  void read_operation_core(FileCtrl *file);
 
   bool write_from_file(FileCtrl *file, uint16_t addr);
-  void write_operation(FileCtrl *file, uint16_t addr);
+  void write_operation_core(FileCtrl *file, uint16_t addr);
 };
 
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)
@@ -93,32 +92,30 @@ public:
 private:
   /******************************** READ RANGE HELPERS ********************************/
 
-  void read_with_progress_bar(uint8_t *data, uint16_t addr1, uint16_t addr2);
+  void read_operation_core(uint8_t *data, uint16_t addr1, uint16_t addr2);
 
   // Contains info for customizing a byte's representation
   struct ByteRepr {
-    uint8_t offset; // X-offset of byte on screen
-    char text[3];   // Text representation of byte
-    uint16_t color; // Color of byte
+    uint8_t offset;
+    char text[3];
+    uint16_t color;
   };
 
   // Returns a `ByteRepr` for a given byte, tells how to format it
   typedef ByteRepr (*ByteReprFunc)(uint8_t input_byte);
 
-  void handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2); // In a user-friendly way, shows read data to user
+  // These are `ByteReprFunc`s
+  static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte);   // Shows byte as white raw hex
+  static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte); // Shows byte as white char if printable, gray "?" if not
+
+  Status handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2); // Shows read data to user nicely
 
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);                                    // Show whole range on TFT
   void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page); // One page at a time
 
-  void draw_page_axis_labels(); // Draw markers: 00, 10, ..., F0; 00, 01, ..., 0F
+  void draw_page_axis_labels(); // Draws markers: 00, 10, ..., F0; 00, 01, ..., 0F
 
-  void store_file(uint8_t *data, uint16_t len); // Stores data to SD card
-
-  // Hex mode shows the data as raw hexadecimal values in white
-  static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte);
-
-  // Chars mode shows the data as printable characters; white character if printable, gray "?" if not
-  static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte);
+  Status store_file(uint8_t *data, uint16_t len); // Stores data to SD card
 
   /******************************** WRITE RANGE HELPERS ********************************/
 
