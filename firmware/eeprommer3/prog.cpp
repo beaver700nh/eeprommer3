@@ -15,6 +15,24 @@
 
 #include "prog.hpp"
 
+static const char PSTR_help_0[] PROGMEM = "Read a byte from EEPROM.";
+static const char PSTR_help_1[] PROGMEM = "Write a byte to EEPROM.";
+static const char PSTR_help_2[] PROGMEM = "Read entire EEPROM to a file.";
+static const char PSTR_help_3[] PROGMEM = "Write file to EEPROM somewhere.";
+static const char PSTR_help_4[] PROGMEM = "Read 6502 jump vector contents.";
+static const char PSTR_help_5[] PROGMEM = "Write to a 6502 jump vector.";
+static const char PSTR_help_6[] PROGMEM = "Read multiple bytes from EEPROM.";
+static const char PSTR_help_7[] PROGMEM = "Write multiple bytes to EEPROM.";
+static const char PSTR_help_8[] PROGMEM = "";
+static const char PSTR_help_9[] PROGMEM = "";
+static const char PSTR_help_A[] PROGMEM = "Show info/about/credits menu.";
+
+static const char PSTR_details_0[] PROGMEM = "There were no errors.";
+static const char PSTR_details_1[] PROGMEM = "Attempted to perform\nan invalid action.";
+static const char PSTR_details_2[] PROGMEM = "Unable to open file.";
+static const char PSTR_details_3[] PROGMEM = "Verification failed.\nContent read did not match\nwhat was written.";
+static const char PSTR_details_4[] PROGMEM = "Memory allocation failed.\n(malloc() probably\nreturned null)";
+
 Programmer::Programmer(TYPED_CONTROLLERS)
   : m_menu(10, 10, 50, 10, 2, 30, true), INIT_LIST_CONTROLLERS {
   static ProgrammerBaseCore \
@@ -46,27 +64,23 @@ Programmer::~Programmer() {
 void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
   if (is_confirm) return;
 
-  static const char *helps[] {
-    "Read a byte from EEPROM.",
-    "Write a byte to EEPROM.",
-    "Read entire EEPROM to a file.",
-    "Write file to EEPROM somewhere.",
-    "Read 6502 jump vector contents.",
-    "Write to a 6502 jump vector.",
-    "Read multiple bytes from EEPROM.",
-    "Write multiple bytes to EEPROM.",
-    nullptr,
-    nullptr,
-    "Show info/about/credits menu.",
+  static const char *const helps[] {
+    PSTR_help_0, PSTR_help_1,
+    PSTR_help_2, PSTR_help_3,
+    PSTR_help_4, PSTR_help_5,
+    PSTR_help_6, PSTR_help_7,
+    PSTR_help_8, PSTR_help_9,
+    PSTR_help_A,
   };
 
-  auto *help_text = ([&]() -> const char * {
-    if (btn_id >= ARR_LEN(helps) || helps[btn_id] == nullptr) {
-      return "No help text available.";
-    }
+  char help_text[128];
 
-    return helps[btn_id];
-  })();
+  if (btn_id >= ARR_LEN(helps) || strlen_P(helps[btn_id]) == 0) {
+    strcpy(help_text, "No help text available.");
+  }
+  else {
+    strcpy_P(help_text, helps[btn_id]);
+  }
 
   tft.fillRect(10, 250, tft.width(), 16, TftColor::BLACK);
   tft.drawText(10, 250, help_text, TftColor::PURPLE, 2);
@@ -125,6 +139,8 @@ void Programmer::run() {
     }
 
     SER_LOG_PRINT("Action returned status code %d.", status_code);
+    SER_LOG_PRINT("Memory remaining: %d bytes.", Util::available_memory());
+    SER_LOG_PRINT("~\n");
 
     show_status(status_code);
 
@@ -133,12 +149,12 @@ void Programmer::run() {
 }
 
 void Programmer::show_status(ProgrammerBaseCore::Status code) {
-  static const char *details[] {
-    "There were no errors.",
-    "Attempted to perform\nan invalid action.",
-    "Unable to open file.",
-    "Verification failed.\nContent read did not match\nwhat was written.",
-    "Memory allocation failed.\n(malloc() probably\nreturned null)",
+  static const char *const details[] {
+    PSTR_details_0,
+    PSTR_details_1,
+    PSTR_details_2,
+    PSTR_details_3,
+    PSTR_details_4,
   };
 
   bool success = (code == ProgrammerBaseCore::Status::OK);
@@ -146,7 +162,14 @@ void Programmer::show_status(ProgrammerBaseCore::Status code) {
   const char *success_str   = (success ? "Success!" : "Failed!");
   uint16_t    success_color = (success ? TftColor::GREEN : TftColor::RED);
 
-  const char *code_text  = (code < ARR_LEN(details) ? details[code] : "Unknown reason.");
+  char code_text[128];
+
+  if (code >= ARR_LEN(details)) {
+    strcpy(code_text, "Unknown reason.");
+  }
+  else {
+    strcpy_P(code_text, details[code]);
+  }
 
   m_tft.drawText(15, TftCalc::bottom(m_tft, 16, 44), success_str, success_color, 2);
 

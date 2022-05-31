@@ -147,8 +147,10 @@ Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(TftCtrl &tft, TouchCtrl &tch
   constexpr uint8_t rows = 6, cols = 6;
 
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+  SER_DEBUG_PRINT(Util::available_memory(), 'd');
 
   Gui::MenuSdFileSel menu(tft, 10, 10, 50, 10, rows, cols);
+  SER_DEBUG_PRINT(Util::available_memory(), 'd');
 
   return menu.wait_for_value(tch, tft, sd, out, len);
 }

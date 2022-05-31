@@ -90,11 +90,7 @@ void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   set_addr_and_oe(0x8000); // ~OE is on to disable output
 
   do {
-    auto t1 = micros();
     write(i, buf[i - addr], true);
-    auto t2 = micros();
-
-    Serial.println(t2 - t1);
   }
   while ((i - addr + 1) < len && ++i);
 

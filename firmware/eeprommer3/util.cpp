@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include <utility/SdFat.h>
+#include <utility/SdFatUtil.h>
+
 #include "util.hpp"
 
 #undef swap
@@ -15,5 +18,9 @@ namespace Util {
     validate_addr(addr2);
 
     if (*addr1 > *addr2) swap(addr1, addr2);
+  }
+
+  int available_memory() {
+    return FreeRam();
   }
 };

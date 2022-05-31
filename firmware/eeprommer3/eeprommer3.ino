@@ -98,7 +98,7 @@ void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn) {
 void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
-  SER_LOG_PRINT("> COMMENCE PROGRAMMING <");
+  SER_LOG_PRINT("> COMMENCE PROGRAMMING <\n");
 
   Programmer prog(CONTROLLERS);
   prog.init();
