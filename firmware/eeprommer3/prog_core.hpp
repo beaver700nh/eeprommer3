@@ -37,7 +37,6 @@ public:
     ERR_MEMORY,  // Memory allocator returned null
   };
 
-  // These functions return `Status`es.
   typedef Status (ProgrammerBaseCore::*Func)();
 
   Status nop();

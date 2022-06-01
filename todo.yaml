@@ -7,6 +7,8 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
+    look for more strings to add to util:Strings::*
+    add Util::wait_continue()
     fix memory bug (leak?) with ask_file
     fix file write verify segfault/crash
     fix read range
