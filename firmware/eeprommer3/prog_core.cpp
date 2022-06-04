@@ -152,7 +152,7 @@ void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
   );
 
   m_tft.drawText(10, 110, Strings::F_READ, TftColor::CYAN);
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_continue(m_tft, m_tch);
 }
 
 Status ProgrammerFileCore::write() {
@@ -222,7 +222,7 @@ void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
   );
 
   m_tft.drawText(10, 110, Strings::F_WRITE, TftColor::CYAN);
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_continue(m_tft, m_tch);
 }
 
 Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
@@ -250,7 +250,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   );
 
   m_tft.drawText(10, 110, Strings::F_VERIFY, TftColor::CYAN);
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_continue(m_tft, m_tch);
 
   file->close();
   m_tft.fillScreen(TftColor::BLACK);
@@ -326,7 +326,7 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
       )
     );
 
-    TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+    TftUtil::wait_continue(m_tft, m_tch);
 
     m_tft.fillScreen(TftColor::BLACK);
 
@@ -393,17 +393,17 @@ void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uin
   );
 
   m_tft.drawText(10, 110, Strings::F_READ, TftColor::CYAN);
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "Continue");
+  TftUtil::wait_continue(m_tft, m_tch);
 }
 
 Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
   uint16_t nbytes = (addr2 - addr1 + 1);
 
   uint8_t viewing_method = Dialog::ask_choice(
-    m_tft, m_tch, "Select viewing method:", 1, 30, 0, 3,
-    "Show as Raw Hexadecimal",   TftColor::BLACK,  TftColor::ORANGE,
-    "Show Printable Characters", TftColor::LGREEN, TftColor::DGREEN,
-    "Write Data to a File",      TftColor::CYAN,   TftColor::BLUE
+    m_tft, m_tch, Strings::P_VIEW_METH, 1, 30, 0, 3,
+    Strings::L_VM_HEX,  TftColor::BLACK,  TftColor::ORANGE,
+    Strings::L_VM_CHAR, TftColor::LGREEN, TftColor::DGREEN,
+    Strings::L_VM_FILE, TftColor::CYAN,   TftColor::BLUE
   );
 
   m_tft.fillScreen(TftColor::BLACK);
@@ -426,7 +426,7 @@ void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t add
   Gui::Menu menu;
   menu.add_btn(new Gui::Btn(15,                 60, 40, 150, 15, 68, "\x11"));
   menu.add_btn(new Gui::Btn(m_tft.width() - 55, 60, 40, 150, 15, 68, "\x10"));
-  menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, "Continue")));
+  menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, Strings::L_CONTINUE)));
   menu.draw(m_tft);
 
   uint8_t cur_page = 0;
@@ -672,9 +672,9 @@ bool ProgrammerMultiCore::poll_menus_and_react(
 
 void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
   m_tft.fillScreen(TftColor::BLACK);
-  auto addr = Dialog::ask_addr(m_tft, m_tch, "Type an address:"); // Left off here
+  auto addr = Dialog::ask_addr(m_tft, m_tch, Strings::P_ADDR_GEN);
   m_tft.fillScreen(TftColor::BLACK);
-  auto data = Dialog::ask_int<uint8_t>(m_tft, m_tch, "Type the data:");
+  auto data = Dialog::ask_int<uint8_t>(m_tft, m_tch, Strings::P_DATA_GEN);
   m_tft.fillScreen(TftColor::BLACK);
 
   buf->append((AddrDataArrayPair) {addr, data});
@@ -691,7 +691,7 @@ Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
 
     if (pair.data != real_data) {
       Dialog::show_error(
-        m_tft, m_tch, ErrorLevel::ERROR, "Mismatch",
+        m_tft, m_tch, ErrorLevel::ERROR, Strings::T_MISMATCH,
         STRFMT_NOBUF(
           "Expected: %02X\n"
           "Actual:   %02X"
@@ -737,7 +737,7 @@ Status ProgrammerOtherCore::debug() {
   menu.add_btn(new Gui::Btn(w2 + 20, 202, w2, 28, "Show Colors",     TftColor::PINKK,          TftColor::PURPLE));
   menu.add_btn(new Gui::Btn(     10, 240, w2, 28, "Aux1",            TftColor::DGRAY,          TftColor::LGRAY ));
   menu.add_btn(new Gui::Btn(w2 + 20, 240, w2, 28, "Aux2",            TftColor::DGRAY,          TftColor::LGRAY ));
-  menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, "Close")));
+  menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, Strings::L_CLOSE)));
 
   while (true) {
     m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
@@ -766,26 +766,26 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
   }
   else if (action == DebugAction::SET_ADDR_BUS_AND_OE) { 
     m_ee.set_addr_and_oe(
-      Dialog::ask_int<uint16_t>(m_tft, m_tch, "Type the value:")
+      Dialog::ask_int<uint16_t>(m_tft, m_tch, Strings::P_VAL_GEN)
     );
   }
   else if (action == DebugAction::READ_DATA_BUS) {
     Dialog::show_error(
-      m_tft, m_tch, ErrorLevel::INFO, "Value",
+      m_tft, m_tch, ErrorLevel::INFO, Strings::T_VALUE,
       STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(m_ee.get_data()))
     );
   }
   else if (action == DebugAction::WRITE_DATA_BUS) {
     m_ee.set_data(
-      Dialog::ask_int<uint8_t>(m_tft, m_tch, "Type the value:")
+      Dialog::ask_int<uint8_t>(m_tft, m_tch, Strings::P_VAL_GEN)
     );
   }
   else if (action == DebugAction::SET_DATA_DIR) {
     m_ee.set_ddr(
       Dialog::ask_choice(
-        m_tft, m_tch, "Which direction?", 1, 45, 0, 2,
-        "Input",        TftColor::CYAN,   TftColor::BLUE,
-        "Output",       TftColor::PINKK,  TftColor::RED
+        m_tft, m_tch, Strings::P_DATA_DIR, 1, 45, 0, 2,
+        Strings::L_INPUT,  TftColor::CYAN,   TftColor::BLUE,
+        Strings::L_OUTPUT, TftColor::PINKK,  TftColor::RED
       )
     );
   }
@@ -810,11 +810,11 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
 void ProgrammerOtherCore::monitor_data_bus() {
   m_ee.set_ddr(false);
 
-  Gui::Btn quit_btn(BOTTOM_BTN(m_tft, "Quit"));
-  quit_btn.draw(m_tft);
+  Gui::Btn close_btn(BOTTOM_BTN(m_tft, Strings::L_CLOSE));
+  close_btn.draw(m_tft);
 
 #ifdef DEBUG_MODE
-  while (!quit_btn.is_pressed(m_tch, m_tft)) {
+  while (!close_btn.is_pressed(m_tch, m_tft)) {
     uint8_t val = m_ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
 
     m_tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
@@ -824,13 +824,13 @@ void ProgrammerOtherCore::monitor_data_bus() {
   // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
 
   Dialog::show_error(
-    m_tft, m_tch, ErrorLevel::ERROR, "Not Supported",
+    m_tft, m_tch, ErrorLevel::ERROR, Strings::T_NOT_SUPP,
     "Data bus monitor is not\n"
     "supported because DEBUG_MODE\n"
     "is disabled."
   );
 
-  quit_btn.wait_for_press(m_tch, m_tft);
+  close_btn.wait_for_press(m_tch, m_tft);
 #endif
 }
 
@@ -857,7 +857,7 @@ Status ProgrammerOtherCore::about() {
   m_tft.drawText( 10, 180, "access to SD card connected on SPI bus", TftColor::LGRAY);
   m_tft.drawText( 10, 240, "Made by beaver700nh (GitHub) 2021-2022", TftColor::DGRAY);
 
-  TftUtil::wait_bottom_btn(m_tft, m_tch, "OK");
+  TftUtil::wait_bottom_btn(m_tft, m_tch, Strings::L_CLOSE);
 
   m_tft.fillScreen(TftColor::BLACK);
 

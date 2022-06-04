@@ -5,6 +5,7 @@
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
 #include "touch.hpp"
+#include "util.hpp"
 
 #include "gui.hpp"
 
@@ -267,7 +268,7 @@ Gui::MenuKeyboard::MenuKeyboard(
     }
   }
 
-  add_btn(new Btn(BOTTOM_BTN(tft, "Continue")));
+  add_btn(new Btn(BOTTOM_BTN(tft, Strings::L_CONTINUE)));
 }
 
 Gui::MenuKeyboard::~MenuKeyboard() {
@@ -423,7 +424,7 @@ bool Gui::MenuChoice::add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t 
   uint16_t y = TftCalc::bottom(tft, 24, (force_bottom ? 10 : m_marg_v));
   uint16_t w = TftCalc::fraction_x(tft, m_marg_h, 1);
 
-  return add_btn(new Btn(m_marg_h, y, w, 24, "Confirm", fg, bg));
+  return add_btn(new Btn(m_marg_h, y, w, 24, Strings::L_CONFIRM, fg, bg));
 }
 
 void Gui::MenuChoice::set_confirm_btn(uint8_t btn_id) {
@@ -473,8 +474,8 @@ Gui::MenuYesNo::MenuYesNo(
   bool force_bottom, uint8_t initial_choice
 )
   : Gui::MenuChoice(pad_v, pad_h, marg_v, marg_h, 2, 0.7, false, initial_choice) {
-  add_btn_calc(tft, "Yes", TftColor::BLACK, TftColor::GREEN);
-  add_btn_calc(tft, "No",  TftColor::WHITE, TftColor::RED);
+  add_btn_calc(tft, Strings::L_YES, TftColor::BLACK, TftColor::GREEN);
+  add_btn_calc(tft, Strings::L_NO,  TftColor::WHITE, TftColor::RED);
   add_btn_confirm(tft, force_bottom);
 }
 

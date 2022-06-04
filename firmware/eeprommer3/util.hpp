@@ -52,10 +52,12 @@ namespace Strings {
   inline const char *const T_DONE      = "Done";
   inline const char *const T_MISMATCH  = "Mismatch";
   inline const char *const T_CANCELED  = "Canceled";
+  inline const char *const T_VALUE     = "Value";
   inline const char *const T_TOO_BIG   = "EEPROM Overflow";
   inline const char *const T_TOO_LONG  = "String Overflow";
   inline const char *const T_INV_FSYS  = "Invalid Filesystem";
   inline const char *const T_WMULTI    = "Write Multiple Bytes";
+  inline const char *const T_NOT_SUPP  = "Not Supported";
 
   inline const char *const E_CANCELED  = "Operation was canceled.";
   inline const char *const E_TOO_BIG   = "File would be too large\nto fit into EEPROM there!\nAborted.";
@@ -64,27 +66,22 @@ namespace Strings {
 
   inline const char *const P_ADDR_GEN  = "Type an address:";
   inline const char *const P_DATA_GEN  = "Type the data:";
-
+  inline const char *const P_VAL_GEN   = "Type a value:";
   inline const char *const P_ADDR_FILE = "Where to write in EEPROM?";
-
   inline const char *const P_ADDR_VEC  = "Type new vector value:";
-
   inline const char *const P_ADDR_BEG  = "Type the start address:";
   inline const char *const P_ADDR_END  = "Type the end address:";
-
   inline const char *const P_OFILE     = "Which file to read to?";
   inline const char *const P_IFILE     = "Which file to write from?";
-
+  inline const char *const P_VIEW_METH = "Select viewing method:";
   inline const char *const P_STORE     = "Where to store data?";
-
   inline const char *const P_VERIFY    = "Verify data?";
+  inline const char *const P_DATA_DIR  = "Which direction?";
 
   inline const char *const W_OFILE     = "Reading EEPROM to file...";
   inline const char *const W_IFILE     = "Writing file to EEPROM...";
-
   inline const char *const W_RMULTI    = "Reading bytes from EEPROM...";
   inline const char *const W_WMULTI    = "Writing bytes to EEPROM...";
-
   inline const char *const W_WAIT      = "Please wait...";
 
   inline const char *const F_READ      = "Done reading!";
@@ -96,6 +93,16 @@ namespace Strings {
   inline const char *const L_ADD_PAIR  = "Add Pair";
   inline const char *const L_DONE      = "Done";
   inline const char *const L_CANCEL    = "Cancel";
+  inline const char *const L_CLOSE     = "Close";
+  inline const char *const L_CONFIRM   = "Confirm";
+  inline const char *const L_CONTINUE  = "Continue";
+  inline const char *const L_INPUT     = "Input";
+  inline const char *const L_OUTPUT    = "Output";
+  inline const char *const L_YES       = "Yes";
+  inline const char *const L_NO        = "No";
+  inline const char *const L_VM_HEX    = "Show as Raw Hexadecimal";
+  inline const char *const L_VM_CHAR   = "Show Printable Characters";
+  inline const char *const L_VM_FILE   = "Write Data to a File";
 }
 
 #endif
