@@ -1,0 +1,4 @@
+[35m[Kgui.cpp[m[K[36m[K:[m[K[32m[K59[m[K[36m[K:[m[K    uint16_t res = [01;31m[K~m_bg;[m[K
+[35m[Kgui.cpp[m[K[36m[K:[m[K[32m[K63[m[K[36m[K:[m[K      res &= [01;31m[K~0x2104;[m[K
+[35m[Kgui.cpp[m[K[36m[K:[m[K[32m[K96[m[K[36m[K:[m[KGui::Menu::[01;31m[K~Menu() {[m[K
+[35m[Kgui.cpp[m[K[36m[K:[m[K[32m[K275[m[K[36m[K:[m[KGui::MenuKeyboard::[01;31m[K~MenuKeyboard() {[m[K

@@ -95,6 +95,7 @@ bool Gui::Btn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
 
 Gui::Menu::~Menu() {
   purge_btns();
+  SER_LOG_PRINT("Destroyed.");
 }
 
 bool Gui::Menu::add_btn(Btn *btn) {

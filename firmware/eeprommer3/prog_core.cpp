@@ -159,10 +159,15 @@ Status ProgrammerFileCore::write() {
   using AFStatus = Dialog::AskFileStatus;
   
   AFStatus fstatus;
+  SER_DEBUG_PRINT(Util::available_memory(), 'd');
   FileCtrl *file = Dialog::ask_file(m_tft, m_tch, Strings::P_IFILE, O_RDONLY, &fstatus, true, m_sd);
+  SER_DEBUG_PRINT(Util::available_memory(), 'd');
   m_tft.fillScreen(TftColor::BLACK);
 
-  if (fstatus != AFStatus::OK) return (fstatus == AFStatus::CANCELED ? Status::OK : Status::ERR_FILE);
+  if (fstatus != AFStatus::OK) {
+    delete file;
+    return (fstatus == AFStatus::CANCELED ? Status::OK : Status::ERR_FILE);
+  }
 
   if (!FileCtrl::check_valid(file)) {
     delete file;

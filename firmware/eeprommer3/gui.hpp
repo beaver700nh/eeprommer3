@@ -119,7 +119,7 @@ private:
 class Menu {
 public:
   Menu() {};
-  virtual ~Menu();
+  ~Menu();
 
   bool add_btn(Btn *btn);
   bool rm_btn(uint8_t btn_idx);
