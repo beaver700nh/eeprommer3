@@ -165,7 +165,7 @@ private:
   uint8_t m_width;
 };
 
-// Functions to get pre-set layouts of HexSel- and String- Menus
+// Functions to get pre-set layouts of the different `MenuKeyboard`s
 
 KeyboardLayout &get_glob_kbd_hex_layout();
 KeyboardLayout &get_glob_kbd_str_layout();
@@ -233,6 +233,8 @@ public:
     m_val[BUF_LEN()] = '\0';
   }
 
+  ~MenuHexInput() {} // Ensure that base destructor(s) are called.
+
   void update_val(char c) {
     uint8_t len = strlen(m_val);
 
@@ -290,6 +292,7 @@ public:
 class MenuStrInput : public MenuKeyboard {
 public:
   MenuStrInput(TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
+  ~MenuStrInput() {} // Ensure that base destructor(s) are called.
 
   void update_val(char c);
 
@@ -324,6 +327,8 @@ public:
     m_btn_height(btn_height), m_btn_height_px(btn_height_px) {
     select(initial_choice);
   }
+
+  ~MenuChoice() {} // Ensure that base destructor(s) are called.
 
   // Function that gets run when user presses a button
   typedef void (*Callback)(TftCtrl &tft, uint8_t btn_id, bool is_confirm);
@@ -371,6 +376,8 @@ public:
   MenuYesNo(
     TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice = 0
   );
+
+  ~MenuYesNo() {} // Ensure that base destructor(s) are called.
 };
 
 // Should return true to request cancel of loop.

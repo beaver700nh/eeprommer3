@@ -80,8 +80,8 @@ namespace Strings {
 
   inline const char *const W_OFILE     = "Reading EEPROM to file...";
   inline const char *const W_IFILE     = "Writing file to EEPROM...";
-  inline const char *const W_RMULTI    = "Reading bytes from EEPROM...";
-  inline const char *const W_WMULTI    = "Writing bytes to EEPROM...";
+  inline const char *const W_RMULTI    = "Reading EEPROM bytes...";
+  inline const char *const W_WMULTI    = "Writing EEPROM bytes...";
   inline const char *const W_WAIT      = "Please wait...";
 
   inline const char *const F_READ      = "Done reading!";

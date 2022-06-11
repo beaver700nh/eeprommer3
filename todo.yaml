@@ -14,6 +14,7 @@ FIRMWARE:
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
+    make Controllers struct so no passing `XXXCtrl&`s everywhere
     make progress bars look better:
       unsatisfying off-by-one stuff
       optimize drawing?
