@@ -11,6 +11,7 @@ FIRMWARE:
     fix file write verify segfault/crash
     fix read range
     fix multi write scrolling
+    update snprintfs/strlens to be inclusive of null
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears

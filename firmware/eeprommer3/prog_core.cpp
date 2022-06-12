@@ -159,9 +159,9 @@ Status ProgrammerFileCore::write() {
   using AFStatus = Dialog::AskFileStatus;
   
   AFStatus fstatus;
-  SER_DEBUG_PRINT(Util::available_memory(), 'd');
+  Memory::print_ram_analysis();
   FileCtrl *file = Dialog::ask_file(m_tft, m_tch, Strings::P_IFILE, O_RDONLY, &fstatus, true, m_sd);
-  SER_DEBUG_PRINT(Util::available_memory(), 'd');
+  Memory::print_ram_analysis();
   m_tft.fillScreen(TftColor::BLACK);
 
   if (fstatus != AFStatus::OK) {

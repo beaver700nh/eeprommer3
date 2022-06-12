@@ -120,8 +120,7 @@ void Programmer::run() {
   // Main Loop
 
   while (true) {
-    SER_LOG_PRINT("Memory remaining: %d bytes.", Util::available_memory());
-    SER_LOG_PRINT("~\n");
+    Memory::print_ram_analysis();
 
     m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
     show_help(m_tft, cur_choice, false);
@@ -141,7 +140,7 @@ void Programmer::run() {
       status_code = (the_core->*the_action)();
     }
 
-    SER_LOG_PRINT("Action returned status code %d.", status_code);
+    SER_LOG_PRINT("Action returned status code %d.\n", status_code);
 
     show_status(status_code);
 

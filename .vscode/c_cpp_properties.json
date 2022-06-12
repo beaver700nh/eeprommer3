@@ -20,8 +20,7 @@
                 "USBCON",
                 "DEBUG_MODE",
                 "ARDUINO",
-                "__AVR_ATmega2560__",
-                "__AVR_ATmega32U4__"
+                "__AVR_ATmega2560__"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",

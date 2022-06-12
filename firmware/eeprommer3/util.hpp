@@ -34,8 +34,25 @@ namespace Util {
 
   // Function to validate two addresses (and make sure first is not greater than second)
   void validate_addrs(uint16_t *addr1, uint16_t *addr2);
+};
 
-  int available_memory();
+struct Memory {
+  static void calculate();
+  static void repr();
+
+  static void print_ram_analysis();
+
+  static constexpr uint8_t NUM_TYPES = 6;
+  enum Types {DATA, BSS, HEAP, FREE, STACK, TOTAL};
+
+  static inline const char *const NAMES[NUM_TYPES] {
+    "Data", "BSS", "Heap", "Free", "Stack", "Total"
+  };
+
+  static inline int32_t sizes[NUM_TYPES];
+
+  static inline char repr_sizes[NUM_TYPES][26];
+  static inline char repr_bords[NUM_TYPES][20];
 };
 
 /*
