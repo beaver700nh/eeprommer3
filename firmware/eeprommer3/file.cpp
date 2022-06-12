@@ -100,10 +100,12 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
 }
 
 FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist, SdCtrl &sd) {
+  SER_DEBUG_PRINT(must_exist, 'd');
   FileSystem fsys = ask_fsys(tft, tch, "Select a file type:", sd);
   tft.fillScreen(TftColor::BLACK);
 
   char fpath[64];
+  Memory::print_ram_analysis();
 
   switch(fsys) {
   case FileSystem::NONE:
@@ -112,7 +114,8 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
     return nullptr;
 
   case FileSystem::ON_SD_CARD:
-    *status = ask_fpath_sd(tft, tch, prompt, fpath, 63, must_exist, sd);
+    SER_LOG_PRINT("Going into ask_fpath_sd()...\n");
+    *status = ask_fpath_sd(tft, tch, prompt, fpath, ARR_LEN(fpath), must_exist, sd);
     return FileCtrl::create_file(fsys, fpath, access);
 
   default:
@@ -123,13 +126,24 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
 }
 
 Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, bool must_exist, SdCtrl &sd) {
+  SER_DEBUG_PRINT(must_exist, 'd');
   using FSStatus = Gui::MenuSdFileSel::Status;
 
-  FSStatus substatus = (
-    must_exist ?
-    ask_sel_fpath_sd(tft, tch, prompt, out, len, sd) :
-    (ask_str        (tft, tch, prompt, out, len), FSStatus::OK)
-  );
+  Memory::print_ram_analysis();
+  SER_LOG_PRINT("A\n");
+
+  FSStatus substatus;
+  SER_LOG_PRINT("B\n");
+  
+  if (must_exist) {
+    SER_LOG_PRINT("must_exist == true\n");
+    substatus = ask_sel_fpath_sd(tft, tch, prompt, out, len, sd);
+  }
+  else {
+    SER_LOG_PRINT("must_exist == false\n");
+    ask_str(tft, tch, prompt, out, len);
+    substatus = FSStatus::OK;
+  }
 
   tft.fillScreen(TftColor::BLACK);
 
@@ -144,8 +158,10 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const c
 }
 
 Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, SdCtrl &sd) {
+  SER_LOG_PRINT("GOT HERE\n");
   constexpr uint8_t rows = 6, cols = 6;
 
+  Memory::print_ram_analysis();
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
   Memory::print_ram_analysis();
 

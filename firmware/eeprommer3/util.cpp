@@ -45,27 +45,32 @@ void Memory::calculate() {
 
 void Memory::repr() {
   for (uint8_t i = 0; i < NUM_TYPES; ++i) {
-    snprintf(repr_sizes[i], 26, "%-5s %6ld bytes (%3d%%)", NAMES[i], sizes[i], 100 * (uint8_t) (sizes[i] / sizes[Types::TOTAL]));
+    uint8_t percentage = 100 * ((float) sizes[i] / (float) sizes[Types::TOTAL]);
+    SNPRINTF(repr_sizes[i], "%-5s %4ld bytes (%3d%%)", NAMES[i], sizes[i], percentage);
   }
 
-  snprintf(repr_bords[Types::DATA],  20, "%04lX (RAMSTART)",     (uint32_t) RAMSTART     );
-  snprintf(repr_bords[Types::BSS],   20, "%04lX (__bss_start)",  (uint32_t) &__bss_start );
-  snprintf(repr_bords[Types::HEAP],  20, "%04lX (__heap_start)", (uint32_t) &__heap_start);
-  snprintf(repr_bords[Types::FREE],  20, "%04lX (__brkval)",     (uint32_t) &__brkval    );
-  snprintf(repr_bords[Types::STACK], 20, "%04lX (SP)",           (uint32_t) SP           );
-  snprintf(repr_bords[Types::TOTAL], 20, "%04lX (RAMEND)",       (uint32_t) RAMEND       );
+  SNPRINTF(repr_bords[Types::DATA],  "%04lX (RAMSTART)",     (uint32_t) RAMSTART     );
+  SNPRINTF(repr_bords[Types::BSS],   "%04lX (__bss_start)",  (uint32_t) &__bss_start );
+  SNPRINTF(repr_bords[Types::HEAP],  "%04lX (__heap_start)", (uint32_t) &__heap_start);
+  SNPRINTF(repr_bords[Types::FREE],  "%04lX (__brkval)",     (uint32_t) &__brkval    );
+  SNPRINTF(repr_bords[Types::STACK], "%04lX (SP)",           (uint32_t) SP           );
+  SNPRINTF(repr_bords[Types::TOTAL], "%04lX (RAMEND)",       (uint32_t) RAMEND       );
 }
 
 void Memory::print_ram_analysis() {
   calculate();
   repr();
 
-  SER_LOG_PRINT("RAM Analysis:");
+  SER_LOG_PRINT("RAM Analysis:\n");
 
-  for (uint8_t i = 0; i < NUM_TYPES; ++i) {
-    SER_LOG_PRINT("+---------------------------+ < 0x%s", repr_bords[i]);
-    SER_LOG_PRINT("| %s |", repr_sizes[i]);
+  for (uint8_t i = 0; i <= NUM_TYPES; ++i) {
+    SER_LOG_PRINT("+-------------------------+");
+
+    if (i < NUM_TYPES) {
+      SER_LOG_PRINTN(" < 0x%s\n", repr_bords[i]);
+      SER_LOG_PRINT("| %s |\n", repr_sizes[i]);
+    }
   }
 
-  SER_LOG_PRINT("+---------------------------+\n");
+  Serial.println();
 }

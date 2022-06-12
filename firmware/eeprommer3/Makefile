@@ -54,14 +54,17 @@ del:
 
 .ONESHELL:
 search:
-	result=`grep -Gn --color=always '$(PATTERN)' *.?pp`
+	result=`grep -Gn --color=always '$(PATTERN)' *.?pp *.ino`
 
 	if [ $$? = 1 ]; then
 		$(call PrintFancy, "No matches found.")
 		exit
 	fi
 
-	printf "%s" "$$result" | while IFS= read -r line; do
+### This line fixes a bug but I have no idea how
+	result=`printf "%s\n " "$$result"`
+
+	printf "%s" "$$result" | while IFS="\n" read -r line; do
 		location=`printf "%s\n" "$$line" | grep -oP '^[^:]+:[^:]+:[^K]+K'`
 		contents=`printf "%s\n" "$$line" | grep -oP '^[^:]+:[^:]+:[^K]+K\K.*'`
 		locplain=`printf "%s\n" "$$location" | sed 's/\x1b\[[0-9]*[mK]//g'`

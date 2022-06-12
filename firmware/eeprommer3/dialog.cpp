@@ -51,9 +51,12 @@ bool Dialog::ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t
 }
 
 void Dialog::ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len) {
+  SER_LOG_PRINT("Hello from ask_str()!\n");
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
+  Memory::print_ram_analysis();
   Gui::MenuStrInput menu(tft, T_DEBOUNCE, 10, 10, 50, 10, len);
+  Memory::print_ram_analysis();
   menu.draw(tft);
 
   while (true) { // Loop to get a val

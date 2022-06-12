@@ -37,12 +37,12 @@ void setup() {
   draw_intro(intro_x, intro_y, &skip_btn);
 
   if (sd_status == SdCtrl::Status::OK) {
-    SER_LOG_PRINT("... success!");
+    SER_LOG_PRINT("... success!\n");
 
     tft.drawText(90, 241, "SD init success!", TftColor::GREEN, 2);
   }
   else {
-    SER_LOG_PRINT("... failed!");
+    SER_LOG_PRINT("... failed!\n");
 
     if      (sd_status == SdCtrl::Status::DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
     else if (sd_status == SdCtrl::Status::FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
@@ -51,8 +51,7 @@ void setup() {
 
   Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(skip_btn, tch, tft));
 
-  Serial.println(F("Hello, world!"));
-  Serial.println();
+  Serial.println(F("Hello, world!\n"));
 
   mainprog();
 }
@@ -64,13 +63,13 @@ SdCtrl::Status initialize() {
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
-  SER_LOG_PRINT("Initialized TFT!");
+  SER_LOG_PRINT("Initialized TFT!\n");
 
   ee.init();
-  SER_LOG_PRINT("Initialized EEPROM!");
+  SER_LOG_PRINT("Initialized EEPROM!\n");
 
   SdCtrl::Status res = sd.init();
-  SER_LOG_PRINT("Initializing SD...");
+  SER_LOG_PRINT("Initializing SD...\n");
 
   return res;
 }

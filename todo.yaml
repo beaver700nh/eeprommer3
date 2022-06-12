@@ -11,7 +11,8 @@ FIRMWARE:
     fix file write verify segfault/crash
     fix read range
     fix multi write scrolling
-    update snprintfs/strlens to be inclusive of null
+    remove string literals from other files too
+    improve "Total" box on Memory
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears

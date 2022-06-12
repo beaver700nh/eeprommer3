@@ -128,7 +128,7 @@ void Programmer::run() {
 
     m_tft.fillScreen(TftColor::BLACK);
 
-    SER_LOG_PRINT("Executing action #%d: %s.", cur_choice, m_menu.get_btn(cur_choice)->get_text());
+    SER_LOG_PRINT("Executing action #%d: %s.\n", cur_choice, m_menu.get_btn(cur_choice)->get_text());
 
     ProgrammerBaseCore::Status status_code = ProgrammerBaseCore::Status::ERR_INVALID;
 
@@ -140,7 +140,7 @@ void Programmer::run() {
       status_code = (the_core->*the_action)();
     }
 
-    SER_LOG_PRINT("Action returned status code %d.\n", status_code);
+    SER_LOG_PRINT("Action returned status code %d.\n\n", status_code);
 
     show_status(status_code);
 

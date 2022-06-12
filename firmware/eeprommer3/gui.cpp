@@ -95,7 +95,7 @@ bool Gui::Btn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
 
 Gui::Menu::~Menu() {
   purge_btns();
-  SER_LOG_PRINT("[Menu destructor called.]");
+  SER_LOG_PRINT("[Menu destructor called.]\n");
 }
 
 bool Gui::Menu::add_btn(Btn *btn) {
@@ -257,15 +257,20 @@ Gui::MenuKeyboard::MenuKeyboard(
 )
   : m_t_debounce(t_debounce), m_layout(layout),
   m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h) {
-  uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * marg_h + 2 * pad_h, pad_h, layout.get_width());
-  uint16_t cell_height = (float) cell_width * btn_height;
+  SER_LOG_PRINT("Hey there\n");
+  const uint16_t cell_width = TftCalc::fraction(tft.width() - 2 * marg_h + 2 * pad_h, pad_h, layout.get_width());
+  const uint16_t cell_height = (float) cell_width * btn_height;
+  uint16_t x, y;
 
   for (uint8_t row = 0; row < layout.get_height(); ++row) {
     for (uint8_t col = 0; col < layout.get_width(); ++col) {
-      uint16_t x = marg_h + col * (cell_width  + pad_h);
-      uint16_t y = marg_v + row * (cell_height + pad_v);
+      x = marg_h + col * (cell_width  + pad_h);
+      y = marg_v + row * (cell_height + pad_v);
 
+      SER_LOG_PRINT("MenuKeyboard::MenuKeyboard(): r%dc%d\n", row, col);
+      Memory::print_ram_analysis();
       add_btn(new Btn(x, y, cell_width, cell_height, layout.get_ptr_char(col, row), TftColor::WHITE, TftColor::BLUE));
+      Memory::print_ram_analysis();
     }
   }
 
@@ -294,7 +299,7 @@ void Gui::MenuKeyboard::show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t l
 }
 
 void Gui::MenuKeyboard::get_val(char *buf, uint8_t len) {
-  strncpy(buf, m_val, len + 1);
+  strncpy(buf, m_val, len);
 }
 
 char *Gui::MenuKeyboard::get_ptr_val() {
@@ -327,6 +332,7 @@ Gui::MenuStrInput::MenuStrInput(
   uint16_t marg_v, uint16_t marg_h, uint8_t buf_len
 )
   : MenuKeyboard(tft, debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_str_layout()), m_buf_len(buf_len) {
+  SER_DEBUG_PRINT((BUF_LEN() + 1) * sizeof(char), 'd');
   m_val = (char *) malloc((BUF_LEN() + 1) * sizeof(char));
   m_val[0] = '\0';
 }
@@ -496,8 +502,7 @@ void Gui::ProgressIndicator::show() {
   double fraction = (double) m_cur_val / (double) m_max_val;
   uint16_t progress = (m_w - 4) * fraction;
 
-  char text[32];
-  snprintf(text, 31, "%d/%d       ", m_cur_val, m_max_val);
+  const char *text = STRFMT_NOBUF("%d/%d       ", m_cur_val, m_max_val);
 
   uint16_t ty = m_y + TftCalc::t_center_y(m_h, 2);
   uint16_t tx = m_x + TftCalc::t_center_x(m_w, text, 2);
