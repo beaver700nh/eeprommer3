@@ -44,12 +44,14 @@ struct Memory {
 
   static constexpr uint8_t NUM_TYPES = 6;
   enum Types {DATA, BSS, HEAP, FREE, STACK, TOTAL};
+  enum Bords {RAM_START, BSS_START, HEAP_START, HEAP_END, STACK_PTR, RAM_END};
 
   static inline const char *const NAMES[NUM_TYPES] {
     "Data", "BSS", "Heap", "Free", "Stack", "Total"
   };
 
   static inline int32_t sizes[NUM_TYPES];
+  static inline uint32_t bords[NUM_TYPES];
 
   static inline char repr_sizes[NUM_TYPES][26];
   static inline char repr_bords[NUM_TYPES][20];

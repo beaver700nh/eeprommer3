@@ -1,7 +1,15 @@
-.SILENT: all build compile upload run new del search love
-.PHONY: all build compile upload run new del search love
+.SILENT: all build compile upload run new del search lsyms lsegs plmap objdump love
+.PHONY: all build compile upload run new del search lsyms lsegs plmap objdump love
 
 .SHELL := /bin/bash
+
+AVR_NM      := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-nm
+AVR_SIZE    := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-size
+AVR_OBJDUMP := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-objdump
+
+TMP_BUILD_DIR := /tmp/arduino-sketch-*/
+
+PROGRAM := eeprommer3.ino
 
 all: compile upload run
 build: compile upload
@@ -74,6 +82,22 @@ search:
 
 		printf "%s%s|%s\n" "$$location" "$$spaces" "$$contents"
 	done
+
+lsyms:
+	$(call PrintFancy, "Listing largest symbols in program")
+	$(AVR_NM) -Crtd --size-sort $(TMP_BUILD_DIR)/$(PROGRAM).elf | grep -i ' [dbv] '
+
+lsegs:
+	$(call PrintFancy, "Listing sizes of static segments")
+	$(AVR_SIZE) $(TMP_BUILD_DIR)/$(PROGRAM).elf
+
+plmap:
+	$(call PrintFancy, "Printing linker .map file")
+	cat $(TMP_BUILD_DIR)/$(PROGRAM).map
+
+objdump:
+	$(call PrintFancy, "Running avr-objdump on program")
+	$(AVR_OBJDUMP) -t $(TMP_BUILD_DIR)/$(PROGRAM).elf
 
 love:
 	$(call PrintFancy, "... not war!")

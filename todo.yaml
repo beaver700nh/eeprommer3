@@ -13,6 +13,7 @@ FIRMWARE:
     fix multi write scrolling
     remove string literals from other files too
     improve "Total" box on Memory
+    put more things in PROGMEM
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
