@@ -11,6 +11,7 @@
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
 #include "touch.hpp"
+#include "util.hpp"
 #include "vector.hpp"
 
 #include "prog_core.hpp"
@@ -217,6 +218,8 @@ void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
 
   bar.for_each(
     [this, &this_page, &file, &cur_addr]GUI_PROGRESS_INDICATOR_LAMBDA {
+      UNUSED_VAR(progress);
+
       auto len = file->read(this_page, 0xFF);
       this->m_ee.write(cur_addr, this_page, MIN(len, 0xFF));
 
@@ -241,6 +244,8 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
 
   bool complete = bar.for_each(
     [this, &expected, &reality, &file, &addr]GUI_PROGRESS_INDICATOR_LAMBDA {
+      UNUSED_VAR(progress);
+
       auto nbytes = file->read(expected, 256);
       this->m_ee.read(addr, addr + nbytes, reality);
 
@@ -386,6 +391,8 @@ void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uin
 
   bar.for_each(
     [this, &data, &cur_addr_offset, &addr1, &addr2]GUI_PROGRESS_INDICATOR_LAMBDA {
+      UNUSED_VAR(progress);
+
       uint16_t _addr1 = addr1 + cur_addr_offset;
       uint16_t _addr2 = MIN(_addr1 + 0xFF, addr2);
 
@@ -686,6 +693,8 @@ void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
 }
 
 Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
+  UNUSED_VAR(addr); // addr is unused because `data` already contains addresses
+
   auto *buf = (AddrDataArray *) data;
 
   for (uint16_t i = 0; i < buf->get_len(); ++i) {

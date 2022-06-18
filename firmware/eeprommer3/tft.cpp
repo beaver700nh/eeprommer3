@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include <avr/pgmspace.h>
+
 #include <MCUFRIEND_kbv.h>
 #include <TouchScreen.h>
 
@@ -48,7 +50,7 @@ void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
   unsigned long last = 0;
 
   while (true) {
-    TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
+    TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft.width(), tft.height());
 
     if (p.x < 3) break;
 
@@ -80,31 +82,58 @@ void tft_print_chars(TftCtrl &tft) {
   tft.setRotation(original_rotation);
 }
 
+static const uint16_t PSTR_COLORS[] PROGMEM {
+  TftColor::DRED,   TftColor::RED,     TftColor::ORANGE,  TftColor::YELLOW, TftColor::LIME,
+  TftColor::LGREEN, TftColor::GREEN,   TftColor::OLIVE,   TftColor::DGREEN,
+  TftColor::DCYAN,  TftColor::CYAN,    TftColor::BLUE,    TftColor::DBLUE, 
+  TftColor::PURPLE, TftColor::MAGENTA, TftColor::PINKK,  TftColor::BLACK,
+  TftColor::DGRAY,  TftColor::GRAY,    TftColor::LGRAY,  TftColor::WHITE,
+};
+
+static const char PSTR_NAMES_0[] PROGMEM = "Dark Red";
+static const char PSTR_NAMES_1[] PROGMEM = "Red";
+static const char PSTR_NAMES_2[] PROGMEM = "Orange";
+static const char PSTR_NAMES_3[] PROGMEM = "Yellow";
+static const char PSTR_NAMES_4[] PROGMEM = "Lime";
+static const char PSTR_NAMES_5[] PROGMEM = "Light Green";
+static const char PSTR_NAMES_6[] PROGMEM = "Green";
+static const char PSTR_NAMES_7[] PROGMEM = "Olive";
+static const char PSTR_NAMES_8[] PROGMEM = "Dark Green";
+static const char PSTR_NAMES_9[] PROGMEM = "Dark Cyan";
+static const char PSTR_NAMES_A[] PROGMEM = "Cyan";
+static const char PSTR_NAMES_B[] PROGMEM = "Blue";
+static const char PSTR_NAMES_C[] PROGMEM = "Dark Blue";
+static const char PSTR_NAMES_D[] PROGMEM = "Purple";
+static const char PSTR_NAMES_E[] PROGMEM = "Magenta";
+static const char PSTR_NAMES_F[] PROGMEM = "Pink";
+static const char PSTR_NAMES_G[] PROGMEM = "Black";
+static const char PSTR_NAMES_H[] PROGMEM = "Dark Gray";
+static const char PSTR_NAMES_I[] PROGMEM = "Gray";
+static const char PSTR_NAMES_J[] PROGMEM = "Light Gray";
+static const char PSTR_NAMES_K[] PROGMEM = "White";
+
+static const char *const PSTR_NAMES[] PROGMEM {
+  PSTR_NAMES_0, PSTR_NAMES_1, PSTR_NAMES_2, PSTR_NAMES_3, PSTR_NAMES_4,
+  PSTR_NAMES_5, PSTR_NAMES_6, PSTR_NAMES_7, PSTR_NAMES_8,
+  PSTR_NAMES_9, PSTR_NAMES_A, PSTR_NAMES_B, PSTR_NAMES_C,
+  PSTR_NAMES_D, PSTR_NAMES_E, PSTR_NAMES_F, PSTR_NAMES_G,
+  PSTR_NAMES_H, PSTR_NAMES_I, PSTR_NAMES_J, PSTR_NAMES_K,
+};
+
 void tft_show_colors(TftCtrl &tft) {
   using namespace TftColor;
 
-  static const uint16_t colors[] {
-    DRED, RED, ORANGE, YELLOW, LIME,
-    LGREEN, GREEN, OLIVE, DGREEN,
-    DCYAN, CYAN, BLUE, DBLUE,
-    PURPLE, MAGENTA, PINKK,
-    BLACK, DGRAY, GRAY, LGRAY, WHITE,
-  };
-
-  static const char *names[] {
-    "Dark Red", "Red", "Orange", "Yellow", "Lime",
-    "Light Green", "Green", "Olive", "Dark Green",
-    "Dark Cyan", "Cyan", "Blue", "Dark Blue",
-    "Purple", "Magenta", "Pink",
-    "Black", "Dark Gray", "Gray", "Light Gray", "White",
-  };
-
   for (uint8_t i = 0; i < 21; ++i) {
-    tft.fillScreen(colors[i]);
+    auto color = pgm_read_word_near(PSTR_COLORS + i);
+
+    char name[12];
+    strcpy_P(name, (char *) pgm_read_word_near(PSTR_NAMES + i));
+
+    tft.fillScreen(color);
 
     tft.drawRoundRect(9, 9, 212, 38, 4, WHITE);
     tft.fillRoundRect(10, 10, 210, 36, 4, BLACK);
-    tft.drawText(16, 16, names[i], WHITE, 3);
+    tft.drawText(16, 16, name, WHITE, 3);
 
     delay(1250);
   }

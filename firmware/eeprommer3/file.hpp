@@ -96,23 +96,23 @@ public:
 class FileCtrlSd : public FileCtrl {
 public:
   FileCtrlSd(const char *path, uint8_t access);
-  ~FileCtrlSd();
+  ~FileCtrlSd() override;
 
-  bool is_open();
+  bool is_open() override;
 
-  const char *name();
+  const char *name() override;
 
-  uint16_t size();
+  uint16_t size() override;
 
-  uint8_t read();
-  uint16_t read(uint8_t *buf, uint16_t size);
+  uint8_t read() override;
+  uint16_t read(uint8_t *buf, uint16_t size) override;
 
-  void write(uint8_t val);
-  uint16_t write(const uint8_t *buf, uint16_t size);
+  void write(uint8_t val) override;
+  uint16_t write(const uint8_t *buf, uint16_t size) override;
 
-  void flush();
+  void flush() override;
 
-  void close();
+  void close() override;
 
 private:
   File m_file;

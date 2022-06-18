@@ -12,6 +12,7 @@
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
 #include "touch.hpp"
+#include "util.hpp"
 
 #include "prog.hpp"
 
@@ -58,6 +59,7 @@ Programmer::Programmer(TYPED_CONTROLLERS)
 Programmer::~Programmer() {
   for (uint8_t i = 0; i < NUM_ACTIONS; ++i) {
     delete m_cores[i];
+    m_cores[i] = nullptr;
   }
 }
 
@@ -71,7 +73,7 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
     PSTR_help_6, PSTR_help_7,
     PSTR_help_8, PSTR_help_9,
     PSTR_help_A,
-  };
+  }; // todo make this progmem + global
 
   char help_text[128];
 

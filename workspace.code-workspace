@@ -16,6 +16,39 @@
 			"string_view": "cpp",
 			"initializer_list": "cpp",
 			"ranges": "cpp"
-		}
+		},
+		"C_Cpp.codeAnalysis.clangTidy.config": "",
+		"C_Cpp.codeAnalysis.clangTidy.enabled": true,
+		"C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+			"bugprone-easily-swappable-parameters",
+			"bugprone-narrowing-conversions",
+			"cppcoreguidelines-avoid-*",
+			"cppcoreguidelines-narrowing-conversions",
+			"cppcoreguidelines-pro-bounds-array-to-pointer-decay",
+			"cppcoreguidelines-pro-type-vararg",
+			"cppcoreguidelines-avoid-c-arrays",
+			"cppcoreguidelines-avoid-non-const-global-variables",
+			"cppcoreguidelines-pro-type-cstyle-cast",
+			"cppcoreguidelines-macro-usage",
+			"cppcoreguidelines-non-private-member-variables-in-classes",
+			"cppcoreguidelines-special-member-functions",
+			"cppcoreguidelines-init-variables",
+			"cppcoreguidelines-owning-memory",
+			"cppcoreguidelines-pro-bounds-constant-array-index",
+			"cppcoreguidelines-no-malloc",
+			"cppcoreguidelines-pro-bounds-pointer-arithmetic",
+			"cppcoreguidelines-pro-type-member-init",
+			"cppcoreguidelines-virtual-class-destructor",
+			"bugprone-sizeof-expression",
+			"bugprone-implicit-widening-of-multiplication-result"
+		],
+		"C_Cpp.codeAnalysis.clangTidy.checks.enabled": [
+			"clang-analyzer-*",
+			"cppcoreguidelines-*",
+			"bugprone-*"
+		],
+		"C_Cpp.errorSquiggles": "Enabled",
+		"C_Cpp.intelliSenseEngine": "Disabled",
+		"clangd.path": ""
 	}
 }

@@ -7,7 +7,6 @@
 #include <SD.h>
 #include <MCUFRIEND_kbv.h>
 
-#include "tft.hpp"
 #include "touch.hpp"
 
 // Removes color constants from MCUFRIEND_kbv library

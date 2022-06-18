@@ -10,12 +10,12 @@ bool TouchCtrl::is_valid_pressure(int16_t pressure, int16_t max_pressure) {
   return pressure > 10 && (max_pressure < 0 || pressure < max_pressure);
 }
 
-TSPoint TouchCtrl::get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, TftCtrl &tft) {
+TSPoint TouchCtrl::get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, uint16_t tftw, uint16_t tfth) {
   TSPoint p = get_raw_point();
 
   // Map raw point from touchscreen coords to TFT coords
-  uint16_t x = map(p.y, miny, maxy, 0, tft.width());
-  uint16_t y = map(p.x, minx, maxx, 0, tft.height());
+  uint16_t x = map(p.y, miny, maxy, 0, tftw);
+  uint16_t y = map(p.x, minx, maxx, 0, tfth);
 
   return TSPoint(x, y, p.z);
 }

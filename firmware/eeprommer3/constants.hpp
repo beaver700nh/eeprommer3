@@ -1,8 +1,15 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
+// To silence clangd errors
+
+#include "HardwareSerial.h"
+
+extern HardwareSerial Serial;
+
+// End silence clangd errors
+
 #include "strfmt.hpp"
-#include "util.hpp"
 
 /*****************************************/
 /** Compile-Time Constants ***************/
@@ -10,23 +17,25 @@
 
 #define DEBUG_MODE
 
+//#define LOGGING
+
 /*****************************************/
 /** Macros *******************************/
 /*****************************************/
 
 #define BYTE_FMT "%c%c%c%c%c%c%c%c"
 #define BYTE_FMT_VAL(n)   \
-  (n & 0x80 ? '1' : '0'), \
-  (n & 0x40 ? '1' : '0'), \
-  (n & 0x20 ? '1' : '0'), \
-  (n & 0x10 ? '1' : '0'), \
-  (n & 0x08 ? '1' : '0'), \
-  (n & 0x04 ? '1' : '0'), \
-  (n & 0x02 ? '1' : '0'), \
-  (n & 0x01 ? '1' : '0')
+  ((n) & 0x80 ? '1' : '0'), \
+  ((n) & 0x40 ? '1' : '0'), \
+  ((n) & 0x20 ? '1' : '0'), \
+  ((n) & 0x10 ? '1' : '0'), \
+  ((n) & 0x08 ? '1' : '0'), \
+  ((n) & 0x04 ? '1' : '0'), \
+  ((n) & 0x02 ? '1' : '0'), \
+  ((n) & 0x01 ? '1' : '0')
 
 // Returns size of `t` but in bits instead of bytes
-#define BIT_WIDTH(t) sizeof(t) * 8
+#define BIT_WIDTH(t) (sizeof(t) * 8)
 
 // Returns `addr` but with 2nd and above most significant bytes equal to `page`
 // - PAGE_ADJUSTED(0x123456FF, 0x00654321) => 0x654321FF
@@ -66,9 +75,9 @@
 
 inline char ser_log_print_fname[128];
 
-// Prints text over Serial if debug mode is enabled
+// Prints text over Serial if logging is enabled
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
-#ifdef DEBUG_MODE
+#ifdef LOGGING
 #define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
 #define SER_LOG_PRINT(text, ...) ( \
   STRNCPY(ser_log_print_fname, __FILE__), \

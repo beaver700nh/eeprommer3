@@ -1,7 +1,9 @@
-.SILENT: all build compile upload run new del search lsyms lsegs plmap objdump love
-.PHONY: all build compile upload run new del search lsyms lsegs plmap objdump love
+.SILENT: all build compile upload run new del search portability lsyms lsegs plmap objdump love
+.PHONY: all build compile upload run new del search portability lsyms lsegs plmap objdump love
 
 .SHELL := /bin/bash
+
+PRINTF := /usr/bin/printf
 
 AVR_NM      := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-nm
 AVR_SIZE    := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-size
@@ -16,11 +18,11 @@ build: compile upload
 go: upload run
 
 define PrintFancy
-	/usr/bin/printf "\x1b[1m***\n*** %s\n***\x1b[0m\n" $(1)
+	$(PRINTF) "\x1b[1m***\n*** %s\n***\x1b[0m\n" $(1)
 endef
 
 define PrintSimple
-	/usr/bin/printf "\x1b[1m%s\x1b[0m" $(1)
+	$(PRINTF) "\x1b[1m%s\x1b[0m" $(1)
 endef
 
 compile:
@@ -83,9 +85,40 @@ search:
 		printf "%s%s|%s\n" "$$location" "$$spaces" "$$contents"
 	done
 
+portability:
+	grep -Gn '\%\[PORTABILITY\]\%' *.?pp *.ino
+
+	if [ $$? = 1 ]; then
+		$(call PrintFancy, "No matches found.")
+		exit
+	fi
+
+.ONESHELL:
 lsyms:
 	$(call PrintFancy, "Listing largest symbols in program")
-	$(AVR_NM) -Crtd --size-sort $(TMP_BUILD_DIR)/$(PROGRAM).elf | grep -i ' [dbv] '
+
+	result=`$(AVR_NM) -C -r -t d -f sysv --size-sort $(TMP_BUILD_DIR)/$(PROGRAM).elf | grep -i ' [dbv] '`
+
+	printf "%s" "$$result" | while IFS="\n" read -r line; do
+		IFS="|"
+		set -- $$line
+
+		padding=$$((100-$${#1}))
+		spaces=`perl -E "say \" \" x $$padding"`
+		$(PRINTF) "\x1b[1m%s\x1b[0m%s" "$$1" "$$spaces"
+
+		for col in 2 3 4 5 6 7; do
+			text=`eval echo "\$$"$$col`
+
+			if [ $$col = 5 ]; then
+				$(PRINTF) " | \x1b[1m$$text\x1b[0m"
+			else
+				echo -n " | $$text"
+			fi
+		done
+
+		echo
+	done
 
 lsegs:
 	$(call PrintFancy, "Listing sizes of static segments")

@@ -41,6 +41,7 @@ public:
 
   Status nop();
 
+protected:
   TftCtrl &m_tft;
   TouchCtrl &m_tch;
   EepromCtrl &m_ee;
@@ -170,7 +171,7 @@ private:
 
 namespace Dialog {
 
-// Helper function to get an address; same as ask_val<uint16_t> but has built-in validation
+// Helper function to get an address; same as `ask_val<uint16_t>` but has built-in validation
 uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt);
 
 };

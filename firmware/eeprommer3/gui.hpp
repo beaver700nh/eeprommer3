@@ -155,7 +155,7 @@ public:
   uint8_t get_width();
   uint8_t get_height();
 
-  const char *const get_ptr_char(uint8_t x, uint8_t y);
+  const char *get_ptr_char(uint8_t x, uint8_t y);
   char get_char(uint8_t x, uint8_t y);
 
 private:
@@ -199,7 +199,7 @@ public:
   KeyboardLayout &get_layout();
 
   // REMEMBER TO OVERRIDE BUFFER LENGTH IN CHILD CLASS!
-  inline virtual const uint8_t BUF_LEN() {
+  inline virtual uint8_t BUF_LEN() {
     return 0;
   }
 
@@ -224,7 +224,7 @@ public:
   // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
   MenuHexInput(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
     : MenuKeyboard(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
-    m_val = (char *) malloc(BUF_LEN() * sizeof(char));
+    m_val = (char *) malloc(BUF_LEN() * sizeof(char)); // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
     for (uint8_t i = 0; i < BUF_LEN(); ++i) {
       m_val[i] = '0';
@@ -281,7 +281,7 @@ public:
     return true;
   }
 
-  inline virtual const uint8_t BUF_LEN() override {
+  inline uint8_t BUF_LEN() override {
     return BIT_WIDTH(T) / 4;
   }
 };
@@ -302,7 +302,7 @@ public:
 
   char capitalize(char c);
 
-  inline virtual const uint8_t BUF_LEN() override {
+  inline uint8_t BUF_LEN() override {
     return m_buf_len;
   }
 

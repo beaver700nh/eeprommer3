@@ -9,12 +9,13 @@
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
+#include "util.hpp"
 
 #include "file.hpp"
 
 Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
   : MenuChoice(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
-  m_num_rows = rows;
+  m_num_rows = rows; // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
   for (uint8_t j = 0; j < m_num_rows; ++j) {
     for (uint8_t i = 0; i < m_num_cols; ++i) {
@@ -63,7 +64,9 @@ void Gui::MenuSdFileSel::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t 
 }
 
 Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
-  char cur_path[max_path_len + 1] = "/";
+  if (max_path_len <= 2) return Status::FNAME_TOO_LONG;
+
+  strcpy(file_path, "/");
 
   while (true) {
     tft.fillRect(0, m_marg_v - 3, tft.width(), tft.height() - m_marg_v + 6, TftColor::BLACK);
@@ -71,7 +74,7 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
     deselect_all();
     select(0);
 
-    use_files_in_dir(sd, cur_path, m_num_rows * m_num_cols);
+    use_files_in_dir(sd, file_path, m_num_rows * m_num_cols);
     uint8_t btn_id = MenuChoice::wait_for_value(tch, tft);
 
     if (btn_id == get_num_btns() - 2) {
@@ -79,21 +82,20 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
     }
 
     if (btn_id == get_num_btns() - 3) {
-      FileUtil::go_up_dir(cur_path);
+      FileUtil::go_up_dir(file_path);
       continue;
     }
 
-    if (strlen(cur_path) + strlen(m_files[btn_id].name) >= max_path_len) return Status::FNAME_TOO_LONG;
+    if (strlen(file_path) + strlen(m_files[btn_id].name) >= max_path_len - 1) return Status::FNAME_TOO_LONG;
 
     // User selected a file, not a control button
 
-    if (!FileUtil::go_down_path(cur_path, m_files + btn_id, max_path_len)) {
+    if (!FileUtil::go_down_path(file_path, m_files + btn_id, max_path_len)) {
       return Status::FNAME_TOO_LONG;
     }
 
     // If the file was a regular file, user has selected the needed file, done
     if (!m_files[btn_id].is_dir) {
-      strncpy(file_path, cur_path, max_path_len);
       return Status::OK;
     }
   }
@@ -283,7 +285,7 @@ bool FileUtil::go_up_dir(char *path) {
 }
 
 bool FileUtil::go_down_file(char *path, const char *file, uint8_t len) {
-  if (strlen(path) + strlen(file) >= len) {
+  if (strlen(path) + strlen(file) >= len - 1) {
     // Doesn't fit, fail
     return false;
   }
@@ -294,7 +296,7 @@ bool FileUtil::go_down_file(char *path, const char *file, uint8_t len) {
 
 bool FileUtil::go_down_dir(char *path, const char *dir, uint8_t len) {
   // Paste a trailing slash onto `dir`
-  auto *temp = (char *) malloc((strlen(dir) + 1) * sizeof(char));
+  auto *temp = (char *) malloc((strlen(dir) + 2) * sizeof(char));
   strcpy(temp, dir);
   strcat(temp, "/");
 

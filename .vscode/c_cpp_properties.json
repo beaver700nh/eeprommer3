@@ -10,12 +10,9 @@
                 "~/.arduino15/packages/arduino/hardware/avr/1.8.5/cores/arduino/**",
                 "~/.arduino15/packages/arduino/hardware/avr/1.8.5/firmwares/**",
                 "~/.arduino15/packages/arduino/hardware/avr/1.8.5/libraries/**",
-                /* ↓↓↓↓ Change this if your Arduino's architecture is not "mega" ↓↓↓↓ */
                 "~/.arduino15/packages/arduino/hardware/avr/1.8.5/variants/mega/**"
             ],
-            "forcedInclude": [
-                "~/.arduino15/packages/arduino/hardware/avr/1.8.5/cores/arduino/Arduino.h"
-            ],
+            "forcedInclude": [],
             "defines": [
                 "USBCON",
                 "DEBUG_MODE",

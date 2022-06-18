@@ -31,7 +31,7 @@ public:
 
   ProgrammerBaseCore *m_cores[NUM_ACTIONS];
 
-#define FUNC(type, name) (ProgrammerBaseCore::Func) &Programmer##type##Core::name
+#define FUNC(type, name) ((ProgrammerBaseCore::Func) &Programmer##type##Core::name)
 
   ProgrammerBaseCore::Func action_map[NUM_ACTIONS] {
     FUNC(Byte,   read ), FUNC(Byte,   write),

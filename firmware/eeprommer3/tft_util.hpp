@@ -20,14 +20,14 @@ namespace TftUtil {
    */
   namespace Lambdas {
     // Tells whether screen is being touched
-    auto is_tching_tft = [](TouchCtrl &tch) {
+    inline auto is_tching_tft(TouchCtrl &tch) {
       return [&]() -> bool { return tch.is_touching(); };
-    };
+    }
 
     // Tells whether buttons is being pressed
-    auto is_tching_btn = [](Gui::Btn &btn, TouchCtrl &tch, TftCtrl &tft) {
+    inline auto is_tching_btn(Gui::Btn &btn, TouchCtrl &tch, TftCtrl &tft) {
       return [&]() -> bool { return btn.is_pressed(tch, tft); };
-    };
+    }
   };
 };
 

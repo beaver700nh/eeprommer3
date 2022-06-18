@@ -6,14 +6,6 @@
  * we use <Arduino.h> with Arduino and normal C++ libraries otherwise.
  */
 
-#ifdef ARDUINO
-#  include <Arduino.h>
-#else
-#  include <cstdint>
-#  include <cstdlib>
-#  include <cstring>
-#endif
-
 #include "constants.hpp"
 
 // A key-value pair data structure for storage of addr-data pairs

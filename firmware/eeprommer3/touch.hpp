@@ -6,8 +6,6 @@
 
 #include <TouchScreen.h>
 
-#include "tft.hpp"
-
 // Forward declaration because of circular dependency
 class TftCtrl;
 
@@ -26,7 +24,7 @@ public:
 
   void wait_for_press();
 
-  TSPoint get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, TftCtrl &tft);
+  TSPoint get_tft_point(uint16_t minx, uint16_t maxx, uint16_t miny, uint16_t maxy, uint16_t tftw, uint16_t tfth);
   TSPoint get_raw_point();
 };
 

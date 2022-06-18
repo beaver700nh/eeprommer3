@@ -14,6 +14,7 @@ FIRMWARE:
     remove string literals from other files too
     improve "Total" box on Memory
     put more things in PROGMEM
+    make stuff allow PROGMEM strings
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears

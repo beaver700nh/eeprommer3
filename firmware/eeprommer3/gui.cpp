@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include <stddef.h>
+
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
@@ -10,14 +12,17 @@
 #include "gui.hpp"
 
 Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg)
-  : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg) {
-  m_text = text;
+  : m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg), m_text(text) {
+  // Empty body, all work done in init list
 }
 
 Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg)
-  : Btn(x, y, w, h, 0, 0, text, fg, bg) { // Passes `tx/ty` as (0, 0) temporarily
-  m_auto_center = true;
-  auto_center(); // Overwrites dummy (0, 0) `tx/ty` with real center
+  : Btn(x, y, w, h, 0, 0, text, fg, bg) {
+  m_auto_center = true; // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
+
+  // Pass `tx/ty` as (0, 0) temporarily in init list
+  // Overwrite dummy (0, 0) with real center here
+  auto_center();
 }
 
 void Gui::Btn::draw(TftCtrl &tft) {
@@ -84,7 +89,7 @@ void Gui::Btn::wait_for_press(TouchCtrl &tch, TftCtrl &tft) {
 bool Gui::Btn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
   if (!m_is_operational) return false; // Ignore presses if non-operational.
 
-  TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft);
+  TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft.width(), tft.height());
 
   return (
     tch.is_valid_pressure(p.z) &&
@@ -219,8 +224,8 @@ uint8_t Gui::KeyboardLayout::get_height() {
   return ceil((float) m_length / (float) m_width);
 }
 
-const char *const Gui::KeyboardLayout::get_ptr_char(uint8_t x, uint8_t y) {
-  return (char *) m_layout + 2 * (y * m_width + x);
+const char *Gui::KeyboardLayout::get_ptr_char(uint8_t x, uint8_t y) {
+  return (char *) m_layout + static_cast<ptrdiff_t>(2 * (y * m_width + x));
 }
 
 char Gui::KeyboardLayout::get_char(uint8_t x, uint8_t y) {
