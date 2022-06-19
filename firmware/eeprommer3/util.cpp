@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-// %[PORTABILITY]%
-#include <avr/iom2560.h>
+#include <avr/io.h>
 
 #include "util.hpp"
 

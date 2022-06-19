@@ -5,6 +5,7 @@ Diagnostics:
     -Wvarargs,
     err_bad_reinterpret_cast_small_int,
     err_asm_invalid_output_constraint,
+    err_expected_fn_body,
   ]
   ClangTidy:
     Add: [

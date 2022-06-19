@@ -15,6 +15,10 @@
 -I/home/pi/Arduino/libraries/MCUFRIEND_kbv/
 -I/home/pi/Arduino/libraries/MCUFRIEND_kbv/extras/unused/
 -I/home/pi/Arduino/libraries/TouchScreen/
+-D__cplusplus
+-D__STDC_LIMIT_MACROS
+-DARDUINO
+-D__AVR_ATmega2560__
 -nobuiltininc
 -nostdinc
 -nostdinc++

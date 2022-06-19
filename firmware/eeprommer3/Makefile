@@ -1,5 +1,5 @@
-.SILENT: all build compile upload run new del search portability lsyms lsegs plmap objdump love
-.PHONY: all build compile upload run new del search portability lsyms lsegs plmap objdump love
+.SILENT: all build compile upload run new del search lsyms lsegs plmap objdump love
+.PHONY: all build compile upload run new del search lsyms lsegs plmap objdump love
 
 .SHELL := /bin/bash
 
@@ -84,14 +84,6 @@ search:
 
 		printf "%s%s|%s\n" "$$location" "$$spaces" "$$contents"
 	done
-
-portability:
-	grep -Gn '\%\[PORTABILITY\]\%' *.?pp *.ino
-
-	if [ $$? = 1 ]; then
-		$(call PrintFancy, "No matches found.")
-		exit
-	fi
 
 .ONESHELL:
 lsyms:
