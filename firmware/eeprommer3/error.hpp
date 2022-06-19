@@ -21,9 +21,7 @@ namespace ErrorLevel {
 };
 
 namespace Dialog {
-
-void show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *title, const char *msg);
-
+  void show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *title, const char *msg);
 };
 
 #endif

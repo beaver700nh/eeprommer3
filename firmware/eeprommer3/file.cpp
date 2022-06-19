@@ -13,9 +13,9 @@
 
 #include "file.hpp"
 
-Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols)
-  : MenuChoice(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
-  m_num_rows = rows; // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
+Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols) :
+  MenuChoice(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
+  m_num_rows = rows;  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
   for (uint8_t j = 0; j < m_num_rows; ++j) {
     for (uint8_t i = 0; i < m_num_cols; ++i) {
@@ -24,10 +24,12 @@ Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, ui
     }
   }
 
-  uint16_t _y = TftCalc::bottom(tft, 24, 44), _w = TftCalc::fraction_x(tft, 10, 2);
+  const uint16_t _w = TftCalc::fraction_x(tft, 10, 2);
+  const uint16_t _x = _w + 20;
+  const uint16_t _y = TftCalc::bottom(tft, 24, 44);
 
-  add_btn(new Gui::Btn(10,      _y, _w, 24, "Parent Dir", TftColor::CYAN,  TftColor::BLUE));
-  add_btn(new Gui::Btn(20 + _w, _y, _w, 24, "Cancel",     TftColor::PINKK, TftColor::RED ));
+  add_btn(new Gui::Btn(10, _y, _w, 24, "Parent Dir", TftColor::CYAN,  TftColor::BLUE));
+  add_btn(new Gui::Btn(_x, _y, _w, 24, "Cancel",     TftColor::PINKK, TftColor::RED ));
   add_btn_confirm(tft, true);
 
   m_files = (SdFileInfo *) malloc(m_num_rows * m_num_cols * sizeof(SdFileInfo));
@@ -109,7 +111,7 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
   char fpath[64];
   Memory::print_ram_analysis();
 
-  switch(fsys) {
+  switch (fsys) {
   case FileSystem::NONE:
     *status = AskFileStatus::CANCELED;
     Dialog::show_error(tft, tch, ErrorLevel::INFO, "Canceled", "The operation\nhas been canceled.");
@@ -136,7 +138,7 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const c
 
   FSStatus substatus;
   SER_LOG_PRINT("B\n");
-  
+
   if (must_exist) {
     SER_LOG_PRINT("must_exist == true\n");
     substatus = ask_sel_fpath_sd(tft, tch, prompt, out, len, sd);
@@ -182,16 +184,16 @@ FileSystem Dialog::ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, Sd
   menu.add_btn_calc(tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );
   menu.add_btn_confirm(tft, true);
 
-  uint8_t avail = FileUtil::get_available_file_systems(sd);
+  const uint8_t avail = FileUtil::get_available_file_systems(sd);
 
   if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
   if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
 
-  uint8_t btn = menu.wait_for_value(tch, tft);
-  uint8_t btn_cancel = menu.get_num_btns() - 2;
+  const uint8_t btn_pressed = menu.wait_for_value(tch, tft);
+  const uint8_t btn_cancel  = menu.get_num_btns() - 2;
 
-  if (btn != btn_cancel) {
-    switch (btn) {
+  if (btn_pressed != btn_cancel) {
+    switch (btn_pressed) {
     case 0: return FileSystem::ON_SD_CARD;
     case 1: return FileSystem::ON_SERIAL;
     }
@@ -215,7 +217,7 @@ bool FileCtrl::check_valid(FileCtrl *file) {
 
 FileCtrlSd::FileCtrlSd(const char *path, uint8_t access) {
   m_file = SD.open(path, access);
-  fsys = FileSystem::ON_SD_CARD;
+  fsys   = FileSystem::ON_SD_CARD;
 }
 
 FileCtrlSd::~FileCtrlSd() {
@@ -265,7 +267,7 @@ bool FileUtil::go_up_dir(char *path) {
   bool success = true;
 
   char *_path = strdup(path);
-  char *end = _path + strlen(_path);
+  char *end   = _path + strlen(_path);
 
   // Remove trailing '/' from copy of `path`
   *(end - 1) = '\0';

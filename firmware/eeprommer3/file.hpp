@@ -19,14 +19,6 @@ class FileCtrl;
 class TftChoiceMenu;
 
 /*
- * Simple little helper struct to store name of file and whether it is a directory.
- */
-struct SdFileInfo {
-  char name[13];
-  bool is_dir;
-};
-
-/*
  * Set of flags to represent types of files.
  */
 enum FileSystem : uint8_t {
@@ -72,12 +64,12 @@ public:
   virtual uint16_t size();
 
   virtual uint8_t read();
-  virtual uint16_t read(uint8_t *buf, uint16_t size); // Reads `size` bytes from file into `buf`. Returns number of bytes read.
+  virtual uint16_t read(uint8_t *buf, uint16_t size);  // Reads `size` bytes from file into `buf`. Returns number of bytes read.
 
   virtual void write(uint8_t val);
-  virtual uint16_t write(const uint8_t *buf, uint16_t size); // Writes `size` bytes from `buf` to file. Returns number of bytes written.
+  virtual uint16_t write(const uint8_t *buf, uint16_t size);  // Writes `size` bytes from `buf` to file. Returns number of bytes written.
 
-  virtual void flush(); // Ensures that all data is written to file.
+  virtual void flush();  // Ensures that all data is written to file.
 
   virtual void close();
 
@@ -129,9 +121,9 @@ public:
   ~MenuSdFileSel();
 
   enum Status : uint8_t {
-    OK,             // No errors
-    CANCELED,       // User pressed "Cancel"
-    FNAME_TOO_LONG, // Filename was too long to fit in buffer
+    OK,              // No errors
+    CANCELED,        // User pressed "Cancel"
+    FNAME_TOO_LONG,  // Filename was too long to fit in buffer
   };
 
   /*
@@ -156,10 +148,10 @@ private:
   static inline uint8_t calc_btn_height(TftCtrl &tft, uint8_t rows, uint8_t marg_v, uint8_t pad_v) {
     return MAX(
       16, TftCalc::fraction(
-        tft.height() // take up as much space as possible
-        - marg_v     // without the top margin
-        - 78         // without the bottom margin
-        + 2 * pad_v, // but still need some amount
+        tft.height()    // take up as much space as possible
+          - marg_v      // without the top margin
+          - 78          // without the bottom margin
+          + 2 * pad_v,  // but still need some amount
         pad_v, rows
       )
     );
@@ -176,10 +168,10 @@ private:
 namespace Dialog {
 
 enum AskFileStatus : uint8_t {
-  OK,             // No errors
-  CANCELED,       // User pressed "Cancel"
-  FNAME_TOO_LONG, // Filename was too long to fit in buffer
-  FSYS_INVALID,   // Selected filesystem does not exist
+  OK,              // No errors
+  CANCELED,        // User pressed "Cancel"
+  FNAME_TOO_LONG,  // Filename was too long to fit in buffer
+  FSYS_INVALID,    // Selected filesystem does not exist
 };
 
 // Asks user for path to any file on any available file system. Puts resulting status into `status`. Returns a FileCtrl * for the file.

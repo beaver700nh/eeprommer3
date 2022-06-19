@@ -36,7 +36,7 @@ bool read_packet(Packet *buf) {
   else if (state == PacketState::DATA_START) {
     if (ch == (char) PacketMarker::DSB) {
       state = PacketState::DATA;
-      type = PacketType::DATA;
+      type  = PacketType::DATA;
     }
     else {
       state = PacketState::NONE;
@@ -60,7 +60,7 @@ bool read_packet(Packet *buf) {
   else if (state == PacketState::DATA_END) {
     if (ch == (char) PacketMarker::DEB) {
       state = PacketState::NONE;
-      type = PacketType::NONE;
+      type  = PacketType::NONE;
 
       buf->contents[idx] = '\0';
       idx = 0;
@@ -83,7 +83,7 @@ bool read_packet(Packet *buf) {
   else if (state == PacketState::CMD_START) {
     if (ch == (char) PacketMarker::CSB) {
       state = PacketState::CMD;
-      type = PacketType::CMD;
+      type  = PacketType::CMD;
     }
     else {
       state = PacketState::NONE;
@@ -107,7 +107,7 @@ bool read_packet(Packet *buf) {
   else if (state == PacketState::CMD_END) {
     if (ch == (char) PacketMarker::CEB) {
       state = PacketState::NONE;
-      type = PacketType::NONE;
+      type  = PacketType::NONE;
 
       buf->contents[idx] = '\0';
       idx = 0;
@@ -136,7 +136,7 @@ bool read_packet(Packet *buf) {
     read_serial_until_end_marker(state);
 
     state = PacketState::NONE;
-    type = PacketType::NONE;
+    type  = PacketType::NONE;
 
     return true;
   }
@@ -153,7 +153,7 @@ void read_serial_until_end_marker(PacketState state) {
   PacketState ps = state;
 
   while (ps != PacketState::NONE) {
-    while (Serial.available() <= 0); /* wait for character */
+    while (Serial.available() <= 0) {} /* wait for character */
 
     char c = Serial.read();
 

@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <Adafruit_MCP23X17.h>
 #include <Adafruit_BusIO_Register.h>
+#include <Adafruit_MCP23X17.h>
 
 #include "ad_array.hpp"
 
@@ -22,9 +22,9 @@ public:
   void write_port(uint8_t port, uint8_t value);
 
 protected:
-  Adafruit_BusIO_Register \
-    *m_reg_iodir_a, *m_reg_iodir_b, \
-    *m_reg_gppu_a,  *m_reg_gppu_b, \
+  Adafruit_BusIO_Register
+    *m_reg_iodir_a, *m_reg_iodir_b,
+    *m_reg_gppu_a,  *m_reg_gppu_b,
     *m_reg_gpio_a,  *m_reg_gpio_b;
 };
 
@@ -60,11 +60,11 @@ public:
 
 private:
   enum Timing : uint8_t {
-    ADDR_SETUP = 0,  // in microseconds (must be more than 15ns)
-    ADDR_HOLD  = 1,  // in microseconds (actually 50ns)
-    WE_PULSE   = 1,  // in microseconds (actually 100ns)
-    WE_HOLD    = 1,  // in microseconds (actually 50ns)
-    WRITE_TIME = 11, // in milliseconds (actually 10ms)
+    ADDR_SETUP = 0,   // in microseconds (must be more than 15ns)
+    ADDR_HOLD  = 1,   // in microseconds (actually 50ns)
+    WE_PULSE   = 1,   // in microseconds (actually 100ns)
+    WE_HOLD    = 1,   // in microseconds (actually 50ns)
+    WRITE_TIME = 11,  // in milliseconds (actually 10ms)
   };
 
   IoExpCtrl m_exp_0, m_exp_1;

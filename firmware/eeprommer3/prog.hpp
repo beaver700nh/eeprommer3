@@ -34,11 +34,16 @@ public:
 #define FUNC(type, name) ((ProgrammerBaseCore::Func) &Programmer##type##Core::name)
 
   ProgrammerBaseCore::Func action_map[NUM_ACTIONS] {
-    FUNC(Byte,   read ), FUNC(Byte,   write),
-    FUNC(File,   read ), FUNC(File,   write),
-    FUNC(Vector, read ), FUNC(Vector, write),
-    FUNC(Multi,  read ), FUNC(Multi,  write),
-    FUNC(Other,  paint), FUNC(Other,  debug),
+    FUNC(Byte,   read),
+    FUNC(Byte,   write),
+    FUNC(File,   read),
+    FUNC(File,   write),
+    FUNC(Vector, read),
+    FUNC(Vector, write),
+    FUNC(Multi,  read),
+    FUNC(Multi,  write),
+    FUNC(Other,  paint),
+    FUNC(Other,  debug),
     FUNC(Other,  about),
   };
 

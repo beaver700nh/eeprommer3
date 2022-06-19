@@ -12,8 +12,8 @@ namespace Util {
   template<typename T>
   void swap(T *a, T *b) {
     T temp = *a;
-    *a = *b;
-    *b = temp;
+    *a     = *b;
+    *b     = temp;
   }
 
   // `exit_condition` is a template type
@@ -43,12 +43,11 @@ struct Memory {
   static void print_ram_analysis();
 
   static constexpr uint8_t NUM_TYPES = 6;
+
   enum Types {DATA, BSS, HEAP, FREE, STACK, TOTAL};
   enum Bords {RAM_START, BSS_START, HEAP_START, HEAP_END, STACK_PTR, RAM_END};
 
-  static inline const char *const NAMES[NUM_TYPES] {
-    "Data", "BSS", "Heap", "Free", "Stack", "Total"
-  };
+  static inline const char *const NAMES[NUM_TYPES] {"Data", "BSS", "Heap", "Free", "Stack", "Total"};
 
   static inline int32_t sizes[NUM_TYPES];
   static inline uint32_t bords[NUM_TYPES];
@@ -119,6 +118,7 @@ namespace Strings {
   inline const char *const L_OUTPUT    = "Output";
   inline const char *const L_YES       = "Yes";
   inline const char *const L_NO        = "No";
+  inline const char *const L_OK        = "OK";
   inline const char *const L_VM_HEX    = "Show as Raw Hexadecimal";
   inline const char *const L_VM_CHAR   = "Show Printable Characters";
   inline const char *const L_VM_FILE   = "Write Data to a File";

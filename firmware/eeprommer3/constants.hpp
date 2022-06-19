@@ -24,7 +24,7 @@ extern HardwareSerial Serial;
 /*****************************************/
 
 #define BYTE_FMT "%c%c%c%c%c%c%c%c"
-#define BYTE_FMT_VAL(n)   \
+#define BYTE_FMT_VAL(n)    \
   ((n) & 0x80 ? '1' : '0'), \
   ((n) & 0x40 ? '1' : '0'), \
   ((n) & 0x20 ? '1' : '0'), \
@@ -68,8 +68,8 @@ extern HardwareSerial Serial;
 // Shorthand for bottom button in TftBtn ctor
 // `tft`: TftCtrl object to get dimensions
 // `text`: text of button
-#define BOTTOM_BTN(tft, text) \
-  10, TftCalc::bottom((tft), 24, 10), \
+#define BOTTOM_BTN(tft, text)            \
+10, TftCalc::bottom((tft), 24, 10),      \
   TftCalc::fraction_x((tft), 10, 1), 24, \
   (text)
 
@@ -79,13 +79,13 @@ inline char ser_log_print_fname[128];
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
 #ifdef LOGGING
 #define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
-#define SER_LOG_PRINT(text, ...) ( \
-  STRNCPY(ser_log_print_fname, __FILE__), \
-  \
-  PRINTF_NOBUF( \
-    Serial, "*!* - SER_LOG_PRINT: ...%-25.25s :%-4d || " text, \
+#define SER_LOG_PRINT(text, ...) (                                  \
+  STRNCPY(ser_log_print_fname, __FILE__),                           \
+                                                                    \
+  PRINTF_NOBUF(                                                     \
+    Serial, "*!* - SER_LOG_PRINT: ...%-25.25s :%-4d || " text,      \
     strrchr(ser_log_print_fname, '/') - 10, __LINE__, ##__VA_ARGS__ \
-  ) \
+  )                                                                 \
 )
 #define SER_LOG_PRINTN(text, ...) PRINTF_NOBUF(Serial, text, ##__VA_ARGS__)
 #else
@@ -123,14 +123,14 @@ inline char ser_log_print_fname[128];
 #define MCP_GPA(n) (n)
 #define MCP_GPB(n) (8 + (n))
 
-#define MCP_EE_WE MCP_GPB(7)  // I2C addr 0x21
-#define MCP_EE_OE MCP_GPB(7)  // I2C addr 0x20
+#define MCP_EE_WE MCP_GPB(7)   // I2C addr 0x21
+#define MCP_EE_OE MCP_GPB(7)   // I2C addr 0x20
 
-#define MCP_EE_WE_PORT    1   // I2C addr 0x21
-#define MCP_EE_DATA_PORT  0   // I2C addr 0x21
-#define MCP_EE_DATA(n)    (n) // I2C addr 0x21
-#define MCP_EE_ADDRL_PORT 0   // I2C addr 0x20
-#define MCP_EE_ADDRH_PORT 1   // I2C addr 0x20
-#define MCP_EE_ADDR(n)    (n) // I2C addr 0x20
+#define MCP_EE_WE_PORT    1    // I2C addr 0x21
+#define MCP_EE_DATA_PORT  0    // I2C addr 0x21
+#define MCP_EE_DATA(n)    (n)  // I2C addr 0x21
+#define MCP_EE_ADDRL_PORT 0    // I2C addr 0x20
+#define MCP_EE_ADDRH_PORT 1    // I2C addr 0x20
+#define MCP_EE_ADDR(n)    (n)  // I2C addr 0x20
 
 #endif

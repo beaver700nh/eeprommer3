@@ -13,8 +13,8 @@ struct Vector {
   Vector(uint8_t id) : m_id(id), m_addr(0xFFF8 + 2 * (id + 1)) {};
 
   void update(EepromCtrl &ee) {
-    m_lo = ee.read(m_addr);
-    m_hi = ee.read(m_addr + 1);
+    m_lo  = ee.read(m_addr);
+    m_hi  = ee.read(m_addr + 1);
     m_val = (m_hi << 8) | m_lo;
   }
 
@@ -28,10 +28,8 @@ struct Vector {
 };
 
 namespace Dialog {
-
-// Helper function to ask user to select a 6502 jump vector
-Vector ask_vector(TftCtrl &tft, TouchCtrl &tch);
-
+  // Helper function to ask user to select a 6502 jump vector
+  Vector ask_vector(TftCtrl &tft, TouchCtrl &tch);
 };
 
 #endif

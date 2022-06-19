@@ -49,6 +49,7 @@
 		],
 		"C_Cpp.errorSquiggles": "Enabled",
 		"C_Cpp.intelliSenseEngine": "Disabled",
-		"clangd.path": ""
+		"clangd.path": "",
+		"C_Cpp.formatting": "Disabled"
 	}
 }

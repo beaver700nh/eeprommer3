@@ -19,8 +19,8 @@ void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *t
   tft.drawText(TftCalc::right(tft, TftCalc::t_width(tag, 2), 10), 10, tag, color, 2);
 
   char *const _msg = strdup(msg);
-  char *cur_line = _msg;
-  uint16_t y = 50;
+  char *cur_line   = _msg;
+  uint16_t y       = 50;
 
   while (cur_line != nullptr) {
     char *end_line = strchr(cur_line, '\n');

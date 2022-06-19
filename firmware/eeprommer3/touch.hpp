@@ -15,12 +15,12 @@ class TftCtrl;
  */
 class TouchCtrl : public TouchScreen {
 public:
-  TouchCtrl(uint16_t xp, uint16_t xm, uint16_t yp, uint16_t ym, uint16_t resist): TouchScreen(xp, yp, xm, ym, resist) {};
+  TouchCtrl(uint16_t xp, uint16_t xm, uint16_t yp, uint16_t ym, uint16_t resist) : TouchScreen(xp, yp, xm, ym, resist) {};
 
   static bool is_valid_pressure(int16_t pressure, int16_t max_pressure = -1);
 
-  bool isTouching(void); // Define this because it's undefined in base class
-  bool is_touching();    // "Alias" to match naming scheme
+  bool isTouching(void);  // Define this because it's undefined in base class
+  bool is_touching();     // "Alias" to match naming scheme
 
   void wait_for_press();
 

@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <SD.h>
 #include <MCUFRIEND_kbv.h>
+#include <SD.h>
 
 #include "touch.hpp"
 
@@ -87,7 +87,7 @@ public:
     File f = SD.open(file);
     if (!f) return false;
 
-    size_t row_size_bytes = width * sizeof(uint16_t);
+    const size_t row_size_bytes = width * sizeof(uint16_t);
     auto *buf = (uint16_t *) malloc(row_size_bytes);
 
     if (buf == nullptr) {

@@ -20,10 +20,10 @@ enum class PacketType {
   NONE, WAITING, DATA, CMD
 };
 
-typedef struct {
+struct Packet {
   PacketType type = PacketType::NONE;
   char contents[17];
-} Packet;
+};
 
 bool read_packet(Packet *buf);
 void copy_packet(Packet *to, Packet *from);

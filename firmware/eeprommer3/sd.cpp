@@ -3,8 +3,6 @@
 
 #include <SD.h>
 
-#include "file.hpp"
-
 #include "sd.hpp"
 
 SdCtrl::SdCtrl(uint8_t cs, int8_t en)

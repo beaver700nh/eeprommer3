@@ -39,5 +39,5 @@ bool TouchCtrl::is_touching() {
 }
 
 void TouchCtrl::wait_for_press() {
-  while (!is_touching());
+  while (!is_touching()) {}
 }

@@ -8,11 +8,9 @@
 
 #undef swap
 
-// NOLINTBEGIN
-
+// NOLINTBEGIN: avr linker symbols
 extern unsigned int __bss_start, __heap_start;
 extern char *__brkval;
-
 // NOLINTEND
 
 void Util::validate_addr(uint16_t *addr) {

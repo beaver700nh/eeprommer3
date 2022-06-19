@@ -83,11 +83,11 @@ void tft_print_chars(TftCtrl &tft) {
 }
 
 static const uint16_t PSTR_COLORS[] PROGMEM {
-  TftColor::DRED,   TftColor::RED,     TftColor::ORANGE,  TftColor::YELLOW, TftColor::LIME,
-  TftColor::LGREEN, TftColor::GREEN,   TftColor::OLIVE,   TftColor::DGREEN,
-  TftColor::DCYAN,  TftColor::CYAN,    TftColor::BLUE,    TftColor::DBLUE, 
-  TftColor::PURPLE, TftColor::MAGENTA, TftColor::PINKK,  TftColor::BLACK,
-  TftColor::DGRAY,  TftColor::GRAY,    TftColor::LGRAY,  TftColor::WHITE,
+  TftColor::DRED,   TftColor::RED,     TftColor::ORANGE,  TftColor::YELLOW,
+  TftColor::LIME,   TftColor::LGREEN,  TftColor::GREEN,   TftColor::OLIVE,
+  TftColor::DGREEN, TftColor::DCYAN,   TftColor::CYAN,    TftColor::BLUE,
+  TftColor::DBLUE,  TftColor::PURPLE,  TftColor::MAGENTA, TftColor::PINKK,
+  TftColor::BLACK,  TftColor::DGRAY,   TftColor::GRAY,    TftColor::LGRAY,  TftColor::WHITE,
 };
 
 static const char PSTR_NAMES_0[] PROGMEM = "Dark Red";
@@ -113,11 +113,11 @@ static const char PSTR_NAMES_J[] PROGMEM = "Light Gray";
 static const char PSTR_NAMES_K[] PROGMEM = "White";
 
 static const char *const PSTR_NAMES[] PROGMEM {
-  PSTR_NAMES_0, PSTR_NAMES_1, PSTR_NAMES_2, PSTR_NAMES_3, PSTR_NAMES_4,
-  PSTR_NAMES_5, PSTR_NAMES_6, PSTR_NAMES_7, PSTR_NAMES_8,
-  PSTR_NAMES_9, PSTR_NAMES_A, PSTR_NAMES_B, PSTR_NAMES_C,
-  PSTR_NAMES_D, PSTR_NAMES_E, PSTR_NAMES_F, PSTR_NAMES_G,
-  PSTR_NAMES_H, PSTR_NAMES_I, PSTR_NAMES_J, PSTR_NAMES_K,
+  PSTR_NAMES_0, PSTR_NAMES_1, PSTR_NAMES_2, PSTR_NAMES_3,
+  PSTR_NAMES_4, PSTR_NAMES_5, PSTR_NAMES_6, PSTR_NAMES_7,
+  PSTR_NAMES_8, PSTR_NAMES_9, PSTR_NAMES_A, PSTR_NAMES_B,
+  PSTR_NAMES_C, PSTR_NAMES_D, PSTR_NAMES_E, PSTR_NAMES_F,
+  PSTR_NAMES_G, PSTR_NAMES_H, PSTR_NAMES_I, PSTR_NAMES_J, PSTR_NAMES_K,
 };
 
 void tft_show_colors(TftCtrl &tft) {

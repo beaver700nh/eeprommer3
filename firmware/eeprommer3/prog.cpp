@@ -16,27 +16,26 @@
 
 #include "prog.hpp"
 
-static const char PSTR_help_0[] PROGMEM = "Read a byte from EEPROM.";
-static const char PSTR_help_1[] PROGMEM = "Write a byte to EEPROM.";
-static const char PSTR_help_2[] PROGMEM = "Read entire EEPROM to a file.";
-static const char PSTR_help_3[] PROGMEM = "Write file to EEPROM somewhere.";
-static const char PSTR_help_4[] PROGMEM = "Read 6502 jump vector contents.";
-static const char PSTR_help_5[] PROGMEM = "Write to a 6502 jump vector.";
-static const char PSTR_help_6[] PROGMEM = "Read multiple bytes from EEPROM.";
-static const char PSTR_help_7[] PROGMEM = "Write multiple bytes to EEPROM.";
-static const char PSTR_help_8[] PROGMEM = "";
-static const char PSTR_help_9[] PROGMEM = "";
-static const char PSTR_help_A[] PROGMEM = "Show info/about/credits menu.";
+static const char PSTR_HELP_0[] PROGMEM = "Read a byte from EEPROM.";
+static const char PSTR_HELP_1[] PROGMEM = "Write a byte to EEPROM.";
+static const char PSTR_HELP_2[] PROGMEM = "Read entire EEPROM to a file.";
+static const char PSTR_HELP_3[] PROGMEM = "Write file to EEPROM somewhere.";
+static const char PSTR_HELP_4[] PROGMEM = "Read 6502 jump vector contents.";
+static const char PSTR_HELP_5[] PROGMEM = "Write to a 6502 jump vector.";
+static const char PSTR_HELP_6[] PROGMEM = "Read multiple bytes from EEPROM.";
+static const char PSTR_HELP_7[] PROGMEM = "Write multiple bytes to EEPROM.";
+static const char PSTR_HELP_8[] PROGMEM = "";
+static const char PSTR_HELP_9[] PROGMEM = "";
+static const char PSTR_HELP_A[] PROGMEM = "Show info/about/credits menu.";
 
-static const char PSTR_details_0[] PROGMEM = "There were no errors.";
-static const char PSTR_details_1[] PROGMEM = "Attempted to perform\nan invalid action.";
-static const char PSTR_details_2[] PROGMEM = "Unable to open file.";
-static const char PSTR_details_3[] PROGMEM = "Verification failed.\nContent read did not match\nwhat was written.";
-static const char PSTR_details_4[] PROGMEM = "Memory allocation failed.\n(malloc() probably\nreturned null)";
+static const char PSTR_DETAILS_0[] PROGMEM = "There were no errors.";
+static const char PSTR_DETAILS_1[] PROGMEM = "Attempted to perform\nan invalid action.";
+static const char PSTR_DETAILS_2[] PROGMEM = "Unable to open file.";
+static const char PSTR_DETAILS_3[] PROGMEM = "Verification failed.\nContent read did not match\nwhat was written.";
+static const char PSTR_DETAILS_4[] PROGMEM = "Memory allocation failed.\n(malloc() probably\nreturned null)";
 
-Programmer::Programmer(TYPED_CONTROLLERS)
-  : m_menu(10, 10, 50, 10, 2, 30, true), INIT_LIST_CONTROLLERS {
-  static ProgrammerBaseCore \
+Programmer::Programmer(TYPED_CONTROLLERS) : m_menu(10, 10, 50, 10, 2, 30, true), INIT_LIST_CONTROLLERS {
+  static ProgrammerBaseCore
     *core_byte   = new ProgrammerByteCore  (CONTROLLERS),
     *core_file   = new ProgrammerFileCore  (CONTROLLERS),
     *core_vector = new ProgrammerVectorCore(CONTROLLERS),
@@ -67,13 +66,13 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
   if (is_confirm) return;
 
   static const char *const helps[] {
-    PSTR_help_0, PSTR_help_1,
-    PSTR_help_2, PSTR_help_3,
-    PSTR_help_4, PSTR_help_5,
-    PSTR_help_6, PSTR_help_7,
-    PSTR_help_8, PSTR_help_9,
-    PSTR_help_A,
-  }; // todo make this progmem + global
+    PSTR_HELP_0, PSTR_HELP_1,
+    PSTR_HELP_2, PSTR_HELP_3,
+    PSTR_HELP_4, PSTR_HELP_5,
+    PSTR_HELP_6, PSTR_HELP_7,
+    PSTR_HELP_8, PSTR_HELP_9,
+    PSTR_HELP_A,
+  };  // todo make this progmem + global
 
   char help_text[128];
 
@@ -89,16 +88,16 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
 }
 
 void Programmer::init() {
-  m_menu.add_btn_calc(m_tft, "Read Byte",       TftColor::BLUE,           TftColor::CYAN);
-  m_menu.add_btn_calc(m_tft, "Write Byte",      TftColor::RED,            TftColor::PINKK);
-  m_menu.add_btn_calc(m_tft, "Read to File",    TftColor::CYAN,           TftColor::BLUE);
-  m_menu.add_btn_calc(m_tft, "Write from File", TftColor::PINKK,          TftColor::RED);
-  m_menu.add_btn_calc(m_tft, "Read Vector",     TO_565(0x00, 0x17, 0x00), TftColor::LGREEN);
+  m_menu.add_btn_calc(m_tft, "Read Byte",       TftColor::BLUE,           TftColor::CYAN          );
+  m_menu.add_btn_calc(m_tft, "Write Byte",      TftColor::RED,            TftColor::PINKK         );
+  m_menu.add_btn_calc(m_tft, "Read to File",    TftColor::CYAN,           TftColor::BLUE          );
+  m_menu.add_btn_calc(m_tft, "Write from File", TftColor::PINKK,          TftColor::RED           );
+  m_menu.add_btn_calc(m_tft, "Read Vector",     TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
   m_menu.add_btn_calc(m_tft, "Write Vector",    TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  m_menu.add_btn_calc(m_tft, "Read Range",      TftColor::LGREEN,         TftColor::DGREEN);
-  m_menu.add_btn_calc(m_tft, "Write Multiple",  TftColor::BLACK,          TftColor::ORANGE);
-  m_menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY);
-  m_menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY);
+  m_menu.add_btn_calc(m_tft, "Read Range",      TftColor::LGREEN,         TftColor::DGREEN        );
+  m_menu.add_btn_calc(m_tft, "Write Multiple",  TftColor::BLACK,          TftColor::ORANGE        );
+  m_menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY          );
+  m_menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY          );
 
   m_menu.add_btn(new Gui::Btn(TftCalc::right(m_tft, 24, 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
 
@@ -134,7 +133,7 @@ void Programmer::run() {
 
     ProgrammerBaseCore::Status status_code = ProgrammerBaseCore::Status::ERR_INVALID;
 
-    auto the_core = m_cores[cur_choice];
+    auto the_core   = m_cores[cur_choice];
     auto the_action = action_map[cur_choice];
 
     // Run the action function if available
@@ -152,17 +151,17 @@ void Programmer::run() {
 
 void Programmer::show_status(ProgrammerBaseCore::Status code) {
   static const char *const details[] {
-    PSTR_details_0,
-    PSTR_details_1,
-    PSTR_details_2,
-    PSTR_details_3,
-    PSTR_details_4,
-  };
+    PSTR_DETAILS_0,
+    PSTR_DETAILS_1,
+    PSTR_DETAILS_2,
+    PSTR_DETAILS_3,
+    PSTR_DETAILS_4,
+  }; // todo make this progmem + global
 
   bool success = (code == ProgrammerBaseCore::Status::OK);
 
-  const char *success_str   = (success ? "Success!" : "Failed!");
-  uint16_t    success_color = (success ? TftColor::GREEN : TftColor::RED);
+  const char *success_str      = (success ? "Success!" : "Failed!");
+  const uint16_t success_color = (success ? TftColor::GREEN : TftColor::RED);
 
   char code_text[128];
 

@@ -2,8 +2,8 @@
 #include "constants.hpp"
 
 #include "gui.hpp"
-#include "tft_calc.hpp"
 #include "tft.hpp"
+#include "tft_calc.hpp"
 #include "touch.hpp"
 #include "util.hpp"
 

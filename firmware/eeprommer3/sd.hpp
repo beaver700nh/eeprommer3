@@ -7,10 +7,13 @@
 #include <SPI.h>
 #include <SD.h>
 
-#include "file.hpp"
-
-// Fwd decl because of circular dependency
-class SdFileInfo;
+/*
+ * Simple little helper struct to store name of file and whether it is a directory.
+ */
+struct SdFileInfo {
+  char name[13];
+  bool is_dir;
+};
 
 class SdCtrl {
 public:

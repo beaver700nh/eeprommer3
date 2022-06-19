@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 #include "gui.hpp"
+#include "util.hpp"
 
 #include "dialog.hpp"
 
@@ -59,7 +60,7 @@ void Dialog::ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf
   Memory::print_ram_analysis();
   menu.draw(tft);
 
-  while (true) { // Loop to get a val
+  while (true) {  // Loop to get a val
     menu.show_val(tft, 10, 240, 3, TftColor::ORANGE, TftColor::BLACK);
 
     uint8_t btn_pressed = menu.wait_for_press(tch, tft);

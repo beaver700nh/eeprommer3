@@ -3,11 +3,11 @@
 
 #include <util/delay.h>
 
-#include <Adafruit_MCP23X17.h>
 #include <Adafruit_BusIO_Register.h>
+#include <Adafruit_MCP23X17.h>
 
-#include "new_delete.hpp"
 #include "ad_array.hpp"
+#include "new_delete.hpp"
 
 #include "eeprom.hpp"
 
@@ -52,7 +52,7 @@ void EepromCtrl::set_oe(bool oe) {
 
 uint8_t EepromCtrl::read(uint16_t addr) {
   set_we(true);
-  set_addr_and_oe(addr & ~0x8000); // ~OE is off to enable output
+  set_addr_and_oe(addr & ~0x8000);  // ~OE is off to enable output
 
   _delay_us(Timing::ADDR_SETUP);
   uint8_t data = get_data();
@@ -62,7 +62,7 @@ uint8_t EepromCtrl::read(uint16_t addr) {
 }
 
 void EepromCtrl::write(uint16_t addr, uint8_t data, bool quick) {
-  set_addr_and_oe(addr | 0x8000); // ~OE is on to disable output
+  set_addr_and_oe(addr | 0x8000);  // ~OE is on to disable output
   set_data(data);
 
   set_we(false);
@@ -87,7 +87,7 @@ void EepromCtrl::read(uint16_t addr1, uint16_t addr2, uint8_t *buf) {
 void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   uint16_t i = addr;
 
-  set_addr_and_oe(0x8000); // ~OE is on to disable output
+  set_addr_and_oe(0x8000);  // ~OE is on to disable output
 
   do {
     write(i, buf[i - addr], true);
@@ -136,8 +136,8 @@ bool IoExpCtrl::begin(uint8_t addr) {
 }
 
 void IoExpCtrl::set_iodir(uint8_t port, uint8_t mode) {
-  (port == 0 ? m_reg_iodir_a : m_reg_iodir_b)->write((mode == OUTPUT      ) ? 0x00 : 0xFF);
-  (port == 0 ? m_reg_gppu_a  : m_reg_gppu_b )->write((mode == INPUT_PULLUP) ? 0xFF : 0x00);
+  (port == 0 ? m_reg_iodir_a : m_reg_iodir_b)->write((mode == OUTPUT) ? 0x00 : 0xFF);
+  (port == 0 ? m_reg_gppu_a : m_reg_gppu_b)->write((mode == INPUT_PULLUP) ? 0xFF : 0x00);
 }
 
 uint8_t IoExpCtrl::read_port(uint8_t port) {

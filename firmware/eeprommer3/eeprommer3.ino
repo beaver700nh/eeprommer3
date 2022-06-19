@@ -44,9 +44,11 @@ void setup() {
   else {
     SER_LOG_PRINT("... failed!\n");
 
-    if      (sd_status == SdCtrl::Status::DISABLED) tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2);
-    else if (sd_status == SdCtrl::Status::FAILED)   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2);
-    else                                            tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2);
+    switch (sd_status) {
+    case SdCtrl::Status::DISABLED: tft.drawText(90, 241, "SD card disabled!",  TftColor::ORANGE,  2); break;
+    case SdCtrl::Status::FAILED:   tft.drawText(90, 241, "SD init failed!",    TftColor::RED,     2); break;
+    default:                       tft.drawText(90, 241, "SD invalid status!", TftColor::MAGENTA, 2); break;
+    }
   }
 
   Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(skip_btn, tch, tft));

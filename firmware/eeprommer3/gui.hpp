@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include "tft_calc.hpp"
 #include "tft.hpp"
+#include "tft_calc.hpp"
 #include "touch.hpp"
 
 /*
@@ -35,7 +35,7 @@ public:
   );
 
   inline uint8_t calc_center_x() { return TftCalc::t_center_x(m_w, m_text, m_font_size); }
-  inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size);         }
+  inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size); }
 
   inline uint16_t get_x()           { return m_x; }
   inline void     set_x(uint16_t x) { m_x = x;    }
@@ -47,21 +47,34 @@ public:
   inline uint16_t get_h()           { return m_h; }
   inline void     set_h(uint16_t h) { m_h = h;    }
 
-  inline uint16_t get_tx()            { return m_tx;                      }
-  inline void     set_tx(uint16_t tx) { m_tx = tx; m_auto_center = false; }
-  inline uint16_t get_ty()            { return m_ty;                      }
-  inline void     set_ty(uint16_t ty) { m_ty = ty; m_auto_center = false; }
+  inline uint16_t get_tx() { return m_tx; }
+  inline void     set_tx(uint16_t tx) {
+    m_tx          = tx;
+    m_auto_center = false;
+  }
+
+  inline uint16_t get_ty() { return m_ty; }
+  inline void set_ty(uint16_t ty) {
+    m_ty          = ty;
+    m_auto_center = false;
+  }
 
   inline uint16_t get_fg()            { return m_fg; }
   inline void     set_fg(uint16_t fg) { m_fg = fg;   }
   inline uint16_t get_bg()            { return m_bg; }
   inline void     set_bg(uint16_t bg) { m_bg = bg;   }
 
-  inline uint8_t get_font_size()                  { return m_font_size;                     }
-  inline void    set_font_size(uint8_t font_size) { m_font_size = font_size; auto_center(); }
+  inline uint8_t get_font_size() { return m_font_size; }
+  inline void    set_font_size(uint8_t font_size) {
+    m_font_size = font_size;
+    auto_center();
+  }
 
-  inline const char *get_text()                 { return m_text;                }
-  inline void        set_text(const char *text) { m_text = text; auto_center(); }
+  inline const char *get_text() { return m_text; }
+  inline void        set_text(const char *text) {
+    m_text = text;
+    auto_center();
+  }
 
   void draw(TftCtrl &tft);
   void erase(TftCtrl &tft);
@@ -106,7 +119,7 @@ private:
   bool m_auto_center = false;
 
   bool m_is_highlighted = false, m_was_highlighted = false;
-  bool m_is_visible     =  true, m_was_visible     =  true;
+  bool m_is_visible     = true,  m_was_visible     = true;
 
   bool m_is_operational = true;
 
@@ -139,7 +152,7 @@ public:
   void deselect_all();
 
 protected:
-  Btn **m_btns = nullptr;
+  Btn **m_btns       = nullptr;
   uint8_t m_num_btns = 0;
 };
 
@@ -218,13 +231,13 @@ protected:
  * `MenuHexInput` is a `MenuKeyboard` but specialized for inputting numbers in hexadecimal.
  * Type `T` is an integer type and determines what numbers can be inputted.
  */
-template <typename T>
+template<typename T>
 class MenuHexInput : public MenuKeyboard {
 public:
   // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
-  MenuHexInput(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h)
-    : MenuKeyboard(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
-    m_val = (char *) malloc(BUF_LEN() * sizeof(char)); // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
+  MenuHexInput(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h) :
+    MenuKeyboard(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
+    m_val = (char *) malloc(BUF_LEN() * sizeof(char));  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
     for (uint8_t i = 0; i < BUF_LEN(); ++i) {
       m_val[i] = '0';
@@ -233,7 +246,7 @@ public:
     m_val[BUF_LEN()] = '\0';
   }
 
-  ~MenuHexInput() {} // Ensure that base destructor(s) are called.
+  ~MenuHexInput() {}  // Ensure that base destructor(s) are called.
 
   void update_val(char c) {
     uint8_t len = strlen(m_val);
@@ -257,7 +270,7 @@ public:
   }
 
   T get_int_val() {
-    T result = 0;
+    T result    = 0;
     uint8_t len = strlen(m_val);
 
     for (uint8_t i = len - BUF_LEN(); i < len; ++i) {
@@ -292,7 +305,7 @@ public:
 class MenuStrInput : public MenuKeyboard {
 public:
   MenuStrInput(TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
-  ~MenuStrInput() {} // Ensure that base destructor(s) are called.
+  ~MenuStrInput() {}  // Ensure that base destructor(s) are called.
 
   void update_val(char c);
 
@@ -322,13 +335,13 @@ public:
   MenuChoice(
     uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t num_cols,
     float btn_height, bool btn_height_px, uint8_t initial_choice = 0
-  )
-    : m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
+  ) :
+    m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
     m_btn_height(btn_height), m_btn_height_px(btn_height_px) {
     select(initial_choice);
   }
 
-  ~MenuChoice() {} // Ensure that base destructor(s) are called.
+  ~MenuChoice() {}  // Ensure that base destructor(s) are called.
 
   // Function that gets run when user presses a button
   typedef void (*Callback)(TftCtrl &tft, uint8_t btn_id, bool is_confirm);
@@ -357,8 +370,8 @@ protected:
   bool m_btn_height_px;
 
   uint8_t m_confirm_btn = 0;
-  uint8_t m_cur_choice = 0;
-  uint8_t m_old_choice = 0;
+  uint8_t m_cur_choice  = 0;
+  uint8_t m_old_choice  = 0;
 
   Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {
     UNUSED_VAR(tft);
@@ -377,7 +390,7 @@ public:
     TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice = 0
   );
 
-  ~MenuYesNo() {} // Ensure that base destructor(s) are called.
+  ~MenuYesNo() {}  // Ensure that base destructor(s) are called.
 };
 
 // Should return true to request cancel of loop.
