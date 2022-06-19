@@ -47,15 +47,15 @@ void Memory::calculate() {
 void Memory::repr() {
   for (uint8_t i = 0; i < NUM_TYPES; ++i) {
     uint8_t percentage = 100 * ((float) sizes[i] / (float) sizes[Types::TOTAL]);
-    SNPRINTF(repr_sizes[i], "%-5s %4d bytes (%3d%%)", NAMES[i], sizes[i], percentage);
+    SNPRINTF(repr_sizes[i], "%-5s %4ld bytes (%3d%%)", NAMES[i], sizes[i], percentage);
   }
 
-  SNPRINTF(repr_bords[Types::DATA],  "%04X (RAMSTART)",     bords[RAM_START] );
-  SNPRINTF(repr_bords[Types::BSS],   "%04X (__bss_start)",  bords[BSS_START] );
-  SNPRINTF(repr_bords[Types::HEAP],  "%04X (__heap_start)", bords[HEAP_START]);
-  SNPRINTF(repr_bords[Types::FREE],  "%04X (__brkval)",     bords[HEAP_END]  );
-  SNPRINTF(repr_bords[Types::STACK], "%04X (SP)",           bords[STACK_PTR] );
-  SNPRINTF(repr_bords[Types::TOTAL], "%04X (RAMEND)",       bords[RAM_END]   );
+  SNPRINTF(repr_bords[Types::DATA],  "%04lX (RAMSTART)",     bords[RAM_START] );
+  SNPRINTF(repr_bords[Types::BSS],   "%04lX (__bss_start)",  bords[BSS_START] );
+  SNPRINTF(repr_bords[Types::HEAP],  "%04lX (__heap_start)", bords[HEAP_START]);
+  SNPRINTF(repr_bords[Types::FREE],  "%04lX (__brkval)",     bords[HEAP_END]  );
+  SNPRINTF(repr_bords[Types::STACK], "%04lX (SP)",           bords[STACK_PTR] );
+  SNPRINTF(repr_bords[Types::TOTAL], "%04lX (RAMEND)",       bords[RAM_END]   );
 }
 
 void Memory::print_ram_analysis() {

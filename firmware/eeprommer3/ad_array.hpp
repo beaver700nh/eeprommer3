@@ -6,6 +6,14 @@
  * we use <Arduino.h> with Arduino and normal C++ libraries otherwise.
  */
 
+// Commented out: testing no longer needed, and <cstdint> causes clangd errors
+
+// #ifdef ARDUINO
+// #include <Arduino.h>
+// #else
+// #include <cstdint>
+// #endif
+
 #include "constants.hpp"
 
 // A key-value pair data structure for storage of addr-data pairs

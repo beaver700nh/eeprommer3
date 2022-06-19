@@ -88,7 +88,7 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
       continue;
     }
 
-    if (strlen(file_path) + strlen(m_files[btn_id].name) >= max_path_len - 1) return Status::FNAME_TOO_LONG;
+    if (strlen(file_path) + strlen(m_files[btn_id].name) >= max_path_len) return Status::FNAME_TOO_LONG;
 
     // User selected a file, not a control button
 
@@ -287,7 +287,7 @@ bool FileUtil::go_up_dir(char *path) {
 }
 
 bool FileUtil::go_down_file(char *path, const char *file, uint8_t len) {
-  if (strlen(path) + strlen(file) >= len - 1) {
+  if (strlen(path) + strlen(file) >= len) {
     // Doesn't fit, fail
     return false;
   }
