@@ -93,8 +93,8 @@ bool Gui::Btn::is_pressed(TouchCtrl &tch, TftCtrl &tft) {
 
   return (
     tch.is_valid_pressure(p.z) &&
-    IN_RANGE(p.x, (int32_t) m_x, (int32_t) m_x + m_w) &&
-    IN_RANGE(p.y, (int32_t) m_y, (int32_t) m_y + m_h)
+    IN_RANGE(p.x, (int32_t) m_x, (int32_t) (m_x + m_w)) &&
+    IN_RANGE(p.y, (int32_t) m_y, (int32_t) (m_y + m_h))
   );
 }
 
@@ -103,10 +103,10 @@ Gui::Menu::~Menu() {
   SER_LOG_PRINT("[Menu destructor called.]\n");
 }
 
-bool Gui::Menu::add_btn(Btn *btn) {
+Gui::Btn *Gui::Menu::add_btn(Btn *btn) {
   auto new_arr = (Btn **) malloc((m_num_btns + 1) * sizeof(Btn *));
 
-  if (new_arr == nullptr) return false;
+  if (new_arr == nullptr) return nullptr;
 
   memcpy(new_arr, m_btns, m_num_btns * sizeof(Btn *));
   new_arr[m_num_btns] = btn;
@@ -116,7 +116,7 @@ bool Gui::Menu::add_btn(Btn *btn) {
   m_btns = new_arr;
   ++m_num_btns;
 
-  return true;
+  return btn;
 }
 
 bool Gui::Menu::rm_btn(uint8_t btn_idx) {
@@ -406,17 +406,19 @@ Gui::MenuChoice::Callback Gui::MenuChoice::get_callback() {
   return m_callback;
 }
 
-bool Gui::MenuChoice::add_btn(Btn *btn) {
-  bool retval = Menu::add_btn(btn);
+Gui::Btn *Gui::MenuChoice::add_btn(Btn *btn) {
+  Btn *added = Menu::add_btn(btn);
+
+  if (added == nullptr) return nullptr;
 
   if (m_num_btns - 1 == m_cur_choice) {
-    get_btn(m_num_btns - 1)->highlight(true);
+    added->highlight(true);
   }
 
-  return retval;
+  return added;
 }
 
-bool Gui::MenuChoice::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg) {
+Gui::Btn *Gui::MenuChoice::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg) {
   uint8_t col = m_num_btns % m_num_cols;
   uint8_t row = m_num_btns / m_num_cols;
 
@@ -429,7 +431,7 @@ bool Gui::MenuChoice::add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, 
   return add_btn(new Btn(x, y, w, h, text, fg, bg));
 }
 
-bool Gui::MenuChoice::add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg, uint16_t bg) {
+Gui::Btn *Gui::MenuChoice::add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg, uint16_t bg) {
   set_confirm_btn(m_num_btns);
 
   uint16_t y = TftCalc::bottom(tft, 24, (force_bottom ? 10 : m_marg_v));

@@ -34,81 +34,120 @@ public:
     uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
-  inline uint8_t calc_center_x() { return TftCalc::t_center_x(m_w, m_text, m_font_size); }
-  inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size); }
-
-  inline uint16_t get_x()           { return m_x; }
-  inline void     set_x(uint16_t x) { m_x = x;    }
-  inline uint16_t get_y()           { return m_y; }
-  inline void     set_y(uint16_t y) { m_y = y;    }
-
-  inline uint16_t get_w()           { return m_w; }
-  inline void     set_w(uint16_t w) { m_w = w;    }
-  inline uint16_t get_h()           { return m_h; }
-  inline void     set_h(uint16_t h) { m_h = h;    }
-
-  inline uint16_t get_tx() { return m_tx; }
-  inline void     set_tx(uint16_t tx) {
-    m_tx          = tx;
-    m_auto_center = false;
-  }
-
-  inline uint16_t get_ty() { return m_ty; }
-  inline void set_ty(uint16_t ty) {
-    m_ty          = ty;
-    m_auto_center = false;
-  }
-
-  inline uint16_t get_fg()            { return m_fg; }
-  inline void     set_fg(uint16_t fg) { m_fg = fg;   }
-  inline uint16_t get_bg()            { return m_bg; }
-  inline void     set_bg(uint16_t bg) { m_bg = bg;   }
-
-  inline uint8_t get_font_size() { return m_font_size; }
-  inline void    set_font_size(uint8_t font_size) {
-    m_font_size = font_size;
-    auto_center();
-  }
-
-  inline const char *get_text() { return m_text; }
-  inline void        set_text(const char *text) {
-    m_text = text;
-    auto_center();
-  }
-
   void draw(TftCtrl &tft);
   void erase(TftCtrl &tft);
   void draw_highlight(TftCtrl &tft);
 
+  inline uint8_t calc_center_x() { return TftCalc::t_center_x(m_w, m_text, m_font_size); }
+  inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size); }
+
+  inline uint16_t get_x() { return m_x; }
+  inline Btn *set_x(uint16_t x) {
+    m_x = x;
+    return this;
+  }
+
+  inline uint16_t get_y() { return m_y; }
+  inline Btn *set_y(uint16_t y) {
+    m_y = y;
+    return this;
+  }
+
+  inline uint16_t get_w() { return m_w; }
+  inline Btn *set_w(uint16_t w) {
+    m_w = w;
+    return this;
+  }
+
+  inline uint16_t get_h() { return m_h; }
+  inline Btn *set_h(uint16_t h) {
+    m_h = h;
+    return this;
+  }
+
+  inline uint16_t get_tx() { return m_tx; }
+  inline Btn *set_tx(uint16_t tx) {
+    m_tx          = tx;
+    m_auto_center = false;
+    return this;
+  }
+
+  inline uint16_t get_ty() { return m_ty; }
+  inline Btn *set_ty(uint16_t ty) {
+    m_ty          = ty;
+    m_auto_center = false;
+    return this;
+  }
+
+  inline uint16_t get_fg() { return m_fg; }
+  inline Btn *set_fg(uint16_t fg) {
+    m_fg = fg;
+    return this;
+  }
+
+  inline uint16_t get_bg() { return m_bg; }
+  inline Btn *set_bg(uint16_t bg) {
+    m_bg = bg;
+    return this;
+  }
+
+  inline uint8_t get_font_size() { return m_font_size; }
+  inline Btn *set_font_size(uint8_t font_size) {
+    m_font_size = font_size;
+    auto_center();
+    return this;
+  }
+
+  inline const char *get_text() { return m_text; }
+  inline Btn *set_text(const char *text) {
+    m_text = text;
+    auto_center();
+    return this;
+  }
+
   // Controls whether a yellow outline appears around the button. Default is false/unhighlighted.
-  inline void highlight(bool highlight) { m_is_highlighted = highlight; }
   inline bool is_highlighted() { return m_is_highlighted; }
+  inline Btn *highlight(bool highlight) {
+    m_is_highlighted = highlight;
+    return this;
+  }
 
   // Controls whether the button is visible. Default is true/visible.
-  inline void visibility(bool visibility) { m_is_visible = visibility; }
   inline bool is_visible() { return m_is_visible; }
+  inline Btn *visibility(bool visibility) {
+    m_is_visible = visibility;
+    return this;
+  }
 
   // Controls whether the button responds to presses. Default is true/operational.
-  inline void operation(bool operation) { m_is_operational = operation; }
   inline bool is_operational() { return m_is_operational; }
+  inline Btn *operation(bool operation) {
+    m_is_operational = operation;
+    return this;
+  }
 
   // Controls whether the button automatically centers text. Only call this to override auto detection.
   // Default is false / manual centering; if constructed without `tx/ty` parameters, default is true / auto centering.
-  inline void auto_centering(bool auto_center) { m_auto_center = auto_center; }
   inline bool is_auto_centering() { return m_auto_center; }
-
-  // Sets `tx` and `ty` to position text at center of button, but only if in `auto_center` mode.
-  inline void auto_center() {
-    if (!m_auto_center) return;
-
-    m_tx = calc_center_x();
-    m_ty = calc_center_y();
+  inline Btn *auto_centering(bool auto_center) {
+    m_auto_center = auto_center;
+    return this;
   }
 
-  // Wait for a press within the boundaries of the button (x to x+w, y to y+h).
-  void wait_for_press(TouchCtrl &tch, TftCtrl &tft);
-  // Test if button is being pressed (x to x+w, y to y+h).
+  // Sets `tx` and `ty` to position text at center of button, but only if in `auto_center` mode.
+  inline Btn *auto_center() {
+    if (m_auto_center) {
+      m_tx = calc_center_x();
+      m_ty = calc_center_y();
+    }
+
+    return this;
+  }
+
+  // Test if button is being pressed (There is a press on `tch` at x to x+w, y to y+h).
   bool is_pressed(TouchCtrl &tch, TftCtrl &tft);
+  // Wait for a press on the button, blocks until `is_pressed()` returns true.
+  void wait_for_press(TouchCtrl &tch, TftCtrl &tft);
 
 private:
   uint8_t m_font_size = 2;
@@ -134,8 +173,7 @@ public:
   Menu() {};
   ~Menu();
 
-  bool add_btn(Btn *btn);
-  bool rm_btn(uint8_t btn_idx);
+  Btn *add_btn(Btn *btn);
   bool set_btn(uint8_t btn_idx, Btn *btn);
   Btn *get_btn(uint8_t btn_idx);
   bool purge_btn(uint8_t btn_idx);
@@ -152,8 +190,10 @@ public:
   void deselect_all();
 
 protected:
-  Btn **m_btns       = nullptr;
-  uint8_t m_num_btns = 0;
+  bool rm_btn(uint8_t btn_idx);  // Not exposed because unsafe: does not `delete` the button
+
+Btn **m_btns       = nullptr;
+uint8_t m_num_btns = 0;
 };
 
 /*
@@ -354,9 +394,9 @@ public:
 
   void update(TftCtrl &tft);
 
-  bool add_btn(Btn *btn);
-  bool add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
-  bool add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
+  Btn *add_btn(Btn *btn);
+  Btn *add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
+  Btn *add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
 
   void set_confirm_btn(uint8_t btn_id);
 

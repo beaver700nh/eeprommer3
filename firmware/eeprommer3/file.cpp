@@ -19,8 +19,7 @@ Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, ui
 
   for (uint8_t j = 0; j < m_num_rows; ++j) {
     for (uint8_t i = 0; i < m_num_cols; ++i) {
-      add_btn_calc(tft, "", TftColor::BLACK, TftColor::WHITE);
-      get_btn(get_num_btns() - 1)->set_font_size(1);
+      add_btn_calc(tft, "", TftColor::BLACK, TftColor::WHITE)->set_font_size(1);
     }
   }
 
@@ -46,22 +45,14 @@ void Gui::MenuSdFileSel::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t 
 
   // Update and enable all the needed buttons.
   for (i = 0; i < m_num_files; ++i) {
-    get_btn(i)->visibility(true);
-    get_btn(i)->operation(true);
-    get_btn(i)->set_text(m_files[i].name);
+    uint16_t bg = (m_files[i].is_dir ? TftColor::CYAN : TftColor::ORANGE);
 
-    if (m_files[i].is_dir) {
-      get_btn(i)->set_bg(TftColor::CYAN);
-    }
-    else {
-      get_btn(i)->set_bg(TftColor::ORANGE);
-    }
+    get_btn(i)->visibility(true)->operation(true)->set_text(m_files[i].name)->set_bg(bg);
   }
 
   // Disable everything else except the control buttons.
   for (/* no init clause */; i < get_num_btns() - 3; ++i) {
-    get_btn(i)->visibility(false);
-    get_btn(i)->operation(false);
+    get_btn(i)->visibility(false)->operation(false);
   }
 }
 

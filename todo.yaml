@@ -16,8 +16,6 @@ FIRMWARE:
     improve "Total" box on Memory
     put more things in PROGMEM
     make stuff allow PROGMEM strings
-    make Gui::Menu methods chainable?
-    add `If` to .clangd to silence warnings in util.cpp
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
