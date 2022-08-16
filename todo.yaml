@@ -13,6 +13,7 @@ FIRMWARE:
     fix multi write scrolling
     remove string literals from other files too:
       make search PATTERN='".*"' | grep -v "util.hpp" | grep -v "#include" | grep -v "PROGMEM"
+    pack structs
     improve "Total" box on Memory
     put more things in PROGMEM
     make stuff allow PROGMEM strings

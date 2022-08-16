@@ -27,8 +27,8 @@ Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, ui
   const uint16_t _x = _w + 20;
   const uint16_t _y = TftCalc::bottom(tft, 24, 44);
 
-  add_btn(new Gui::Btn(10, _y, _w, 24, "Parent Dir", TftColor::CYAN,  TftColor::BLUE));
-  add_btn(new Gui::Btn(_x, _y, _w, 24, "Cancel",     TftColor::PINKK, TftColor::RED ));
+  add_btn(new Gui::Btn(10, _y, _w, 24, Strings::L_GO_UP_DIR, TftColor::CYAN,  TftColor::BLUE));
+  add_btn(new Gui::Btn(_x, _y, _w, 24, Strings::L_CANCEL,    TftColor::PINKK, TftColor::RED ));
   add_btn_confirm(tft, true);
 
   m_files = (SdFileInfo *) malloc(m_num_rows * m_num_cols * sizeof(SdFileInfo));
@@ -96,7 +96,7 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
 
 FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist, SdCtrl &sd) {
   SER_DEBUG_PRINT(must_exist, 'd');
-  FileSystem fsys = ask_fsys(tft, tch, "Select a file type:", sd);
+  FileSystem fsys = ask_fsys(tft, tch, Strings::P_FILE_TYPE, sd);
   tft.fillScreen(TftColor::BLACK);
 
   char fpath[64];
@@ -105,7 +105,7 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
   switch (fsys) {
   case FileSystem::NONE:
     *status = AskFileStatus::CANCELED;
-    Dialog::show_error(tft, tch, ErrorLevel::INFO, "Canceled", "The operation\nhas been canceled.");
+    Dialog::show_error(tft, tch, ErrorLevel::INFO, Strings::T_CANCELED, Strings::E_CANCELED);
     return nullptr;
 
   case FileSystem::ON_SD_CARD:
@@ -115,7 +115,7 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
 
   default:
     *status = AskFileStatus::FSYS_INVALID;
-    Dialog::show_error(tft, tch, ErrorLevel::ERROR, "Invalid Filesystem", STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
+    Dialog::show_error(tft, tch, ErrorLevel::ERROR, Strings::E_INV_FSYS, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
     return nullptr;
   }
 }
@@ -143,10 +143,10 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const c
   tft.fillScreen(TftColor::BLACK);
 
   if (substatus == FSStatus::CANCELED) {
-    Dialog::show_error(tft, tch, ErrorLevel::INFO, "Canceled", "The operation\nhas been canceled.");
+    Dialog::show_error(tft, tch, ErrorLevel::INFO, Strings::T_CANCELED, Strings::E_CANCELED);
   }
   else if (substatus == FSStatus::FNAME_TOO_LONG) {
-    Dialog::show_error(tft, tch, ErrorLevel::ERROR, "String Overflow", "File name was too long\nto fit in the buffer.");
+    Dialog::show_error(tft, tch, ErrorLevel::ERROR, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
   }
 
   return (AskFileStatus) substatus;

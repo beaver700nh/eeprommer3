@@ -13,6 +13,8 @@ TMP_BUILD_DIR := /tmp/arduino-sketch-*/
 
 PROGRAM := eeprommer3.ino
 
+BUILD_FLAGS := '-std=c++17\ -fshort-enums'
+
 all: compile upload run
 build: compile upload
 go: upload run
@@ -27,7 +29,7 @@ endef
 
 compile:
 	$(call PrintFancy, "Compiling...")
-	arduino-cli-mega-compile . --warnings=more --build-property=compiler.cpp.extra_flags=-std=c++17 $(FLAGS)
+	arduino-cli-mega-compile . --warnings=more '--build-property=compiler.cpp.extra_flags=$(BUILD_FLAGS)' $(FLAGS)
 
 upload:
 	$(call PrintFancy, "Uploading...")

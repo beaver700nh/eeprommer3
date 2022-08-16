@@ -819,12 +819,7 @@ void ProgrammerOtherCore::monitor_data_bus() {
 #else
   // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
 
-  Dialog::show_error(
-    m_tft, m_tch, ErrorLevel::ERROR, Strings::T_NOT_SUPP,
-    "Data bus monitor is not\n"
-    "supported because DEBUG_MODE\n"
-    "is disabled."
-  );
+  Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, Strings::T_NOT_SUPP, Strings::E_NO_DB_MON);
 
   close_btn.wait_for_press(m_tch, m_tft);
 #endif

@@ -76,19 +76,25 @@ namespace Strings {
   inline const char *const T_INV_FSYS  = "Invalid Filesystem";
   inline const char *const T_WMULTI    = "Write Multiple Bytes";
   inline const char *const T_NOT_SUPP  = "Not Supported";
+  inline const char *const T_RESULT    = "Result";
+  inline const char *const T_SUCCESS   = "Success";
+  inline const char *const T_FAILED    = "Failed";
 
   inline const char *const E_CANCELED  = "Operation was canceled.";
   inline const char *const E_TOO_BIG   = "File would be too large\nto fit into EEPROM there!\nAborted.";
   inline const char *const E_TOO_LONG  = "File name was too long\nto fit in the buffer.";
   inline const char *const E_INV_FSYS  = "The selected filesystem\ndoes not exist.";
+  inline const char *const E_NO_DB_MON = "Data bus monitor is not\nsupported because DEBUG_MODE\nis disabled.";
 
   inline const char *const P_ADDR_GEN  = "Type an address:";
   inline const char *const P_DATA_GEN  = "Type the data:";
   inline const char *const P_VAL_GEN   = "Type a value:";
+  inline const char *const P_VECTOR    = "Select the vector:";
   inline const char *const P_ADDR_FILE = "Where to write in EEPROM?";
   inline const char *const P_ADDR_VEC  = "Type new vector value:";
   inline const char *const P_ADDR_BEG  = "Type the start address:";
   inline const char *const P_ADDR_END  = "Type the end address:";
+  inline const char *const P_FILE_TYPE = "Select the file type:";
   inline const char *const P_OFILE     = "Which file to read to?";
   inline const char *const P_IFILE     = "Which file to write from?";
   inline const char *const P_VIEW_METH = "Select viewing method:";
@@ -108,10 +114,10 @@ namespace Strings {
 
   inline const char *const L_LEFT      = "\x1e";
   inline const char *const L_RIGHT     = "\x1f";
-  inline const char *const L_ADD_PAIR  = "Add Pair";
   inline const char *const L_DONE      = "Done";
   inline const char *const L_CANCEL    = "Cancel";
   inline const char *const L_CLOSE     = "Close";
+  inline const char *const L_SKIP      = "Skip";
   inline const char *const L_CONFIRM   = "Confirm";
   inline const char *const L_CONTINUE  = "Continue";
   inline const char *const L_INPUT     = "Input";
@@ -119,9 +125,13 @@ namespace Strings {
   inline const char *const L_YES       = "Yes";
   inline const char *const L_NO        = "No";
   inline const char *const L_OK        = "OK";
+  inline const char *const L_ADD_PAIR  = "Add Pair";
+  inline const char *const L_GO_UP_DIR = "Parent Dir";
   inline const char *const L_VM_HEX    = "Show as Raw Hexadecimal";
   inline const char *const L_VM_CHAR   = "Show Printable Characters";
   inline const char *const L_VM_FILE   = "Write Data to a File";
+  inline const char *const L_NO_HELP   = "No help text available.";
+  inline const char *const L_UNK_REAS  = "Unknown reason.";
 }
 
 #endif

@@ -31,7 +31,7 @@ void setup() {
   uint16_t intro_x = (tft.width() - 320) / 2;
   uint16_t intro_y = (tft.height() - 240) / 2 - 17;
 
-  Gui::Btn skip_btn(80, intro_y + 250, 320, 24, "Skip", TftColor::WHITE, TftColor::DGREEN);
+  Gui::Btn skip_btn(80, intro_y + 250, 320, 24, Strings::L_SKIP, TftColor::WHITE, TftColor::DGREEN);
   skip_btn.draw(tft);
 
   draw_intro(intro_x, intro_y, &skip_btn);

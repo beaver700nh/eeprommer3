@@ -5,6 +5,7 @@
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
 #include "touch.hpp"
+#include "util.hpp"
 
 #include "error.hpp"
 
@@ -36,5 +37,5 @@ void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *t
 
   free(_msg);
 
-  TftUtil::wait_bottom_btn(tft, tch, (lvl >= ErrorLevel::WARNING ? "OK" : "Continue"));
+  TftUtil::wait_bottom_btn(tft, tch, (lvl >= ErrorLevel::WARNING ? Strings::L_OK : Strings::L_CONTINUE));
 }

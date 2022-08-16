@@ -7,17 +7,22 @@
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "touch.hpp"
+#include "util.hpp"
 
 namespace ErrorLevel {
   enum : uint8_t {INFO, WARNING, ERROR};
 
+  // NOLINTBEGIN: not unused
+
   static inline constexpr const char *const NAMES[] {
-    "Info", "Warning", "Error"
+    "Info", "Warning", "Error",
   };
 
   static inline constexpr const uint16_t COLORS[] {
-    TftColor::DCYAN, TftColor::MAGENTA, TftColor::DRED
+    TftColor::DCYAN, TftColor::MAGENTA, TftColor::DRED,
   };
+
+  // NOLINTEND
 };
 
 namespace Dialog {
