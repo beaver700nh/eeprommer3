@@ -1,4 +1,24 @@
 # eeprommer3 | hardware
+
+## v2.y - August 2022
+
+This directory contains images and LibrePCB files for each revision of
+the eeprommer3 Arduino Mega shield.
+
+The PCB, which covers the whole Arduino as a pass-through shield,
+holds a socket for the AT28C256 EEPROM. It also contains the EEPROM
+driver circuitry and RAM expansion circuitry.
+
+Support for use as a breakout board as well as use with boards other
+than Arduino Megas has been dropped. It would probably also be very
+difficult to modify the PCB for use with other EEPROMs.
+
+Support for the character LCD has also been dropped in favor of a TFT
+LCD touchscreen, which is now 3.5" instead of 2.8". The screen plugs in
+on top of the shield instead of next to it.
+
+## v1.y - July 2021
+
 This directory contains images of the PCB and schematic files, as well as
 the EasyEDA files of the Arduino Mega shield for the EEPROM programmer,
 for each revision.

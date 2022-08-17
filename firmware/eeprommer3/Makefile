@@ -15,7 +15,7 @@ PROGRAM := eeprommer3.ino
 
 BUILD_FLAGS := '-std=c++17\ -fshort-enums'
 
-all: compile upload run
+all: build run
 build: compile upload
 go: upload run
 
