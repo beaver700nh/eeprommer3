@@ -74,17 +74,10 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
     PSTR_HELP_A,
   };  // todo make this progmem + global
 
-  char help_text[128];
-
-  if (btn_id >= ARR_LEN(helps) || strlen_P(helps[btn_id]) == 0) {
-    strcpy(help_text, Strings::L_NO_HELP);
-  }
-  else {
-    strcpy_P(help_text, helps[btn_id]);
-  }
+  bool has_help = btn_id < ARR_LEN(helps) && strlen_P(helps[btn_id]) != 0;
 
   tft.fillRect(10, 250, tft.width(), 16, TftColor::BLACK);
-  tft.drawText(10, 250, help_text, TftColor::PURPLE, 2);
+  tft.drawText_P(10, 250, (has_help ? helps[btn_id] : Strings::L_NO_HELP), TftColor::PURPLE, 2);
 }
 
 void Programmer::init() {
@@ -123,7 +116,7 @@ void Programmer::run() {
   while (true) {
     Memory::print_ram_analysis();
 
-    m_tft.drawText(10, 10, Strings::P_ACTION, TftColor::CYAN, 3);
+    m_tft.drawText_P(10, 10, Strings::P_ACTION, TftColor::CYAN, 3);
     show_help(m_tft, cur_choice, false);
     cur_choice = m_menu.wait_for_value(m_tch, m_tft);
 
@@ -164,15 +157,9 @@ void Programmer::show_status(ProgrammerBaseCore::Status code) {
   const uint16_t success_color = (success ? TftColor::GREEN : TftColor::RED);
 
   char code_text[128];
+  strcpy_P(code_text, (code < ARR_LEN(details) ? details[code] : Strings::L_UNK_REAS));
 
-  if (code >= ARR_LEN(details)) {
-    strcpy(code_text, Strings::L_UNK_REAS);
-  }
-  else {
-    strcpy_P(code_text, details[code]);
-  }
-
-  m_tft.drawText(15, TftCalc::bottom(m_tft, 16, 44), success_str, success_color, 2);
+  m_tft.drawText_P(15, TftCalc::bottom(m_tft, 16, 44), success_str, success_color, 2);
 
   Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, Strings::T_RESULT, code_text);
 }

@@ -16,6 +16,10 @@ namespace Util {
     *b     = temp;
   }
 
+  // Duplicates PROGMEM string into normal string, returns it.
+  // Caller is responsible for freeing.
+  char *strdup_P(const char *pstr);
+
   // `exit_condition` is a template type
   // to get around annoying lambda errors
   template<typename Func>
@@ -70,7 +74,7 @@ struct Memory {
  * I_ - Info
  */
 namespace Strings {
-#define ADD_STRING(type, name, value) inline const char *const type##_##name = value
+#define ADD_STRING(type, name, value) inline const char type##_##name[] PROGMEM = value
 
   ADD_STRING(T, DONE,      "Done");
   ADD_STRING(T, MISMATCH,  "Mismatch");

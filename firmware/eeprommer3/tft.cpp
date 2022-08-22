@@ -11,6 +11,7 @@
 
 #include "tft.hpp"
 #include "tft_calc.hpp"
+#include "util.hpp"
 
 void TftCtrl::init(uint16_t driver_id, uint8_t orientation) {
   reset();
@@ -34,13 +35,30 @@ void TftCtrl::drawText(uint16_t x, uint16_t y, const char *text, uint16_t color,
   print(text);
 }
 
+void TftCtrl::drawText_P(uint16_t x, uint16_t y, const char *text, uint16_t color, uint8_t size) {
+  const char *_text = Util::strdup_P(text);
+  drawText(x, y, _text, color, size);
+  free((void *) _text);
+}
+
 void TftCtrl::drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t color, uint16_t bg, uint8_t size) {
   fillRect(x, y, TftCalc::t_width(text, size), size * 8, bg);
   drawText(x, y, text, color, size);
 }
 
+void TftCtrl::drawTextBg_P(uint16_t x, uint16_t y, const char *text, uint16_t color, uint16_t bg, uint8_t size) {
+  fillRect(x, y, TftCalc::t_width(text, size), size * 8, bg);
+  drawText_P(x, y, text, color, size);
+}
+
 void TftCtrl::drawText(const char *text) {
   print(text);
+}
+
+void TftCtrl::drawText_P(const char *text) {
+  const char *_text = Util::strdup_P(text);
+  print(_text);
+  free((void *) _text);
 }
 
 void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {

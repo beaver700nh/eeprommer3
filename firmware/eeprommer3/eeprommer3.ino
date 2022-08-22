@@ -45,9 +45,9 @@ void setup() {
     SER_LOG_PRINT("... failed!\n");
 
     switch (sd_status) {
-    case SdCtrl::Status::DISABLED: tft.drawText(90, 241, Strings::L_SD_DISAB, TftColor::ORANGE,  2); break;
-    case SdCtrl::Status::FAILED:   tft.drawText(90, 241, Strings::L_SD_FAIL,  TftColor::RED,     2); break;
-    default:                       tft.drawText(90, 241, Strings::L_SD_INVAL, TftColor::MAGENTA, 2); break;
+    case SdCtrl::Status::DISABLED: tft.drawText_P(90, 241, Strings::L_SD_DISAB, TftColor::ORANGE,  2); break;
+    case SdCtrl::Status::FAILED:   tft.drawText_P(90, 241, Strings::L_SD_FAIL,  TftColor::RED,     2); break;
+    default:                       tft.drawText_P(90, 241, Strings::L_SD_INVAL, TftColor::MAGENTA, 2); break;
     }
   }
 
@@ -82,15 +82,15 @@ void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn) {
   }
   else {
     tft.drawThickRect(x, y, 320, 240, TftColor::CYAN, 4);
-    tft.drawText(TftCalc::t_center_x_l(tft, 10, 4), y + 10, Strings::L_PROJ_NAME, TftColor::ORANGE, 4);
-    tft.drawText(TftCalc::t_center_x_l(tft, 15, 2), y + 50, Strings::L_INTRO1,    TftColor::BLUE,   2);
-    tft.drawText(TftCalc::t_center_x_l(tft, 18, 2), y + 90, Strings::L_INTRO2,    TftColor::CYAN,   2);
+    tft.drawText_P(TftCalc::t_center_x_l(tft, 10, 4), y + 10, Strings::L_PROJ_NAME, TftColor::ORANGE, 4);
+    tft.drawText_P(TftCalc::t_center_x_l(tft, 15, 2), y + 50, Strings::L_INTRO1,    TftColor::BLUE,   2);
+    tft.drawText_P(TftCalc::t_center_x_l(tft, 18, 2), y + 90, Strings::L_INTRO2,    TftColor::CYAN,   2);
 
     tft.fillCircle   (x + 135, y + 140, 20,     TftColor::CYAN);
     tft.fillRect     (x + 175, y + 120, 40, 40, TftColor::DGRAY);
     tft.drawThickRect(x + 175, y + 120, 40, 40, TftColor::LGRAY, 2);
 
-    tft.drawText(x + 10, y + 190, Strings::W_LOAD, TftColor::PURPLE, 3);
+    tft.drawText_P(x + 10, y + 190, Strings::W_LOAD, TftColor::PURPLE, 3);
 
     Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(*skip_btn, tch, tft));
   }

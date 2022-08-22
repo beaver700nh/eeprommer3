@@ -31,7 +31,7 @@ uint16_t TftCalc::t_center_y(TftCtrl &tft, uint8_t size) {
 }
 
 uint16_t TftCalc::t_width(const char *text, uint8_t size) {
-  return t_width(strlen(text), size);
+  return t_width(strlen_P(text), size);
 }
 
 uint16_t TftCalc::t_width(uint8_t len, uint8_t size) {

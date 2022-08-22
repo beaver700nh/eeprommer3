@@ -11,8 +11,7 @@ FIRMWARE:
     fix file write verify segfault/crash
     fix read range
     fix multi write scrolling
-    remove string literals from other files too:
-      make search PATTERN='".*"' | grep -v "util.hpp" | grep -v "#include" | grep -v "PROGMEM"
+    fix `MenuKeyboard`s
     pack structs
     improve "Total" box on Memory
     put more things in PROGMEM
@@ -20,7 +19,8 @@ FIRMWARE:
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
-    make Controllers struct so no passing `XXXCtrl&`s everywhere
+    make Controllers struct so no passing `XXXCtrl&`s everywhere:
+      nvm just make them global
     make progress bars look better:
       unsatisfying off-by-one stuff
       optimize drawing?

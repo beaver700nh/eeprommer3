@@ -849,14 +849,14 @@ void ProgrammerOtherCore::debug_action_aux2() {
 }
 
 Status ProgrammerOtherCore::about() {
-  m_tft.drawText( 10,  10, Strings::T_ABOUT,     TftColor::CYAN, 3);
-  m_tft.drawText( 10,  50, Strings::L_PROJ_NAME, TftColor::PURPLE);
-  m_tft.drawText(142,  50, Strings::I_SUBTITLE,  TftColor::BLUE);
-  m_tft.drawText( 10,  90, Strings::I_LINE_1,    TftColor::LGRAY);
-  m_tft.drawText( 10, 120, Strings::I_LINE_2,    TftColor::LGRAY);
-  m_tft.drawText( 10, 150, Strings::I_LINE_3,    TftColor::LGRAY);
-  m_tft.drawText( 10, 180, Strings::I_LINE_4,    TftColor::LGRAY);
-  m_tft.drawText( 10, 240, Strings::I_LINE_5,    TftColor::DGRAY);
+  m_tft.drawText_P( 10,  10, Strings::T_ABOUT,     TftColor::CYAN, 3);
+  m_tft.drawText_P( 10,  50, Strings::L_PROJ_NAME, TftColor::PURPLE);
+  m_tft.drawText_P(142,  50, Strings::I_SUBTITLE,  TftColor::BLUE);
+  m_tft.drawText_P( 10,  90, Strings::I_LINE_1,    TftColor::LGRAY);
+  m_tft.drawText_P( 10, 120, Strings::I_LINE_2,    TftColor::LGRAY);
+  m_tft.drawText_P( 10, 150, Strings::I_LINE_3,    TftColor::LGRAY);
+  m_tft.drawText_P( 10, 180, Strings::I_LINE_4,    TftColor::LGRAY);
+  m_tft.drawText_P( 10, 240, Strings::I_LINE_5,    TftColor::DGRAY);
 
   TftUtil::wait_bottom_btn(m_tft, m_tch, Strings::L_CLOSE);
 

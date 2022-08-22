@@ -10,7 +10,7 @@
 #include "tft_util.hpp"
 
 void TftUtil::wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text) {
-  static Gui::Btn continue_btn(BOTTOM_BTN(tft, text));
+  static Gui::Btn continue_btn(BOTTOM_BTN(tft, text)); // todo - make sure this is only constructed once
   continue_btn.draw(tft);
   continue_btn.wait_for_press(tch, tft);
 }

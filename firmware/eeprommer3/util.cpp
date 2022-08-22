@@ -12,6 +12,13 @@ extern unsigned int __bss_start, __heap_start;
 extern char *__brkval;
 // NOLINTEND
 
+char *Util::strdup_P(const char *pstr) {
+  auto *buf = (char *) malloc(strlen_P(pstr) * sizeof(char));
+  strcpy_P(buf, pstr);
+
+  return buf;
+}
+
 void Util::validate_addr(uint16_t *addr) {
   *addr &= ~0x8000;
 }

@@ -10,13 +10,15 @@
 #include "error.hpp"
 
 void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *title, const char *msg) {
-  tft.drawText(10, 10, title, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, title, TftColor::CYAN, 3);
 
-  auto name  = ErrorLevel::NAMES[lvl];
-  auto color = ErrorLevel::COLORS[lvl];
+  const char *name = Util::strdup_P(ErrorLevel::NAMES[lvl]);
+  uint16_t color = ErrorLevel::COLORS[lvl];
 
   char tag[16];
   SNPRINTF(tag, "[%s]", name);
+
+  free((void *) name);
 
   tft.drawText(TftCalc::right(tft, TftCalc::t_width(tag, 2), 10), 10, tag, color, 2);
 

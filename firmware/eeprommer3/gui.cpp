@@ -35,7 +35,7 @@ void Gui::Btn::draw(TftCtrl &tft) {
   uint16_t bg = (m_is_operational ? m_bg : TftColor::GRAY);
 
   tft.fillRect(m_x, m_y, m_w, m_h, bg);
-  tft.drawText(m_x + m_tx, m_y + m_ty, m_text, fg, m_font_size);
+  tft.drawText_P(m_x + m_tx, m_y + m_ty, m_text, fg, m_font_size);
 
   draw_highlight(tft);
 }

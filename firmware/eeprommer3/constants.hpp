@@ -65,11 +65,11 @@ extern HardwareSerial Serial;
 #define GRN_565(c) (((c) >> 5) & 0x3F)
 #define BLU_565(c) ((c) & 0x1F)
 
-// Shorthand for bottom button in TftBtn ctor
+// Shorthand for bottom button in Btn ctor
 // `tft`: TftCtrl object to get dimensions
 // `text`: text of button
 #define BOTTOM_BTN(tft, text)            \
-10, TftCalc::bottom((tft), 24, 10),      \
+  10, TftCalc::bottom((tft), 24, 10),    \
   TftCalc::fraction_x((tft), 10, 1), 24, \
   (text)
 
