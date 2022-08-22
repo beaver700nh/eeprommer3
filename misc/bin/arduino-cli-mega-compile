@@ -2,16 +2,15 @@
 
 prgm="$1"
 shift
-args="$@"
-args2=""
+args=""
 
-for arg in $args; do
-  args2="$args2\"$arg\" "
+for arg in "$@"; do
+  args="$args\"$arg\" "
 done
 
-if [[ "$args2" == "" ]]; then
-  args2="[none]"
+if [[ "$args" == "" ]]; then
+  args="[none]"
 fi
 
-echo -e "\x1b[1;96mCompiling sketch \"$prgm\" for Arduino Mega...\nFlags/arguments: $args2\x1b[0m\n"
-arduino-cli compile --fqbn arduino:avr:mega $args "$prgm"
+echo -e "\x1b[1;96mCompiling sketch \"$prgm\" for Arduino Mega...\nFlags/arguments: $args\x1b[0m\n"
+arduino-cli compile --fqbn arduino:avr:mega "$@" "$prgm"

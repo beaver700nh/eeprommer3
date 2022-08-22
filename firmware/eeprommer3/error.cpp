@@ -15,7 +15,8 @@ void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *t
   auto name  = ErrorLevel::NAMES[lvl];
   auto color = ErrorLevel::COLORS[lvl];
 
-  const char *tag = STRFMT_NOBUF("[%s]", name);
+  char tag[16];
+  SNPRINTF(tag, "[%s]", name);
 
   tft.drawText(TftCalc::right(tft, TftCalc::t_width(tag, 2), 10), 10, tag, color, 2);
 

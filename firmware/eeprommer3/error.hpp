@@ -14,8 +14,8 @@ namespace ErrorLevel {
 
   // NOLINTBEGIN: not unused
 
-  static inline constexpr const char *const NAMES[] {
-    "Info", "Warning", "Error",
+  static inline const char *const NAMES[] {
+    Strings::T_EL_INFO, Strings::T_EL_WARN, Strings::T_EL_ERR,
   };
 
   static inline constexpr const uint16_t COLORS[] {

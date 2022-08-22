@@ -4,16 +4,15 @@ prgm="$1"
 port="$2"
 shift
 shift
-args="$@"
-args2=""
+args=""
 
-for arg in $args; do
-  args2="$args2\"$arg\" "
+for arg in "$@"; do
+  args="$args\"$arg\" "
 done
 
-if [[ "$args2" == "" ]]; then
-  args2="[none]"
+if [[ "$args" == "" ]]; then
+  args="[none]"
 fi
 
-echo -e "\x1b[1;96mUploading program \"$prgm\" to Arduino Mega on port \"$port\"...\nFlags/arguments: $args2\x1b[0m\n"
-arduino-cli upload -p "$port" --fqbn arduino:avr:mega $args "$prgm"
+echo -e "\x1b[1;96mUploading program \"$prgm\" to Arduino Mega on port \"$port\"...\nFlags/arguments: $args\x1b[0m\n"
+arduino-cli upload -p "$port" --fqbn arduino:avr:mega "$@" "$prgm"

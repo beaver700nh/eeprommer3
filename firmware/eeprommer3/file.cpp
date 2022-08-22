@@ -19,7 +19,7 @@ Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, ui
 
   for (uint8_t j = 0; j < m_num_rows; ++j) {
     for (uint8_t i = 0; i < m_num_cols; ++i) {
-      add_btn_calc(tft, "", TftColor::BLACK, TftColor::WHITE)->set_font_size(1);
+      add_btn_calc(tft, Strings::L_EMPTY_STR, TftColor::BLACK, TftColor::WHITE)->set_font_size(1);
     }
   }
 
@@ -170,9 +170,9 @@ FileSystem Dialog::ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, Sd
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
   Gui::MenuChoice menu(10, 10, 50, 10, 1, 40, true, 0);
-  menu.add_btn_calc(tft, "SD Card File", TftColor::LGREEN, TftColor::DGREEN);
-  menu.add_btn_calc(tft, "Serial File",  TftColor::CYAN,   TftColor::BLUE  );
-  menu.add_btn_calc(tft, "Cancel",       TftColor::PINKK,  TftColor::DRED  );
+  menu.add_btn_calc(tft, Strings::L_FILE_SD,  TftColor::LGREEN, TftColor::DGREEN);
+  menu.add_btn_calc(tft, Strings::L_FILE_SER, TftColor::CYAN,   TftColor::BLUE  );
+  menu.add_btn_calc(tft, Strings::L_CANCEL,   TftColor::PINKK,  TftColor::DRED  );
   menu.add_btn_confirm(tft, true);
 
   const uint8_t avail = FileUtil::get_available_file_systems(sd);

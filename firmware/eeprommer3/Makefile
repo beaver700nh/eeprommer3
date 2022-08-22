@@ -13,7 +13,7 @@ TMP_BUILD_DIR := /tmp/arduino-sketch-*/
 
 PROGRAM := eeprommer3.ino
 
-BUILD_FLAGS := '-std=c++17\ -fshort-enums'
+BUILD_FLAGS := '-std=c++17\ -fshort-enums\ -felide-constructors'
 
 all: build run
 build: compile upload

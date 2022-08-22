@@ -41,7 +41,7 @@ Status ProgrammerByteCore::read() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  char title[64];
+  char title[32];
   SNPRINTF(title, "Value at addr %04X", addr);
 
   Dialog::show_error(
@@ -441,8 +441,8 @@ void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t add
   const uint16_t x2 = m_tft.width() - 55;
 
   Gui::Menu menu;
-  menu.add_btn(new Gui::Btn(15, 60, 40, 150, 15, 68, "\x11"));
-  menu.add_btn(new Gui::Btn(x2, 60, 40, 150, 15, 68, "\x10"));
+  menu.add_btn(new Gui::Btn(15, 60, 40, 150, 15, 68, Strings::L_ARROW_L));
+  menu.add_btn(new Gui::Btn(x2, 60, 40, 150, 15, 68, Strings::L_ARROW_R));
   menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, Strings::L_CONTINUE)));
   menu.draw(m_tft);
 
@@ -576,10 +576,10 @@ Status ProgrammerMultiCore::write() {
   const uint16_t _y = TftCalc::bottom(m_tft, 24, 10);
 
   Gui::Menu menu;
-  menu.add_btn(new Gui::Btn(10, 74, 24, _h, Strings::L_LEFT,     TftColor::WHITE, TftColor::DGRAY ));
-  menu.add_btn(new Gui::Btn(x1, 74, 24, _h, Strings::L_RIGHT,    TftColor::WHITE, TftColor::DGRAY ));
+  menu.add_btn(new Gui::Btn(10, 74, 24, _h, Strings::L_ARROW_U,  TftColor::WHITE, TftColor::DGRAY ));
+  menu.add_btn(new Gui::Btn(x1, 74, 24, _h, Strings::L_ARROW_D,  TftColor::WHITE, TftColor::DGRAY ));
   menu.add_btn(new Gui::Btn(10, 40, w1, 24, Strings::L_ADD_PAIR, TftColor::WHITE, TftColor::PURPLE));
-  menu.add_btn(new Gui::Btn(10, _y, w2, 24, Strings::L_DONE,     TftColor::RED,   TftColor::PINKK ));
+  menu.add_btn(new Gui::Btn(10, _y, w2, 24, Strings::L_CONFIRM,  TftColor::RED,   TftColor::PINKK ));
   menu.add_btn(new Gui::Btn(x2, _y, w2, 24, Strings::L_CANCEL,   TftColor::CYAN,  TftColor::BLUE  ));
 
   Gui::Menu del_btns;
@@ -587,7 +587,7 @@ Status ProgrammerMultiCore::write() {
   const uint8_t num_pairs = 7;
 
   for (uint8_t i = 0; i < num_pairs; ++i) {
-    del_btns.add_btn(new Gui::Btn(TftCalc::right(m_tft, 18, 44), 76 + 30 * i, 18, 18, "x", TftColor::YELLOW, TftColor::RED));
+    del_btns.add_btn(new Gui::Btn(TftCalc::right(m_tft, 18, 44), 76 + 30 * i, 18, 18, Strings::L_X_CLOSE, TftColor::YELLOW, TftColor::RED));
   }
 
   uint16_t scroll = 0;
@@ -626,8 +626,8 @@ void ProgrammerMultiCore::draw_pairs(
   }
 
   if (buf.get_len() == 0) {
-    m_tft.drawText(margin_l, margin_u +  0, "No pairs yet!",                   TftColor::LGRAY);
-    m_tft.drawText(margin_l, margin_u + 30, "Click `Add Pair' to add a pair!", TftColor::LGRAY);
+    m_tft.drawText(margin_l, margin_u +  0, Strings::L_NO_PAIRS1, TftColor::LGRAY);
+    m_tft.drawText(margin_l, margin_u + 30, Strings::L_NO_PAIRS2, TftColor::LGRAY);
     return;
   }
 
@@ -749,21 +749,21 @@ Status ProgrammerOtherCore::debug() {
   const auto x2 = w2 + 20;
 
   Gui::Menu menu;
-  menu.add_btn(new Gui::Btn(10, 50,  w2, 28, "WE Hi (Disable)", TftColor::LGREEN, TftColor::DGREEN));
-  menu.add_btn(new Gui::Btn(x2, 50,  w2, 28, "WE Lo (Enable)",  TftColor::PINKK,  TftColor::RED   ));
-  menu.add_btn(new Gui::Btn(10, 88,  w1, 28, "Set Address/OE",  TftColor::BLACK,  TftColor::YELLOW));
-  menu.add_btn(new Gui::Btn(10, 126, w2, 28, "Read Data Bus",   TftColor::BLUE,   TftColor::CYAN  ));
-  menu.add_btn(new Gui::Btn(x2, 126, w2, 28, "Write Data Bus",  TftColor::CYAN,   TftColor::BLUE  ));
-  menu.add_btn(new Gui::Btn(10, 164, w2, 28, "Set Data Dir",    TftColor::BLACK,  TftColor::ORANGE));
-  menu.add_btn(new Gui::Btn(x2, 164, w2, 28, "Monitor Data",    TftColor::YELLOW, TftColor::DCYAN ));
-  menu.add_btn(new Gui::Btn(10, 202, w2, 28, "Print Charset",   TftColor::PINKK,  TftColor::PURPLE));
-  menu.add_btn(new Gui::Btn(x2, 202, w2, 28, "Show Colors",     TftColor::PINKK,  TftColor::PURPLE));
-  menu.add_btn(new Gui::Btn(10, 240, w2, 28, "Aux1",            TftColor::DGRAY,  TftColor::LGRAY ));
-  menu.add_btn(new Gui::Btn(x2, 240, w2, 28, "Aux2",            TftColor::DGRAY,  TftColor::LGRAY ));
+  menu.add_btn(new Gui::Btn(10, 50,  w2, 28, Strings::D_WE_HI,     TftColor::LGREEN, TftColor::DGREEN));
+  menu.add_btn(new Gui::Btn(x2, 50,  w2, 28, Strings::D_WE_LO,     TftColor::PINKK,  TftColor::RED   ));
+  menu.add_btn(new Gui::Btn(10, 88,  w1, 28, Strings::D_SET_ADDR,  TftColor::BLACK,  TftColor::YELLOW));
+  menu.add_btn(new Gui::Btn(10, 126, w2, 28, Strings::D_RD_DATA,   TftColor::BLUE,   TftColor::CYAN  ));
+  menu.add_btn(new Gui::Btn(x2, 126, w2, 28, Strings::D_WR_DATA,   TftColor::CYAN,   TftColor::BLUE  ));
+  menu.add_btn(new Gui::Btn(10, 164, w2, 28, Strings::D_SET_DDIR,  TftColor::BLACK,  TftColor::ORANGE));
+  menu.add_btn(new Gui::Btn(x2, 164, w2, 28, Strings::D_MON_DATA,  TftColor::YELLOW, TftColor::DCYAN ));
+  menu.add_btn(new Gui::Btn(10, 202, w2, 28, Strings::D_P_CHARSET, TftColor::PINKK,  TftColor::PURPLE));
+  menu.add_btn(new Gui::Btn(x2, 202, w2, 28, Strings::D_SHOW_COL,  TftColor::PINKK,  TftColor::PURPLE));
+  menu.add_btn(new Gui::Btn(10, 240, w2, 28, Strings::D_AUX1,      TftColor::DGRAY,  TftColor::LGRAY ));
+  menu.add_btn(new Gui::Btn(x2, 240, w2, 28, Strings::D_AUX2,      TftColor::DGRAY,  TftColor::LGRAY ));
   menu.add_btn(new Gui::Btn(BOTTOM_BTN(m_tft, Strings::L_CLOSE)));
 
   while (true) {
-    m_tft.drawText(10, 10, "Debug Tools Menu", TftColor::CYAN, 4);
+    m_tft.drawText(10, 10, Strings::T_DEBUGS, TftColor::CYAN, 4);
     menu.draw(m_tft);
 
     DebugAction btn = (DebugAction) menu.wait_for_press(m_tch, m_tft);
@@ -849,14 +849,14 @@ void ProgrammerOtherCore::debug_action_aux2() {
 }
 
 Status ProgrammerOtherCore::about() {
-  m_tft.drawText( 10,  10, "About",                                  TftColor::CYAN, 3);
-  m_tft.drawText( 10,  50, "eeprommer3",                             TftColor::PURPLE);
-  m_tft.drawText(142,  50, "- hardware/firmware side",               TftColor::BLUE);
-  m_tft.drawText( 10,  90, "AT28C256 EEPROM programmer using 2 I2C", TftColor::LGRAY);
-  m_tft.drawText( 10, 120, "MCP23017 chips. Use: standalone device", TftColor::LGRAY);
-  m_tft.drawText( 10, 150, "or computer peripheral via USB. Allows", TftColor::LGRAY);
-  m_tft.drawText( 10, 180, "access to SD card connected on SPI bus", TftColor::LGRAY);
-  m_tft.drawText( 10, 240, "Made by beaver700nh (GitHub) 2021-2022", TftColor::DGRAY);
+  m_tft.drawText( 10,  10, Strings::T_ABOUT,     TftColor::CYAN, 3);
+  m_tft.drawText( 10,  50, Strings::L_PROJ_NAME, TftColor::PURPLE);
+  m_tft.drawText(142,  50, Strings::I_SUBTITLE,  TftColor::BLUE);
+  m_tft.drawText( 10,  90, Strings::I_LINE_1,    TftColor::LGRAY);
+  m_tft.drawText( 10, 120, Strings::I_LINE_2,    TftColor::LGRAY);
+  m_tft.drawText( 10, 150, Strings::I_LINE_3,    TftColor::LGRAY);
+  m_tft.drawText( 10, 180, Strings::I_LINE_4,    TftColor::LGRAY);
+  m_tft.drawText( 10, 240, Strings::I_LINE_5,    TftColor::DGRAY);
 
   TftUtil::wait_bottom_btn(m_tft, m_tch, Strings::L_CLOSE);
 

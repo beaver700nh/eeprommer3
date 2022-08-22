@@ -8,7 +8,7 @@
 #include "tft.hpp"
 #include "touch.hpp"
 
-// Vector is a helper class for vector-related actions.
+// Vector is a helper struct for vector-related actions.
 struct Vector {
   Vector(uint8_t id) : m_id(id), m_addr(0xFFF8 + 2 * (id + 1)) {};
 
@@ -24,7 +24,7 @@ struct Vector {
   uint8_t m_lo, m_hi;
   uint16_t m_val;
 
-  inline static const char *NAMES[3] {"NMI", "RESET", "IRQ"};
+  inline static const char *NAMES[3] {"NMI", "RESET", "IRQ"}; // todo - put in progmem
 };
 
 namespace Dialog {

@@ -88,18 +88,18 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
 }
 
 void Programmer::init() {
-  m_menu.add_btn_calc(m_tft, "Read Byte",       TftColor::BLUE,           TftColor::CYAN          );
-  m_menu.add_btn_calc(m_tft, "Write Byte",      TftColor::RED,            TftColor::PINKK         );
-  m_menu.add_btn_calc(m_tft, "Read to File",    TftColor::CYAN,           TftColor::BLUE          );
-  m_menu.add_btn_calc(m_tft, "Write from File", TftColor::PINKK,          TftColor::RED           );
-  m_menu.add_btn_calc(m_tft, "Read Vector",     TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
-  m_menu.add_btn_calc(m_tft, "Write Vector",    TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  m_menu.add_btn_calc(m_tft, "Read Range",      TftColor::LGREEN,         TftColor::DGREEN        );
-  m_menu.add_btn_calc(m_tft, "Write Multiple",  TftColor::BLACK,          TftColor::ORANGE        );
-  m_menu.add_btn_calc(m_tft, "Draw Test",       TftColor::DGRAY,          TftColor::GRAY          );
-  m_menu.add_btn_calc(m_tft, "Debug Tools",     TftColor::DGRAY,          TftColor::GRAY          );
+  m_menu.add_btn_calc(m_tft, Strings::A_R_BYTE,    TftColor::BLUE,           TftColor::CYAN          );
+  m_menu.add_btn_calc(m_tft, Strings::A_W_BYTE,    TftColor::RED,            TftColor::PINKK         );
+  m_menu.add_btn_calc(m_tft, Strings::A_R_FILE,    TftColor::CYAN,           TftColor::BLUE          );
+  m_menu.add_btn_calc(m_tft, Strings::A_W_FILE,    TftColor::PINKK,          TftColor::RED           );
+  m_menu.add_btn_calc(m_tft, Strings::A_R_VECTOR,  TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
+  m_menu.add_btn_calc(m_tft, Strings::A_W_VECTOR,  TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
+  m_menu.add_btn_calc(m_tft, Strings::A_R_MULTI,   TftColor::LGREEN,         TftColor::DGREEN        );
+  m_menu.add_btn_calc(m_tft, Strings::A_W_MULTI,   TftColor::BLACK,          TftColor::ORANGE        );
+  m_menu.add_btn_calc(m_tft, Strings::A_DRAW_TEST, TftColor::DGRAY,          TftColor::GRAY          );
+  m_menu.add_btn_calc(m_tft, Strings::A_DEBUGS,    TftColor::DGRAY,          TftColor::GRAY          );
 
-  m_menu.add_btn(new Gui::Btn(TftCalc::right(m_tft, 24, 10), 10, 24, 24, "i", TftColor::WHITE, TftColor::BLUE));
+  m_menu.add_btn(new Gui::Btn(TftCalc::right(m_tft, 24, 10), 10, 24, 24, Strings::A_INFO, TftColor::WHITE, TftColor::BLUE));
 
   m_menu.add_btn_confirm(m_tft, true);
 
@@ -123,7 +123,7 @@ void Programmer::run() {
   while (true) {
     Memory::print_ram_analysis();
 
-    m_tft.drawText(10, 10, "Choose an action:", TftColor::CYAN, 3);
+    m_tft.drawText(10, 10, Strings::P_ACTION, TftColor::CYAN, 3);
     show_help(m_tft, cur_choice, false);
     cur_choice = m_menu.wait_for_value(m_tch, m_tft);
 
