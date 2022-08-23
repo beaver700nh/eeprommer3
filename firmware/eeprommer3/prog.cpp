@@ -156,10 +156,9 @@ void Programmer::show_status(ProgrammerBaseCore::Status code) {
   const char *success_str      = (success ? Strings::T_SUCCESS : Strings::T_FAILED);
   const uint16_t success_color = (success ? TftColor::GREEN : TftColor::RED);
 
-  char code_text[128];
-  strcpy_P(code_text, (code < ARR_LEN(details) ? details[code] : Strings::L_UNK_REAS));
-
   m_tft.drawText_P(15, TftCalc::bottom(m_tft, 16, 44), success_str, success_color, 2);
 
-  Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, Strings::T_RESULT, code_text);
+  const char *const code_text = (code < ARR_LEN(details) ? details[code] : Strings::L_UNK_REAS);
+
+  Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, 0x3, Strings::T_RESULT, code_text);
 }

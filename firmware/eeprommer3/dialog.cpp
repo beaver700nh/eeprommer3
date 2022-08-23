@@ -14,7 +14,7 @@ uint8_t Dialog::ask_choice(
   va_list args;
   va_start(args, num);
 
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, prompt, TftColor::CYAN, 3);
 
   if (cols < 0) {
     cols = (int8_t) floor(sqrt(num));
@@ -43,7 +43,7 @@ uint8_t Dialog::ask_choice(
 }
 
 bool Dialog::ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t initial_choice) {
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, prompt, TftColor::CYAN, 3);
 
   Gui::MenuYesNo menu(tft, 10, 10, 50, 10, true, (initial_choice < 0 ? 0 : initial_choice));
   uint8_t btn_pressed = menu.wait_for_value(tch, tft);
@@ -53,7 +53,7 @@ bool Dialog::ask_yesno(TftCtrl &tft, TouchCtrl &tch, const char *prompt, int16_t
 
 void Dialog::ask_str(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *buf, uint8_t len) {
   SER_LOG_PRINT("Hello from ask_str()!\n");
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, prompt, TftColor::CYAN, 3);
 
   Memory::print_ram_analysis();
   Gui::MenuStrInput menu(tft, T_DEBOUNCE, 10, 10, 50, 10, len);

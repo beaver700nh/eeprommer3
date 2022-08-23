@@ -105,7 +105,7 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
   switch (fsys) {
   case FileSystem::NONE:
     *status = AskFileStatus::CANCELED;
-    Dialog::show_error(tft, tch, ErrorLevel::INFO, Strings::T_CANCELED, Strings::E_CANCELED);
+    Dialog::show_error(tft, tch, ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
     return nullptr;
 
   case FileSystem::ON_SD_CARD:
@@ -115,7 +115,7 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
 
   default:
     *status = AskFileStatus::FSYS_INVALID;
-    Dialog::show_error(tft, tch, ErrorLevel::ERROR, Strings::E_INV_FSYS, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
+    Dialog::show_error(tft, tch, ErrorLevel::ERROR, 0x1, Strings::E_INV_FSYS, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
     return nullptr;
   }
 }
@@ -143,10 +143,10 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const c
   tft.fillScreen(TftColor::BLACK);
 
   if (substatus == FSStatus::CANCELED) {
-    Dialog::show_error(tft, tch, ErrorLevel::INFO, Strings::T_CANCELED, Strings::E_CANCELED);
+    Dialog::show_error(tft, tch, ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
   }
   else if (substatus == FSStatus::FNAME_TOO_LONG) {
-    Dialog::show_error(tft, tch, ErrorLevel::ERROR, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
+    Dialog::show_error(tft, tch, ErrorLevel::ERROR, 0x3, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
   }
 
   return (AskFileStatus) substatus;

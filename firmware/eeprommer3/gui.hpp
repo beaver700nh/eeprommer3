@@ -218,10 +218,10 @@ private:
   uint8_t m_width;
 };
 
-// Functions to get pre-set layouts of the different `MenuKeyboard`s
+// Pre-set layouts of the different `MenuKeyboard`s
 
-KeyboardLayout &get_glob_kbd_hex_layout();
-KeyboardLayout &get_glob_kbd_str_layout();
+extern KeyboardLayout glob_kbd_hex_layout;
+extern KeyboardLayout glob_kbd_str_layout;
 
 /*
  * `MenuKeyboard` is an ABC specialization of `Menu` for getting aggregate values such as
@@ -276,7 +276,7 @@ class MenuHexInput : public MenuKeyboard {
 public:
   // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
   MenuHexInput(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h) :
-    MenuKeyboard(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_hex_layout(), 1) {
+    MenuKeyboard(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, glob_kbd_hex_layout, 1) {
     m_val = (char *) malloc(BUF_LEN() * sizeof(char));  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
     for (uint8_t i = 0; i < BUF_LEN(); ++i) {

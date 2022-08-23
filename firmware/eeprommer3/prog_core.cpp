@@ -45,7 +45,7 @@ Status ProgrammerByteCore::read() {
   SNPRINTF(title, "Value at addr %04X", addr);
 
   Dialog::show_error(
-    m_tft, m_tch, ErrorLevel::INFO, title,
+    m_tft, m_tch, ErrorLevel::INFO, 0x0, title,
     STRFMT_NOBUF(
       "BIN: " BYTE_FMT "\n"
       "OCT: %03o\n"
@@ -71,7 +71,7 @@ Status ProgrammerByteCore::write() {
   m_tft.fillScreen(TftColor::BLACK);
 
   Dialog::show_error(
-    m_tft, m_tch, ErrorLevel::INFO, Strings::T_DONE,
+    m_tft, m_tch, ErrorLevel::INFO, 0x1, Strings::T_DONE,
     STRFMT_NOBUF(
       "Wrote data %02X\n"
       "to address %04X.",
@@ -89,7 +89,7 @@ Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
 
   if (actual != *(uint8_t *) data) {
     Dialog::show_error(
-      m_tft, m_tch, ErrorLevel::INFO, Strings::T_MISMATCH,
+      m_tft, m_tch, ErrorLevel::INFO, 0x1, Strings::T_MISMATCH,
       STRFMT_NOBUF(
         "Expected: %02X\n"
         "Actual:   %02X",
@@ -202,7 +202,7 @@ Status ProgrammerFileCore::write() {
 
 bool ProgrammerFileCore::write_from_file(FileCtrl *file, uint16_t addr) {
   if (file->size() > (0x7FFF - addr + 1)) {
-    Dialog::show_error(m_tft, m_tch, ErrorLevel::WARNING, Strings::T_TOO_BIG, Strings::E_TOO_BIG);
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::WARNING, 0x3, Strings::T_TOO_BIG, Strings::E_TOO_BIG);
     return false;
   }
 
@@ -279,11 +279,11 @@ Status ProgrammerVectorCore::read() {
 
   m_tft.fillScreen(TftColor::BLACK);
 
-  char title[64];
+  char title[16];
   SNPRINTF(title, "Value of %s", Vector::NAMES[vec.m_id]);
 
   Dialog::show_error(
-    m_tft, m_tch, ErrorLevel::INFO, title,
+    m_tft, m_tch, ErrorLevel::INFO, 0x0, title,
     STRFMT_NOBUF(
       "Addr: %04X-%04X\n"
       "HEX: %04X\n"
@@ -311,7 +311,7 @@ Status ProgrammerVectorCore::write() {
   m_tft.fillScreen(TftColor::BLACK);
 
   Dialog::show_error(
-    m_tft, m_tch, ErrorLevel::INFO, Strings::T_DONE,
+    m_tft, m_tch, ErrorLevel::INFO, 0x1, Strings::T_DONE,
     STRFMT_NOBUF(
       "Wrote value %04X\n"
       "to vector %s\n"
@@ -330,7 +330,7 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
 
   if (actual != *(uint16_t *) data) {
     Dialog::show_error(
-      m_tft, m_tch, ErrorLevel::ERROR, Strings::T_MISMATCH,
+      m_tft, m_tch, ErrorLevel::ERROR, 0x1, Strings::T_MISMATCH,
       STRFMT_NOBUF(
         "Expected: %04X\n"
         "Actual:   %04X",
@@ -550,14 +550,14 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
     file->close();
   }
   else if (substatus == AFStatus::CANCELED) {
-    Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, Strings::T_CANCELED, Strings::E_CANCELED);
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
   }
   else if (substatus == AFStatus::FNAME_TOO_LONG) {
-    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, 0x3, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
     status = Status::ERR_FILE;
   }
   else if (substatus == AFStatus::FSYS_INVALID) {
-    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, Strings::T_INV_FSYS, Strings::E_INV_FSYS);
+    Dialog::show_error(m_tft, m_tch, ErrorLevel::ERROR, 0x3, Strings::T_INV_FSYS, Strings::E_INV_FSYS);
     status = Status::ERR_FILE;
   }
 
@@ -713,7 +713,7 @@ Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
 
     if (pair.data != real_data) {
       Dialog::show_error(
-        m_tft, m_tch, ErrorLevel::ERROR, Strings::T_MISMATCH,
+        m_tft, m_tch, ErrorLevel::ERROR, 0x1, Strings::T_MISMATCH,
         STRFMT_NOBUF(
           "Expected: %02X\n"
           "Actual:   %02X"
@@ -798,7 +798,7 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
 
 void ProgrammerOtherCore::show_data_bus() {
   Dialog::show_error(
-    m_tft, m_tch, ErrorLevel::INFO, Strings::T_VALUE,
+    m_tft, m_tch, ErrorLevel::INFO, 0x1, Strings::T_VALUE,
     STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(m_ee.get_data()))
   );
 }

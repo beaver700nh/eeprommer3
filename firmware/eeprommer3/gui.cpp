@@ -225,36 +225,32 @@ uint8_t Gui::KeyboardLayout::get_height() {
 }
 
 const char *Gui::KeyboardLayout::get_ptr_char(uint8_t x, uint8_t y) {
-  return (char *) m_layout + static_cast<ptrdiff_t>(2 * (y * m_width + x));
+  return (char *) m_layout + ptrdiff_t(2 * (y * m_width + x));
 }
 
 char Gui::KeyboardLayout::get_char(uint8_t x, uint8_t y) {
-  return *get_ptr_char(x, y);
+  return pgm_read_byte_near(get_ptr_char(x, y));
 }
 
-Gui::KeyboardLayout &Gui::get_glob_kbd_hex_layout() {
-  static Gui::KeyboardLayout layout(
-    (const uint8_t *)
-    "\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00"
-    "\x38\x00\x39\x00\x41\x00\x42\x00\x43\x00\x44\x00\x45\x00\x46\x00",
-    16, 8
-  );
+/*
+ * Layout data is uint16_t[] to insert NULs between the elements when casting back to uint8_t[]
+ */
 
-  return layout;
-}
+static const uint16_t glob_kbd_hex_layout_data[] PROGMEM {
+  '\x30', '\x31', '\x32', '\x33', '\x34', '\x35', '\x36', '\x37',
+  '\x38', '\x39', '\x41', '\x42', '\x43', '\x44', '\x45', '\x46',
+};
 
-Gui::KeyboardLayout &Gui::get_glob_kbd_str_layout() {
-  static Gui::KeyboardLayout layout(
-    (const uint8_t *)
-    "\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\x00\x30\x00\x7e\x00"
-    "\x51\x00\x57\x00\x45\x00\x52\x00\x54\x00\x59\x00\x55\x00\x49\x00\x4f\x00\x50\x00\x11\x00"
-    "\x41\x00\x53\x00\x44\x00\x46\x00\x47\x00\x48\x00\x4a\x00\x4b\x00\x4c\x00\x5f\x00\x2d\x00"
-    "\x7f\x00\x5a\x00\x58\x00\x43\x00\x56\x00\x42\x00\x4e\x00\x4d\x00\xb0\x00\x2c\x00\x2e\x00",
-    44, 11
-  );
+Gui::KeyboardLayout Gui::glob_kbd_hex_layout((const uint8_t *) glob_kbd_hex_layout_data, 16, 8);
 
-  return layout;
-}
+static const uint16_t glob_kbd_str_layout_data[] PROGMEM {
+  '\x31', '\x32', '\x33', '\x34', '\x35', '\x36', '\x37', '\x38', '\x39', '\x30', '\x7e',
+  '\x51', '\x57', '\x45', '\x52', '\x54', '\x59', '\x55', '\x49', '\x4f', '\x50', '\x11',
+  '\x41', '\x53', '\x44', '\x46', '\x47', '\x48', '\x4a', '\x4b', '\x4c', '\x5f', '\x2d',
+  '\x7f', '\x5a', '\x58', '\x43', '\x56', '\x42', '\x4e', '\x4d', '\xb0', '\x2c', '\x2e',
+};
+
+Gui::KeyboardLayout Gui::glob_kbd_str_layout((const uint8_t *) glob_kbd_str_layout_data, 44, 11);
 
 Gui::MenuKeyboard::MenuKeyboard(
   TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h,
@@ -335,7 +331,7 @@ Gui::MenuStrInput::MenuStrInput(
   TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h,
   uint16_t marg_v, uint16_t marg_h, uint8_t buf_len
 ) :
-  MenuKeyboard(tft, debounce, pad_v, pad_h, marg_v, marg_h, get_glob_kbd_str_layout()), m_buf_len(buf_len) {
+  MenuKeyboard(tft, debounce, pad_v, pad_h, marg_v, marg_h, glob_kbd_str_layout), m_buf_len(buf_len) {
   SER_DEBUG_PRINT((BUF_LEN() + 1) * sizeof(char), 'd');
   m_val    = (char *) malloc((BUF_LEN() + 1) * sizeof(char));
   m_val[0] = '\0';

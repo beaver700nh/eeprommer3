@@ -9,8 +9,12 @@
 
 #include "error.hpp"
 
-void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *title, const char *msg) {
-  tft.drawText_P(10, 10, title, TftColor::CYAN, 3);
+void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, uint8_t str_types, const char *title, const char *msg) {
+  using Printer = void (TftCtrl::*)(uint16_t, uint16_t, const char *, uint16_t, uint8_t);
+
+  Printer printer = (str_types & 0x1 ? (Printer) &TftCtrl::drawText_P : (Printer) &TftCtrl::drawText);
+  
+  (tft.*printer)(10, 10, title, TftColor::CYAN, 3);
 
   const char *name = Util::strdup_P(ErrorLevel::NAMES[lvl]);
   uint16_t color = ErrorLevel::COLORS[lvl];
@@ -20,9 +24,10 @@ void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *t
 
   free((void *) name);
 
-  tft.drawText(TftCalc::right(tft, TftCalc::t_width(tag, 2), 10), 10, tag, color, 2);
+  const uint16_t x = TftCalc::right(tft, TftCalc::t_width(strlen(tag), 2), 10);
+  tft.drawText(x, 10, tag, color, 2);
 
-  char *const _msg = strdup(msg);
+  char *const _msg = (str_types & 0x2 ? Util::strdup_P : strdup)(msg);
   char *cur_line   = _msg;
   uint16_t y       = 50;
 
@@ -32,7 +37,7 @@ void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, const char *t
     if (end_line != nullptr) *end_line = '\0';
     // if it is null (reached end of string) then the end of the line is already null
 
-    tft.drawText(10, y, cur_line, TftColor::PURPLE);
+    tft.drawText(10, y, cur_line, TftColor::PURPLE, 2);
     y += 35;
 
     cur_line = (end_line == nullptr ? nullptr : end_line + 1);
