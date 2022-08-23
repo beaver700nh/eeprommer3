@@ -72,6 +72,7 @@ struct Memory {
  * A_ - Action
  * D_ - Debug
  * I_ - Info
+ * M_ - Misc (Non-PROGMEM)
  */
 namespace Strings {
 #define ADD_STRING(type, name, value) inline const char type##_##name[] PROGMEM = value
@@ -149,7 +150,6 @@ namespace Strings {
   ADD_STRING(L, YES,       "Yes");
   ADD_STRING(L, NO,        "No");
   ADD_STRING(L, OK,        "OK");
-  ADD_STRING(L, GO_UP_DIR, "Parent Dir");
   ADD_STRING(L, ADD_PAIR,  "Add Pair");
   ADD_STRING(L, NO_PAIRS1, "No pairs yet!");
   ADD_STRING(L, NO_PAIRS2, "Click `Add Pair' to add a pair!");
@@ -160,6 +160,7 @@ namespace Strings {
   ADD_STRING(L, UNK_REAS,  "Unknown reason.");
   ADD_STRING(L, FILE_SD,   "SD Card File");
   ADD_STRING(L, FILE_SER,  "Serial File");
+  ADD_STRING(L, NO_FILES,  "Hmm, no files here...");
   ADD_STRING(L, X_CLOSE,   "x");
   ADD_STRING(L, EMPTY_STR, "");
 
@@ -193,6 +194,8 @@ namespace Strings {
   ADD_STRING(I, LINE_3,    "or computer peripheral via USB. Allows");
   ADD_STRING(I, LINE_4,    "access to SD card connected on SPI bus");
   ADD_STRING(I, LINE_5,    "Made by beaver700nh (GitHub) 2021-2022");
+
+  inline const char *const M_FILE_DIR = "/ERMR3/";
 
 #undef ADD_STRING
 }

@@ -11,9 +11,7 @@
 extern TftCtrl tft;
 
 void Dialog::show_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg) {
-  using Printer = void (TftCtrl::*)(uint16_t, uint16_t, const char *, uint16_t, uint8_t);
-
-  Printer printer = (str_types & 0x1 ? (Printer) &TftCtrl::drawText_P : (Printer) &TftCtrl::drawText);
+  TftCtrl::drawText_t printer = (str_types & 0x1 ? &TftCtrl::drawText_P : &TftCtrl::drawText);
   
   (tft.*printer)(10, 10, title, TftColor::CYAN, 3);
 

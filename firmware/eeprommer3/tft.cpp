@@ -51,16 +51,6 @@ void TftCtrl::drawTextBg_P(uint16_t x, uint16_t y, const char *text, uint16_t co
   drawText_P(x, y, text, color, size);
 }
 
-void TftCtrl::drawText(const char *text) {
-  print(text);
-}
-
-void TftCtrl::drawText_P(const char *text) {
-  const char *_text = Util::strdup_P(text);
-  print(_text);
-  free((void *) _text);
-}
-
 extern TftCtrl tft;
 extern TouchCtrl tch;
 

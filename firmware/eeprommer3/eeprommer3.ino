@@ -41,7 +41,7 @@ void setup() {
   if (sd_status == SdCtrl::Status::OK) {
     SER_LOG_PRINT("... success!\n");
 
-    tft.drawText(90, 241, Strings::L_SD_GOOD, TftColor::GREEN, 2);
+    tft.drawText_P(90, 241, Strings::L_SD_GOOD, TftColor::GREEN, 2);
   }
   else {
     SER_LOG_PRINT("... failed!\n");

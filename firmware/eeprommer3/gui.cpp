@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "strfmt.hpp"
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
@@ -16,37 +17,42 @@ extern TouchCtrl tch;
 
 Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg) :
   m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg), m_text(text) {
-  // Empty body, all work done in init list
+  SER_DEBUG_PRINT(x, 'd');
+  SER_DEBUG_PRINT(y, 'd');
+  init_bit_fields();
 }
 
 Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg) :
   Btn(x, y, w, h, 0, 0, text, fg, bg) {
-  m_auto_center = true;  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
+  flags.auto_center = 1;  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
   // Pass `tx/ty` as (0, 0) temporarily in init list
   // Overwrite dummy (0, 0) with real center here
-  auto_center();
+  do_auto_center();
 }
 
 void Gui::Btn::draw() {
-  m_was_highlighted = m_is_highlighted;
-  m_was_visible     = m_is_visible;
+  appearance.was_highlighted = appearance.is_highlighted;
+  appearance.was_visible     = appearance.is_visible;
 
-  if (!m_is_visible) return;  // If it is invisible, there is nothing to draw.
+  if (!appearance.is_visible) return;  // If it is invisible, there is nothing to draw.
 
-  uint16_t fg = (m_is_operational ? m_fg : TftColor::DGRAY);
-  uint16_t bg = (m_is_operational ? m_bg : TftColor::GRAY);
+  uint16_t fg = (flags.operational ? m_fg : TftColor::DGRAY);
+  uint16_t bg = (flags.operational ? m_bg : TftColor::GRAY);
 
   tft.fillRect(m_x, m_y, m_w, m_h, bg);
-  tft.drawText_P(m_x + m_tx, m_y + m_ty, m_text, fg, m_font_size);
+
+  TftCtrl::drawText_t printer = (flags.ram_label ? &TftCtrl::drawText : &TftCtrl::drawText_P);
+
+  (tft.*printer)(m_x + m_tx, m_y + m_ty, m_text, fg, m_font_size);
 
   draw_highlight();
 }
 
 void Gui::Btn::erase() {
-  if (!m_was_visible) return;  // If it was invisible, there is nothing to erase.
+  if (!appearance.was_visible) return;  // If it was invisible, there is nothing to erase.
 
-  if (m_was_highlighted) {
+  if (appearance.was_highlighted) {
     tft.fillRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, TftColor::BLACK);
   }
   else {
@@ -56,11 +62,11 @@ void Gui::Btn::erase() {
 
 void Gui::Btn::draw_highlight() {
   auto color = ([=]() -> uint16_t {
-    if (!m_is_highlighted) {
+    if (!appearance.is_highlighted) {
       return TftColor::BLACK;
     }
 
-    if (!m_is_operational) {
+    if (!flags.operational) {
       return TftColor::LGRAY;
     }
 
@@ -90,7 +96,7 @@ void Gui::Btn::wait_for_press() {
 }
 
 bool Gui::Btn::is_pressed() {
-  if (!m_is_operational) return false;  // Ignore presses if non-operational.
+  if (!flags.operational) return false;  // Ignore presses if non-operational.
 
   TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft.width(), tft.height());
 
@@ -426,6 +432,19 @@ Gui::Btn *Gui::MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t 
   uint16_t x = m_marg_h + col * (w + m_pad_h);
   uint16_t y = m_marg_v + row * (h + m_pad_v);
 
+  SER_DEBUG_PRINT(TftCalc::fraction(480, 10, 2), 'd');
+  SER_DEBUG_PRINT(m_marg_h, 'd');
+  SER_DEBUG_PRINT(m_pad_h, 'd');
+  SER_DEBUG_PRINT(m_num_cols, 'd');
+
+  SER_DEBUG_PRINT(tft.width() - 2 * m_marg_h + 2 * m_pad_h, 'd');
+  SER_DEBUG_PRINT(TftCalc::fraction(tft.width() - 2 * m_marg_h + 2 * m_pad_h, m_pad_h, m_num_cols), 'd');
+
+  SER_DEBUG_PRINT(TftCalc::fraction(tft.width() - 2 * 10 + 2 * 10, 10, 2), 'd');
+
+  SER_DEBUG_PRINT(w, 'd');
+  SER_DEBUG_PRINT(x, 'd');
+
   return add_btn(new Btn(x, y, w, h, text, fg, bg));
 }
 
@@ -450,7 +469,7 @@ uint8_t Gui::MenuChoice::wait_for_value() {
     (*m_callback)(btn_pressed, btn_pressed == m_confirm_btn);
 
     if (btn_pressed == m_confirm_btn) {
-      if (get_btn(m_cur_choice)->is_operational()) {
+      if (get_btn(m_cur_choice)->flags.operational) {
         break;
       }
     }

@@ -7,6 +7,7 @@
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "touch.hpp"
+#include "util.hpp"
 
 /*
  * This file contains classes for GUI elements such as buttons and menus.
@@ -34,109 +35,126 @@ public:
     uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
+  inline void init_bit_fields() {
+    flags.auto_center = 0;
+    flags.operational = 1;
+    flags.ram_label   = 0;
+
+    appearance.is_highlighted  = 0;
+    appearance.was_highlighted = 0;
+    appearance.is_visible      = 1;
+    appearance.was_visible     = 1;
+  }
+
   void draw();
   void erase();
   void draw_highlight();
 
-  inline uint8_t calc_center_x() { return TftCalc::t_center_x(m_w, m_text, m_font_size); }
   inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size); }
+  inline uint8_t calc_center_x() {
+    auto len_fn = (flags.ram_label ? strlen : strlen_P);
+    return TftCalc::t_center_x_l(m_w, len_fn(m_text), m_font_size);
+  }
 
   inline uint16_t get_x() { return m_x; }
-  inline Btn *set_x(uint16_t x) {
-    m_x = x;
+  inline Btn *set_x(uint16_t val) {
+    m_x = val;
     return this;
   }
 
   inline uint16_t get_y() { return m_y; }
-  inline Btn *set_y(uint16_t y) {
-    m_y = y;
+  inline Btn *set_y(uint16_t val) {
+    m_y = val;
     return this;
   }
 
   inline uint16_t get_w() { return m_w; }
-  inline Btn *set_w(uint16_t w) {
-    m_w = w;
+  inline Btn *set_w(uint16_t val) {
+    m_w = val;
     return this;
   }
 
   inline uint16_t get_h() { return m_h; }
-  inline Btn *set_h(uint16_t h) {
-    m_h = h;
+  inline Btn *set_h(uint16_t val) {
+    m_h = val;
     return this;
   }
 
   inline uint16_t get_tx() { return m_tx; }
-  inline Btn *set_tx(uint16_t tx) {
-    m_tx          = tx;
-    m_auto_center = false;
+  inline Btn *set_tx(uint16_t val) {
+    m_tx              = val;
+    flags.auto_center = false;
     return this;
   }
 
   inline uint16_t get_ty() { return m_ty; }
-  inline Btn *set_ty(uint16_t ty) {
-    m_ty          = ty;
-    m_auto_center = false;
+  inline Btn *set_ty(uint16_t val) {
+    m_ty              = val;
+    flags.auto_center = false;
     return this;
   }
 
   inline uint16_t get_fg() { return m_fg; }
-  inline Btn *set_fg(uint16_t fg) {
-    m_fg = fg;
+  inline Btn *set_fg(uint16_t val) {
+    m_fg = val;
     return this;
   }
 
   inline uint16_t get_bg() { return m_bg; }
-  inline Btn *set_bg(uint16_t bg) {
-    m_bg = bg;
+  inline Btn *set_bg(uint16_t val) {
+    m_bg = val;
     return this;
   }
 
   inline uint8_t get_font_size() { return m_font_size; }
-  inline Btn *set_font_size(uint8_t font_size) {
-    m_font_size = font_size;
-    auto_center();
+  inline Btn *set_font_size(uint8_t val) {
+    m_font_size = val;
+    do_auto_center();
     return this;
   }
 
   inline const char *get_text() { return m_text; }
-  inline Btn *set_text(const char *text) {
-    m_text = text;
-    auto_center();
+  inline Btn *set_text(const char *val) {
+    m_text = val;
+    do_auto_center();
     return this;
   }
 
-  // Controls whether a yellow outline appears around the button. Default is false/unhighlighted.
-  inline bool is_highlighted() { return m_is_highlighted; }
-  inline Btn *highlight(bool highlight) {
-    m_is_highlighted = highlight;
+  // Controls whether an outline appears around the button. Default is false/unhighlighted.
+  inline Btn *highlight(bool val) {
+    appearance.is_highlighted = val;
     return this;
   }
 
   // Controls whether the button is visible. Default is true/visible.
-  inline bool is_visible() { return m_is_visible; }
-  inline Btn *visibility(bool visibility) {
-    m_is_visible = visibility;
+  inline Btn *visibility(bool val) {
+    appearance.is_visible = val;
     return this;
   }
 
   // Controls whether the button responds to presses. Default is true/operational.
-  inline bool is_operational() { return m_is_operational; }
-  inline Btn *operation(bool operation) {
-    m_is_operational = operation;
+  inline Btn *operation(bool val) {
+    flags.operational = val;
+    return this;
+  }
+
+  // Controls whether the button treats its label text as stored in RAM (true) or PROGMEM (false). Default is false/PROGMEM.
+  inline Btn *ram_label(bool val) {
+    flags.ram_label = val;
+    do_auto_center();
     return this;
   }
 
   // Controls whether the button automatically centers text. Only call this to override auto detection.
   // Default is false / manual centering; if constructed without `tx/ty` parameters, default is true / auto centering.
-  inline bool is_auto_centering() { return m_auto_center; }
-  inline Btn *auto_centering(bool auto_center) {
-    m_auto_center = auto_center;
+  inline Btn *auto_center(bool val) {
+    flags.auto_center = val;
     return this;
   }
 
   // Sets `tx` and `ty` to position text at center of button, but only if in `auto_center` mode.
-  inline Btn *auto_center() {
-    if (m_auto_center) {
+  inline Btn *do_auto_center() {
+    if (flags.auto_center) {
       m_tx = calc_center_x();
       m_ty = calc_center_y();
     }
@@ -149,21 +167,27 @@ public:
   // Wait for a press on the button, blocks until `is_pressed()` returns true.
   void wait_for_press();
 
+  struct {
+    uint8_t auto_center : 1;
+    uint8_t operational : 1;
+    uint8_t ram_label   : 1;
+  } flags;
+
+  struct {
+    uint8_t is_highlighted  : 1;
+    uint8_t was_highlighted : 1;
+    uint8_t is_visible      : 1;
+    uint8_t was_visible     : 1;
+  } appearance;
+
 private:
   uint8_t m_font_size = 2;
   uint16_t m_x, m_y, m_w, m_h;
   uint16_t m_tx, m_ty;
   uint16_t m_fg, m_bg;
 
-  bool m_auto_center = false;
-
-  bool m_is_highlighted = false, m_was_highlighted = false;
-  bool m_is_visible     = true,  m_was_visible     = true;
-
-  bool m_is_operational = true;
-
   const char *m_text;
-};
+} __attribute__((packed, aligned(1)));
 
 /*
  * `Menu` makes creating menus easier; it's basically just a collection of `Btn`s with some helpful functions included.

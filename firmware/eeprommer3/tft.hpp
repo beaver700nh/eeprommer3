@@ -78,11 +78,12 @@ public:
 
   void drawText(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint8_t size = 2);
   void drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint16_t bg = TftColor::BLACK, uint8_t size = 2);
-  void drawText(const char *text);
 
   void drawText_P(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint8_t size = 2);
   void drawTextBg_P(uint16_t x, uint16_t y, const char *text, uint16_t color = TftColor::WHITE, uint16_t bg = TftColor::BLACK, uint8_t size = 2);
-  void drawText_P(const char *text);
+
+  using drawText_t   = decltype(&TftCtrl::drawText);
+  using drawTextBg_t = decltype(&TftCtrl::drawTextBg);
 
   template<typename Func>
   bool drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, bool swap_endian, Func check_skip) {

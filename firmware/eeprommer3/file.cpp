@@ -19,79 +19,69 @@ Gui::MenuSdFileSel::MenuSdFileSel(uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, 
 
   for (uint8_t j = 0; j < m_num_rows; ++j) {
     for (uint8_t i = 0; i < m_num_cols; ++i) {
-      add_btn_calc(Strings::L_EMPTY_STR, TftColor::BLACK, TftColor::WHITE)->set_font_size(1);
+      add_btn_calc(Strings::L_EMPTY_STR, TftColor::BLACK, TftColor::WHITE)->set_font_size(1)->ram_label(true);
     }
   }
 
-  const uint16_t _w = TftCalc::fraction_x(tft, 10, 2);
-  const uint16_t _x = _w + 20;
+  const uint16_t _w = TftCalc::fraction_x(tft, 10, 1);
   const uint16_t _y = TftCalc::bottom(tft, 24, 44);
 
-  add_btn(new Gui::Btn(10, _y, _w, 24, Strings::L_GO_UP_DIR, TftColor::CYAN,  TftColor::BLUE));
-  add_btn(new Gui::Btn(_x, _y, _w, 24, Strings::L_CANCEL,    TftColor::PINKK, TftColor::RED ));
+  add_btn(new Gui::Btn(10, _y, _w, 24, Strings::L_CANCEL, TftColor::PINKK, TftColor::RED));
   add_btn_confirm(true);
 
-  m_files = (SdFileInfo *) malloc(m_num_rows * m_num_cols * sizeof(SdFileInfo));
+  init_files();
+}
+
+void Gui::MenuSdFileSel::init_files() {
+  const uint8_t max_files = m_num_cols * m_num_rows;
+
+  m_files = (SdFileInfo *) malloc(max_files * sizeof(SdFileInfo));
+
+  if (!SD.exists(Strings::M_FILE_DIR)) {
+    SD.mkdir(Strings::M_FILE_DIR);
+  }
+
+  m_num_files = sd.get_files(Strings::M_FILE_DIR, m_files, max_files);
+
+  uint8_t i = 0;
+
+  // Update and enable all the needed buttons.
+  for (/* no init clause */; i < m_num_files; ++i) {
+    get_btn(i)->visibility(true)->set_text(m_files[i].name);
+
+    if (m_files[i].is_dir) {
+      get_btn(i)->set_fg(TftColor::LGRAY)->set_bg(TftColor::DGRAY)->operation(false);
+    }
+  }
+
+  // Disable everything else except the control buttons.
+  for (/* no init clause */; i < get_num_btns() - 2; ++i) {
+    get_btn(i)->visibility(false)->operation(false);
+  }
 }
 
 Gui::MenuSdFileSel::~MenuSdFileSel() {
   free(m_files);
 }
 
-void Gui::MenuSdFileSel::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files) {
-  uint8_t i;
-
-  m_num_files = sd.get_files(path, m_files, max_files);
-
-  // Update and enable all the needed buttons.
-  for (i = 0; i < m_num_files; ++i) {
-    uint16_t bg = (m_files[i].is_dir ? TftColor::CYAN : TftColor::ORANGE);
-
-    get_btn(i)->visibility(true)->operation(true)->set_text(m_files[i].name)->set_bg(bg);
-  }
-
-  // Disable everything else except the control buttons.
-  for (/* no init clause */; i < get_num_btns() - 3; ++i) {
-    get_btn(i)->visibility(false)->operation(false);
-  }
-}
-
 Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(char *file_path, uint8_t max_path_len) {
   if (max_path_len <= 2) return Status::FNAME_TOO_LONG;
 
-  strcpy(file_path, "/");
-
-  while (true) {
-    tft.fillRect(0, m_marg_v - 3, tft.width(), tft.height() - m_marg_v + 6, TftColor::BLACK);
-
-    deselect_all();
-    select(0);
-
-    use_files_in_dir(sd, file_path, m_num_rows * m_num_cols);
-    uint8_t btn_id = MenuChoice::wait_for_value();
-
-    if (btn_id == get_num_btns() - 2) {
-      return Status::CANCELED;
-    }
-
-    if (btn_id == get_num_btns() - 3) {
-      FileUtil::go_up_dir(file_path);
-      continue;
-    }
-
-    if (strlen(file_path) + strlen(m_files[btn_id].name) >= max_path_len) return Status::FNAME_TOO_LONG;
-
-    // User selected a file, not a control button
-
-    if (!FileUtil::go_down_path(file_path, m_files + btn_id, max_path_len)) {
-      return Status::FNAME_TOO_LONG;
-    }
-
-    // If the file was a regular file, user has selected the needed file, done
-    if (!m_files[btn_id].is_dir) {
-      return Status::OK;
-    }
+  if (m_num_files == 0) {
+    select(m_num_btns - 2);  // Cancel button
+    tft.drawText_P(10, 50, Strings::L_NO_FILES, TftColor::PINKK);
   }
+
+  uint8_t btn_id = MenuChoice::wait_for_value();
+
+  if (btn_id == get_num_btns() - 2) {
+    return Status::CANCELED;
+  }
+
+  if (strlen(m_files[btn_id].name) + 7 >= max_path_len) return Status::FNAME_TOO_LONG;
+
+  snprintf(file_path, max_path_len, "%s%s", Strings::M_FILE_DIR, m_files[btn_id].name);
+  return Status::OK;
 }
 
 FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist) {
@@ -109,8 +99,8 @@ FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *st
     return nullptr;
 
   case FileSystem::ON_SD_CARD:
-    SER_LOG_PRINT("Going into ask_fpath_sd()...\n");
-    *status = ask_fpath_sd(prompt, fpath, ARR_LEN(fpath), must_exist);
+    SER_LOG_PRINT("Getting file path...\n");
+    *status = ask_file_sd(prompt, fpath, ARR_LEN(fpath), must_exist);
     return FileCtrl::create_file(fsys, fpath, access);
 
   default:
@@ -120,7 +110,7 @@ FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *st
   }
 }
 
-Dialog::AskFileStatus Dialog::ask_fpath_sd(const char *prompt, char *out, uint8_t len, bool must_exist) {
+Dialog::AskFileStatus Dialog::ask_file_sd(const char *prompt, char *out, uint8_t len, bool must_exist) {
   SER_DEBUG_PRINT(must_exist, 'd');
   using FSStatus = Gui::MenuSdFileSel::Status;
 
@@ -132,7 +122,7 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(const char *prompt, char *out, uint8_
 
   if (must_exist) {
     SER_LOG_PRINT("must_exist == true\n");
-    substatus = ask_sel_fpath_sd(prompt, out, len);
+    substatus = ask_sel_file_sd(prompt, out, len);
   }
   else {
     SER_LOG_PRINT("must_exist == false\n");
@@ -152,12 +142,12 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(const char *prompt, char *out, uint8_
   return (AskFileStatus) substatus;
 }
 
-Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(const char *prompt, char *out, uint8_t len) {
+Gui::MenuSdFileSel::Status Dialog::ask_sel_file_sd(const char *prompt, char *out, uint8_t len) {
   SER_LOG_PRINT("GOT HERE\n");
   constexpr uint8_t rows = 6, cols = 6;
 
   Memory::print_ram_analysis();
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, prompt, TftColor::CYAN, 3);
   Memory::print_ram_analysis();
 
   Gui::MenuSdFileSel menu(10, 10, 50, 10, rows, cols);
@@ -167,7 +157,7 @@ Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(const char *prompt, char *ou
 }
 
 FileSystem Dialog::ask_fsys(const char *prompt) {
-  tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, prompt, TftColor::CYAN, 3);
 
   Gui::MenuChoice menu(10, 10, 50, 10, 1, 40, true, 0);
   menu.add_btn_calc(Strings::L_FILE_SD,  TftColor::LGREEN, TftColor::DGREEN);
@@ -175,7 +165,7 @@ FileSystem Dialog::ask_fsys(const char *prompt) {
   menu.add_btn_calc(Strings::L_CANCEL,   TftColor::PINKK,  TftColor::DRED  );
   menu.add_btn_confirm(true);
 
-  const uint8_t avail = FileUtil::get_available_file_systems();
+  const uint8_t avail = get_available_file_systems();
 
   if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
   if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
@@ -251,62 +241,7 @@ void FileCtrlSd::close() {
   m_file.close();
 }
 
-bool FileUtil::go_up_dir(char *path) {
-  // Empty path is treated as root dir
-  if (strlen(path) == 0) return false;
-
-  bool success = true;
-
-  char *_path = strdup(path);
-  char *end   = _path + strlen(_path);
-
-  // Remove trailing '/' from copy of `path`
-  *(end - 1) = '\0';
-
-  char *new_end = strrchr(_path, '/');
-
-  if (new_end == nullptr) {
-    success = false;
-  }
-  else {
-    memset(new_end + 1, '\0', end - new_end - 2);
-    strcpy(path, _path);
-  }
-
-  free(_path);
-  return success;
-}
-
-bool FileUtil::go_down_file(char *path, const char *file, uint8_t len) {
-  if (strlen(path) + strlen(file) >= len) {
-    // Doesn't fit, fail
-    return false;
-  }
-
-  strcat(path, file);
-  return true;
-}
-
-bool FileUtil::go_down_dir(char *path, const char *dir, uint8_t len) {
-  // Paste a trailing slash onto `dir`
-  auto *temp = (char *) malloc((strlen(dir) + 2) * sizeof(char));
-  strcpy(temp, dir);
-  strcat(temp, "/");
-
-  // Delegates to go_down_file but passes `dir` with a trailing slash
-  bool result = go_down_file(path, temp, len);
-
-  free(temp);
-
-  return result;
-}
-
-bool FileUtil::go_down_path(char *path, SdFileInfo *sub_path, uint8_t len) {
-  // Delegate to go_down_file() or go_down_dir()
-  return (sub_path->is_dir ? go_down_dir : go_down_file)(path, sub_path->name, len);
-}
-
-uint8_t FileUtil::get_available_file_systems() {
+uint8_t get_available_file_systems() {
   uint8_t avail = FileSystem::NONE;
 
   // TODO: implement serial files

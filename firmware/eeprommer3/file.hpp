@@ -30,26 +30,9 @@ enum FileSystem : uint8_t {
 };
 
 /*
- * Miscellaneous file-related utilities.
+ * Scans all known file systems and returns available ones OR'ed together.
  */
-namespace FileUtil {
-  // Go up a directory from `path`. Return whether operation was successful.
-  bool go_up_dir(char *path);
-
-  // Set `path` to "`path`/`file`". Return false if resulting path is `len` chars or longer, true otherwise.
-  bool go_down_file(char *path, const char *file, uint8_t len);
-
-  // Set `path` to "`path`/`dir`/". Return false if resulting path is `len` chars or longer, true otherwise.
-  bool go_down_dir(char *path, const char *dir, uint8_t len);
-
-  // Set `path` to file `sub_path` inside `path`. Return false if resulting path is `len` chars or longer, true otherwise.
-  bool go_down_path(char *path, SdFileInfo *sub_path, uint8_t len);
-
-  // Scans parameters to find which file systems are available, returns the available ones.
-  uint8_t get_available_file_systems();
-};
-
-// TODO: add serial file support
+uint8_t get_available_file_systems();
 
 /*
  * An ABC that can access a file from any available file system.
@@ -129,18 +112,14 @@ public:
   };
 
   /*
-   * Sets internal files buffer to the files in directory `path` on `sd`. Reads at most `max_files` files from directory.
-   */
-  void use_files_in_dir(SdCtrl &sd, const char *path, uint8_t max_files);
-
-  /*
-   * Waits for user to select a file.
-   * Returns Status::CANCELED if `Cancel` button pressed; Status::FNAME_TOO_LONG if path len >= `max_path_len`.
-   * Returns Status::OK if everything fine; sets `file_path` = path to selected file.
+   * Waits for user to select a file, writes path to file in `file_path`.
+   * Returns status code as appropriate.
    */
   Status wait_for_value(char *file_path, uint8_t max_path_len);
 
 private:
+  void init_files();
+
   // The supplied `cols` or the maximum number of cols that will fit, whichever is smaller
   static inline uint8_t calc_num_cols(uint8_t cols) {
     return MIN(cols, MAX((tft.width() - 10) / (73 + 10), 1));
@@ -176,14 +155,14 @@ enum AskFileStatus : uint8_t {
   FSYS_INVALID,    // Selected filesystem does not exist
 };
 
-// Asks user for path to any file on any available file system. Puts resulting status into `status`. Returns a FileCtrl * for the file.
+// Get path to any file on any available file system, returns FileCtrl * for the file. Puts resulting status into `status`.
 FileCtrl *ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist);
 
-// Asks user for a path to a file on SD card. Writes path into `out`. Returns a status based on user's choice.
-AskFileStatus ask_fpath_sd(const char *prompt, char *out, uint8_t len, bool must_exist);
+// Asks user to select a file on SD card, writes the file's path into `out`. Returns resulting status.
+AskFileStatus ask_file_sd(const char *prompt, char *out, uint8_t len, bool must_exist);
 
-// Asks user to select an existing file on SD card. Writes path into `out`. Returns a status based on user's choice.
-Gui::MenuSdFileSel::Status ask_sel_fpath_sd(const char *prompt, char *out, uint8_t len);
+// Asks user to select an existing file on SD card, writes the file's path into `out`. Returns resulting status.
+Gui::MenuSdFileSel::Status ask_sel_file_sd(const char *prompt, char *out, uint8_t len);
 
 // Asks user to select a file system out of all the ones that are detected.
 FileSystem ask_fsys(const char *prompt);
