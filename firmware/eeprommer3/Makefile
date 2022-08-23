@@ -30,6 +30,7 @@ endef
 compile:
 	$(call PrintFancy, "Compiling...")
 	arduino-cli-mega-compile . --warnings=more '--build-property=compiler.cpp.extra_flags=$(BUILD_FLAGS)' $(FLAGS)
+	sleep 3
 
 upload:
 	$(call PrintFancy, "Uploading...")

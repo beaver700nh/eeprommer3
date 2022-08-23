@@ -26,7 +26,7 @@
  */
 class ProgrammerBaseCore {
 public:
-  ProgrammerBaseCore(TYPED_CONTROLLERS) : INIT_LIST_CONTROLLERS {};
+  ProgrammerBaseCore() {};
 
   // These status codes are returned by `Func`s.
   enum Status : uint8_t {
@@ -40,12 +40,6 @@ public:
   typedef Status (ProgrammerBaseCore::*Func)();
 
   Status nop();
-
-  protected:
-  TftCtrl &m_tft;
-  TouchCtrl &m_tch;
-  EepromCtrl &m_ee;
-  SdCtrl &m_sd;
 };
 
 /*************************************************/
@@ -55,7 +49,7 @@ public:
 /*** Manipulates a single byte at a time ***/
 class ProgrammerByteCore : public ProgrammerBaseCore {
 public:
-  ProgrammerByteCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+  ProgrammerByteCore() {};
 
   ADD_RWV_METHODS
 };
@@ -63,7 +57,7 @@ public:
 /*** Reads files to and from EEPROM ***/
 class ProgrammerFileCore : public ProgrammerBaseCore {
 public:
-  ProgrammerFileCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+  ProgrammerFileCore() {};
 
   ADD_RWV_METHODS
 
@@ -77,7 +71,7 @@ private:
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)
 class ProgrammerVectorCore : public ProgrammerBaseCore {
 public:
-  ProgrammerVectorCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+  ProgrammerVectorCore() {};
 
   ADD_RWV_METHODS
 };
@@ -85,7 +79,7 @@ public:
 // Reads ranges and writes arrays of pairs
 class ProgrammerMultiCore : public ProgrammerBaseCore {
 public:
-  ProgrammerMultiCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+  ProgrammerMultiCore() {};
 
   ADD_RWV_METHODS
 
@@ -135,7 +129,7 @@ private:
 // Miscellaneous other functions
 class ProgrammerOtherCore : public ProgrammerBaseCore {
 public:
-  ProgrammerOtherCore(TYPED_CONTROLLERS) : ProgrammerBaseCore(CONTROLLERS) {};
+  ProgrammerOtherCore() {};
 
   Status paint();
   Status debug();

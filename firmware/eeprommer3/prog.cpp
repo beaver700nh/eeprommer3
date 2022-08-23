@@ -34,13 +34,16 @@ static const char PSTR_DETAILS_2[] PROGMEM = "Unable to open file.";
 static const char PSTR_DETAILS_3[] PROGMEM = "Verification failed.\nContent read did not match\nwhat was written.";
 static const char PSTR_DETAILS_4[] PROGMEM = "Memory allocation failed.\n(malloc() probably\nreturned null)";
 
-Programmer::Programmer(TYPED_CONTROLLERS) : m_menu(10, 10, 50, 10, 2, 30, true), INIT_LIST_CONTROLLERS {
+extern TftCtrl tft;
+extern TouchCtrl tch;
+
+Programmer::Programmer() : m_menu(10, 10, 50, 10, 2, 30, true) {
   static ProgrammerBaseCore
-    *core_byte   = new ProgrammerByteCore  (CONTROLLERS),
-    *core_file   = new ProgrammerFileCore  (CONTROLLERS),
-    *core_vector = new ProgrammerVectorCore(CONTROLLERS),
-    *core_multi  = new ProgrammerMultiCore (CONTROLLERS),
-    *core_other  = new ProgrammerOtherCore (CONTROLLERS);
+    *core_byte   = new ProgrammerByteCore,
+    *core_file   = new ProgrammerFileCore,
+    *core_vector = new ProgrammerVectorCore,
+    *core_multi  = new ProgrammerMultiCore,
+    *core_other  = new ProgrammerOtherCore;
 
   m_cores[ 0] = core_byte;
   m_cores[ 1] = core_byte;
@@ -81,20 +84,20 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
 }
 
 void Programmer::init() {
-  m_menu.add_btn_calc(m_tft, Strings::A_R_BYTE,    TftColor::BLUE,           TftColor::CYAN          );
-  m_menu.add_btn_calc(m_tft, Strings::A_W_BYTE,    TftColor::RED,            TftColor::PINKK         );
-  m_menu.add_btn_calc(m_tft, Strings::A_R_FILE,    TftColor::CYAN,           TftColor::BLUE          );
-  m_menu.add_btn_calc(m_tft, Strings::A_W_FILE,    TftColor::PINKK,          TftColor::RED           );
-  m_menu.add_btn_calc(m_tft, Strings::A_R_VECTOR,  TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
-  m_menu.add_btn_calc(m_tft, Strings::A_W_VECTOR,  TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  m_menu.add_btn_calc(m_tft, Strings::A_R_MULTI,   TftColor::LGREEN,         TftColor::DGREEN        );
-  m_menu.add_btn_calc(m_tft, Strings::A_W_MULTI,   TftColor::BLACK,          TftColor::ORANGE        );
-  m_menu.add_btn_calc(m_tft, Strings::A_DRAW_TEST, TftColor::DGRAY,          TftColor::GRAY          );
-  m_menu.add_btn_calc(m_tft, Strings::A_DEBUGS,    TftColor::DGRAY,          TftColor::GRAY          );
+  m_menu.add_btn_calc(tft, Strings::A_R_BYTE,    TftColor::BLUE,           TftColor::CYAN          );
+  m_menu.add_btn_calc(tft, Strings::A_W_BYTE,    TftColor::RED,            TftColor::PINKK         );
+  m_menu.add_btn_calc(tft, Strings::A_R_FILE,    TftColor::CYAN,           TftColor::BLUE          );
+  m_menu.add_btn_calc(tft, Strings::A_W_FILE,    TftColor::PINKK,          TftColor::RED           );
+  m_menu.add_btn_calc(tft, Strings::A_R_VECTOR,  TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
+  m_menu.add_btn_calc(tft, Strings::A_W_VECTOR,  TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
+  m_menu.add_btn_calc(tft, Strings::A_R_MULTI,   TftColor::LGREEN,         TftColor::DGREEN        );
+  m_menu.add_btn_calc(tft, Strings::A_W_MULTI,   TftColor::BLACK,          TftColor::ORANGE        );
+  m_menu.add_btn_calc(tft, Strings::A_DRAW_TEST, TftColor::DGRAY,          TftColor::GRAY          );
+  m_menu.add_btn_calc(tft, Strings::A_DEBUGS,    TftColor::DGRAY,          TftColor::GRAY          );
 
-  m_menu.add_btn(new Gui::Btn(TftCalc::right(m_tft, 24, 10), 10, 24, 24, Strings::A_INFO, TftColor::WHITE, TftColor::BLUE));
+  m_menu.add_btn(new Gui::Btn(TftCalc::right(tft, 24, 10), 10, 24, 24, Strings::A_INFO, TftColor::WHITE, TftColor::BLUE));
 
-  m_menu.add_btn_confirm(m_tft, true);
+  m_menu.add_btn_confirm(tft, true);
 
 #ifndef DEBUG_MODE
   m_menu.get_btn(8)->operation(false);
@@ -116,11 +119,11 @@ void Programmer::run() {
   while (true) {
     Memory::print_ram_analysis();
 
-    m_tft.drawText_P(10, 10, Strings::P_ACTION, TftColor::CYAN, 3);
-    show_help(m_tft, cur_choice, false);
-    cur_choice = m_menu.wait_for_value(m_tch, m_tft);
+    tft.drawText_P(10, 10, Strings::P_ACTION, TftColor::CYAN, 3);
+    show_help(tft, cur_choice, false);
+    cur_choice = m_menu.wait_for_value(tch, tft);
 
-    m_tft.fillScreen(TftColor::BLACK);
+    tft.fillScreen(TftColor::BLACK);
 
     SER_LOG_PRINT("Executing action #%d: %s.\n", cur_choice, m_menu.get_btn(cur_choice)->get_text());
 
@@ -138,7 +141,7 @@ void Programmer::run() {
 
     show_status(status_code);
 
-    m_tft.fillScreen(TftColor::BLACK);
+    tft.fillScreen(TftColor::BLACK);
   }
 }
 
@@ -156,9 +159,9 @@ void Programmer::show_status(ProgrammerBaseCore::Status code) {
   const char *success_str      = (success ? Strings::T_SUCCESS : Strings::T_FAILED);
   const uint16_t success_color = (success ? TftColor::GREEN : TftColor::RED);
 
-  m_tft.drawText_P(15, TftCalc::bottom(m_tft, 16, 44), success_str, success_color, 2);
+  tft.drawText_P(15, TftCalc::bottom(tft, 16, 44), success_str, success_color, 2);
 
   const char *const code_text = (code < ARR_LEN(details) ? details[code] : Strings::L_UNK_REAS);
 
-  Dialog::show_error(m_tft, m_tch, ErrorLevel::INFO, 0x3, Strings::T_RESULT, code_text);
+  Dialog::show_error(tft, tch, ErrorLevel::INFO, 0x3, Strings::T_RESULT, code_text);
 }

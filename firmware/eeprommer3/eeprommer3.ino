@@ -18,6 +18,8 @@ void mainprog();
 
 void check_packet();
 
+// Global
+
 TftCtrl tft;
 TouchCtrl tch(TS_XP, TS_XM, TS_YP, TS_YM, TS_RESIST);
 SdCtrl sd(SD_CS, SD_EN);
@@ -101,7 +103,7 @@ void mainprog() {
 
   SER_LOG_PRINT("> COMMENCE PROGRAMMING <\n");
 
-  Programmer prog(CONTROLLERS);
+  Programmer prog;
   prog.init();
   prog.run();
 }

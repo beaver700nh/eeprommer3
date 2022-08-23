@@ -19,7 +19,7 @@ class ProgrammerBaseCore;
  */
 class Programmer {
 public:
-  Programmer(TYPED_CONTROLLERS);
+  Programmer();
   ~Programmer();
 
   void init();
@@ -51,11 +51,6 @@ public:
 
   Gui::MenuChoice m_menu;
   bool initialized;
-
-  TftCtrl &m_tft;
-  TouchCtrl &m_tch;
-  EepromCtrl &m_ee;
-  SdCtrl &m_sd;
 };
 
 #endif

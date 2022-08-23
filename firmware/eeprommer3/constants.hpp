@@ -1,15 +1,15 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-// To silence clangd errors
+#include "strfmt.hpp"
+
+/*****************************************/
+/** Global Objects ***********************/
+/*****************************************/
 
 #include "HardwareSerial.h"
 
 extern HardwareSerial Serial;
-
-// End silence clangd errors
-
-#include "strfmt.hpp"
 
 /*****************************************/
 /** Compile-Time Constants ***************/
@@ -93,10 +93,6 @@ inline char ser_log_print_fname[128];
 #define SER_LOG_PRINT(text, ...)
 #define SER_LOG_PRINTN(text, ...)
 #endif
-
-#define TYPED_CONTROLLERS     TftCtrl &tft, TouchCtrl &tch, EepromCtrl &ee, SdCtrl &sd
-#define INIT_LIST_CONTROLLERS m_tft(tft),   m_tch(tch),     m_ee(ee),       m_sd(sd)
-#define CONTROLLERS           tft,          tch,            ee,             sd
 
 /*****************************************/
 /** Constants ****************************/
