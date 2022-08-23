@@ -24,12 +24,16 @@ struct Vector {
   uint8_t m_lo, m_hi;
   uint16_t m_val;
 
-  inline static const char *NAMES[3] {"NMI", "RESET", "IRQ"}; // todo - put in progmem
+  inline static const char NAME_NMI  [] PROGMEM = "NMI";
+  inline static const char NAME_RESET[] PROGMEM = "RESET";
+  inline static const char NAME_IRQ  [] PROGMEM = "IRQ";
+
+  inline static const char *NAMES[3] {NAME_NMI, NAME_RESET, NAME_IRQ};
 };
 
 namespace Dialog {
   // Helper function to ask user to select a 6502 jump vector
-  Vector ask_vector(TftCtrl &tft, TouchCtrl &tch);
+  Vector ask_vector();
 };
 
 #endif

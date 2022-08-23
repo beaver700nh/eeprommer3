@@ -8,25 +8,27 @@
 #include "tft.hpp"
 #include "touch.hpp"
 
+extern TouchCtrl tch;
+
 namespace TftUtil {
   // Function to wait for the user to press a button at the bottom of the screen
-  void wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text);
+  void wait_bottom_btn(const char *text);
 
   // Function to wait for the user to press a "Continue" button at the bottom of the screen
-  void wait_continue(TftCtrl &tft, TouchCtrl &tch);
+  void wait_continue();
 
   /*
    * Some reused lambdas
    */
   namespace Lambdas {
     // Tells whether screen is being touched
-    inline auto is_tching_tft(TouchCtrl &tch) {
+    inline auto is_tching_tft() {
       return [&]() -> bool { return tch.is_touching(); };
     }
 
     // Tells whether buttons is being pressed
-    inline auto is_tching_btn(Gui::Btn &btn, TouchCtrl &tch, TftCtrl &tft) {
-      return [&]() -> bool { return btn.is_pressed(tch, tft); };
+    inline auto is_tching_btn(Gui::Btn &btn) {
+      return [&]() -> bool { return btn.is_pressed(); };
     }
   };
 };

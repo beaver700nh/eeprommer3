@@ -9,12 +9,14 @@
 
 #include "tft_util.hpp"
 
-void TftUtil::wait_bottom_btn(TftCtrl &tft, TouchCtrl &tch, const char *text) {
-  static Gui::Btn continue_btn(BOTTOM_BTN(tft, text)); // todo - make sure this is only constructed once
-  continue_btn.draw(tft);
-  continue_btn.wait_for_press(tch, tft);
+extern TftCtrl tft;
+
+void TftUtil::wait_bottom_btn(const char *text) {
+  Gui::Btn continue_btn(BOTTOM_BTN(text));
+  continue_btn.draw();
+  continue_btn.wait_for_press();
 }
 
-void TftUtil::wait_continue(TftCtrl &tft, TouchCtrl &tch) {
-  wait_bottom_btn(tft, tch, Strings::L_CONTINUE);
+void TftUtil::wait_continue() {
+  wait_bottom_btn(Strings::L_CONTINUE);
 }

@@ -17,7 +17,7 @@ extern HardwareSerial Serial;
 
 #define DEBUG_MODE
 
-//#define LOGGING
+#define LOGGING
 
 /*****************************************/
 /** Macros *******************************/
@@ -68,9 +68,9 @@ extern HardwareSerial Serial;
 // Shorthand for bottom button in Btn ctor
 // `tft`: TftCtrl object to get dimensions
 // `text`: text of button
-#define BOTTOM_BTN(tft, text)            \
-  10, TftCalc::bottom((tft), 24, 10),    \
-  TftCalc::fraction_x((tft), 10, 1), 24, \
+#define BOTTOM_BTN(text)            \
+  10, TftCalc::bottom(tft, 24, 10),    \
+  TftCalc::fraction_x(tft, 10, 1), 24, \
   (text)
 
 inline char ser_log_print_fname[128];
@@ -81,17 +81,14 @@ inline char ser_log_print_fname[128];
 #define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
 #define SER_LOG_PRINT(text, ...) (                                  \
   STRNCPY(ser_log_print_fname, __FILE__),                           \
-                                                                    \
   PRINTF_NOBUF(                                                     \
     Serial, "*!* - SER_LOG_PRINT: ...%-25.25s :%-4d || " text,      \
     strrchr(ser_log_print_fname, '/') - 10, __LINE__, ##__VA_ARGS__ \
   )                                                                 \
 )
-#define SER_LOG_PRINTN(text, ...) PRINTF_NOBUF(Serial, text, ##__VA_ARGS__)
 #else
 #define SER_DEBUG_PRINT(var, type)
 #define SER_LOG_PRINT(text, ...)
-#define SER_LOG_PRINTN(text, ...)
 #endif
 
 /*****************************************/

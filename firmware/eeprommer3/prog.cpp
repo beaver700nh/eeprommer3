@@ -65,7 +65,7 @@ Programmer::~Programmer() {
   }
 }
 
-void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
+void show_help(uint8_t btn_id, bool is_confirm) {
   if (is_confirm) return;
 
   static const char *const helps[] {
@@ -84,20 +84,20 @@ void show_help(TftCtrl &tft, uint8_t btn_id, bool is_confirm) {
 }
 
 void Programmer::init() {
-  m_menu.add_btn_calc(tft, Strings::A_R_BYTE,    TftColor::BLUE,           TftColor::CYAN          );
-  m_menu.add_btn_calc(tft, Strings::A_W_BYTE,    TftColor::RED,            TftColor::PINKK         );
-  m_menu.add_btn_calc(tft, Strings::A_R_FILE,    TftColor::CYAN,           TftColor::BLUE          );
-  m_menu.add_btn_calc(tft, Strings::A_W_FILE,    TftColor::PINKK,          TftColor::RED           );
-  m_menu.add_btn_calc(tft, Strings::A_R_VECTOR,  TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
-  m_menu.add_btn_calc(tft, Strings::A_W_VECTOR,  TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  m_menu.add_btn_calc(tft, Strings::A_R_MULTI,   TftColor::LGREEN,         TftColor::DGREEN        );
-  m_menu.add_btn_calc(tft, Strings::A_W_MULTI,   TftColor::BLACK,          TftColor::ORANGE        );
-  m_menu.add_btn_calc(tft, Strings::A_DRAW_TEST, TftColor::DGRAY,          TftColor::GRAY          );
-  m_menu.add_btn_calc(tft, Strings::A_DEBUGS,    TftColor::DGRAY,          TftColor::GRAY          );
+  m_menu.add_btn_calc(Strings::A_R_BYTE,    TftColor::BLUE,           TftColor::CYAN          );
+  m_menu.add_btn_calc(Strings::A_W_BYTE,    TftColor::RED,            TftColor::PINKK         );
+  m_menu.add_btn_calc(Strings::A_R_FILE,    TftColor::CYAN,           TftColor::BLUE          );
+  m_menu.add_btn_calc(Strings::A_W_FILE,    TftColor::PINKK,          TftColor::RED           );
+  m_menu.add_btn_calc(Strings::A_R_VECTOR,  TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
+  m_menu.add_btn_calc(Strings::A_W_VECTOR,  TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
+  m_menu.add_btn_calc(Strings::A_R_MULTI,   TftColor::LGREEN,         TftColor::DGREEN        );
+  m_menu.add_btn_calc(Strings::A_W_MULTI,   TftColor::BLACK,          TftColor::ORANGE        );
+  m_menu.add_btn_calc(Strings::A_DRAW_TEST, TftColor::DGRAY,          TftColor::GRAY          );
+  m_menu.add_btn_calc(Strings::A_DEBUGS,    TftColor::DGRAY,          TftColor::GRAY          );
 
   m_menu.add_btn(new Gui::Btn(TftCalc::right(tft, 24, 10), 10, 24, 24, Strings::A_INFO, TftColor::WHITE, TftColor::BLUE));
 
-  m_menu.add_btn_confirm(tft, true);
+  m_menu.add_btn_confirm(true);
 
 #ifndef DEBUG_MODE
   m_menu.get_btn(8)->operation(false);
@@ -120,12 +120,12 @@ void Programmer::run() {
     Memory::print_ram_analysis();
 
     tft.drawText_P(10, 10, Strings::P_ACTION, TftColor::CYAN, 3);
-    show_help(tft, cur_choice, false);
-    cur_choice = m_menu.wait_for_value(tch, tft);
+    show_help(cur_choice, false);
+    cur_choice = m_menu.wait_for_value();
 
     tft.fillScreen(TftColor::BLACK);
 
-    SER_LOG_PRINT("Executing action #%d: %s.\n", cur_choice, m_menu.get_btn(cur_choice)->get_text());
+    SER_LOG_PRINT("Executing action #%d.\n", cur_choice);
 
     ProgrammerBaseCore::Status status_code = ProgrammerBaseCore::Status::ERR_INVALID;
 
@@ -163,5 +163,5 @@ void Programmer::show_status(ProgrammerBaseCore::Status code) {
 
   const char *const code_text = (code < ARR_LEN(details) ? details[code] : Strings::L_UNK_REAS);
 
-  Dialog::show_error(tft, tch, ErrorLevel::INFO, 0x3, Strings::T_RESULT, code_text);
+  Dialog::show_error(ErrorLevel::INFO, 0x3, Strings::T_RESULT, code_text);
 }

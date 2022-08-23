@@ -13,13 +13,13 @@
 
 #include "file.hpp"
 
-Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols) :
-  MenuChoice(pad_v, pad_h, marg_v, marg_h, calc_num_cols(tft, cols), calc_btn_height(tft, rows, marg_v, pad_v), true) {
+Gui::MenuSdFileSel::MenuSdFileSel(uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols) :
+  MenuChoice(pad_v, pad_h, marg_v, marg_h, calc_num_cols(cols), calc_btn_height(rows, marg_v, pad_v), true) {
   m_num_rows = rows;  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
   for (uint8_t j = 0; j < m_num_rows; ++j) {
     for (uint8_t i = 0; i < m_num_cols; ++i) {
-      add_btn_calc(tft, Strings::L_EMPTY_STR, TftColor::BLACK, TftColor::WHITE)->set_font_size(1);
+      add_btn_calc(Strings::L_EMPTY_STR, TftColor::BLACK, TftColor::WHITE)->set_font_size(1);
     }
   }
 
@@ -29,7 +29,7 @@ Gui::MenuSdFileSel::MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, ui
 
   add_btn(new Gui::Btn(10, _y, _w, 24, Strings::L_GO_UP_DIR, TftColor::CYAN,  TftColor::BLUE));
   add_btn(new Gui::Btn(_x, _y, _w, 24, Strings::L_CANCEL,    TftColor::PINKK, TftColor::RED ));
-  add_btn_confirm(tft, true);
+  add_btn_confirm(true);
 
   m_files = (SdFileInfo *) malloc(m_num_rows * m_num_cols * sizeof(SdFileInfo));
 }
@@ -56,7 +56,7 @@ void Gui::MenuSdFileSel::use_files_in_dir(SdCtrl &sd, const char *path, uint8_t 
   }
 }
 
-Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len) {
+Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(char *file_path, uint8_t max_path_len) {
   if (max_path_len <= 2) return Status::FNAME_TOO_LONG;
 
   strcpy(file_path, "/");
@@ -68,7 +68,7 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
     select(0);
 
     use_files_in_dir(sd, file_path, m_num_rows * m_num_cols);
-    uint8_t btn_id = MenuChoice::wait_for_value(tch, tft);
+    uint8_t btn_id = MenuChoice::wait_for_value();
 
     if (btn_id == get_num_btns() - 2) {
       return Status::CANCELED;
@@ -94,9 +94,9 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(TouchCtrl &tch, Tf
   }
 }
 
-FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist, SdCtrl &sd) {
+FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist) {
   SER_DEBUG_PRINT(must_exist, 'd');
-  FileSystem fsys = ask_fsys(tft, tch, Strings::P_FILE_TYPE, sd);
+  FileSystem fsys = ask_fsys(Strings::P_FILE_TYPE);
   tft.fillScreen(TftColor::BLACK);
 
   char fpath[64];
@@ -105,22 +105,22 @@ FileCtrl *Dialog::ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uin
   switch (fsys) {
   case FileSystem::NONE:
     *status = AskFileStatus::CANCELED;
-    Dialog::show_error(tft, tch, ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
+    Dialog::show_error(ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
     return nullptr;
 
   case FileSystem::ON_SD_CARD:
     SER_LOG_PRINT("Going into ask_fpath_sd()...\n");
-    *status = ask_fpath_sd(tft, tch, prompt, fpath, ARR_LEN(fpath), must_exist, sd);
+    *status = ask_fpath_sd(prompt, fpath, ARR_LEN(fpath), must_exist);
     return FileCtrl::create_file(fsys, fpath, access);
 
   default:
     *status = AskFileStatus::FSYS_INVALID;
-    Dialog::show_error(tft, tch, ErrorLevel::ERROR, 0x1, Strings::E_INV_FSYS, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
+    Dialog::show_error(ErrorLevel::ERROR, 0x1, Strings::E_INV_FSYS, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
     return nullptr;
   }
 }
 
-Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, bool must_exist, SdCtrl &sd) {
+Dialog::AskFileStatus Dialog::ask_fpath_sd(const char *prompt, char *out, uint8_t len, bool must_exist) {
   SER_DEBUG_PRINT(must_exist, 'd');
   using FSStatus = Gui::MenuSdFileSel::Status;
 
@@ -132,27 +132,27 @@ Dialog::AskFileStatus Dialog::ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const c
 
   if (must_exist) {
     SER_LOG_PRINT("must_exist == true\n");
-    substatus = ask_sel_fpath_sd(tft, tch, prompt, out, len, sd);
+    substatus = ask_sel_fpath_sd(prompt, out, len);
   }
   else {
     SER_LOG_PRINT("must_exist == false\n");
-    ask_str(tft, tch, prompt, out, len);
+    ask_str(prompt, out, len);
     substatus = FSStatus::OK;
   }
 
   tft.fillScreen(TftColor::BLACK);
 
   if (substatus == FSStatus::CANCELED) {
-    Dialog::show_error(tft, tch, ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
+    Dialog::show_error(ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
   }
   else if (substatus == FSStatus::FNAME_TOO_LONG) {
-    Dialog::show_error(tft, tch, ErrorLevel::ERROR, 0x3, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
+    Dialog::show_error(ErrorLevel::ERROR, 0x3, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
   }
 
   return (AskFileStatus) substatus;
 }
 
-Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, SdCtrl &sd) {
+Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(const char *prompt, char *out, uint8_t len) {
   SER_LOG_PRINT("GOT HERE\n");
   constexpr uint8_t rows = 6, cols = 6;
 
@@ -160,27 +160,27 @@ Gui::MenuSdFileSel::Status Dialog::ask_sel_fpath_sd(TftCtrl &tft, TouchCtrl &tch
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
   Memory::print_ram_analysis();
 
-  Gui::MenuSdFileSel menu(tft, 10, 10, 50, 10, rows, cols);
+  Gui::MenuSdFileSel menu(10, 10, 50, 10, rows, cols);
   Memory::print_ram_analysis();
 
-  return menu.wait_for_value(tch, tft, sd, out, len);
+  return menu.wait_for_value(out, len);
 }
 
-FileSystem Dialog::ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd) {
+FileSystem Dialog::ask_fsys(const char *prompt) {
   tft.drawText(10, 10, prompt, TftColor::CYAN, 3);
 
   Gui::MenuChoice menu(10, 10, 50, 10, 1, 40, true, 0);
-  menu.add_btn_calc(tft, Strings::L_FILE_SD,  TftColor::LGREEN, TftColor::DGREEN);
-  menu.add_btn_calc(tft, Strings::L_FILE_SER, TftColor::CYAN,   TftColor::BLUE  );
-  menu.add_btn_calc(tft, Strings::L_CANCEL,   TftColor::PINKK,  TftColor::DRED  );
-  menu.add_btn_confirm(tft, true);
+  menu.add_btn_calc(Strings::L_FILE_SD,  TftColor::LGREEN, TftColor::DGREEN);
+  menu.add_btn_calc(Strings::L_FILE_SER, TftColor::CYAN,   TftColor::BLUE  );
+  menu.add_btn_calc(Strings::L_CANCEL,   TftColor::PINKK,  TftColor::DRED  );
+  menu.add_btn_confirm(true);
 
-  const uint8_t avail = FileUtil::get_available_file_systems(sd);
+  const uint8_t avail = FileUtil::get_available_file_systems();
 
   if (~avail & FileSystem::ON_SD_CARD) menu.get_btn(0)->operation(false);
   if (~avail & FileSystem::ON_SERIAL)  menu.get_btn(1)->operation(false);
 
-  const uint8_t btn_pressed = menu.wait_for_value(tch, tft);
+  const uint8_t btn_pressed = menu.wait_for_value();
   const uint8_t btn_cancel  = menu.get_num_btns() - 2;
 
   if (btn_pressed != btn_cancel) {
@@ -306,7 +306,7 @@ bool FileUtil::go_down_path(char *path, SdFileInfo *sub_path, uint8_t len) {
   return (sub_path->is_dir ? go_down_dir : go_down_file)(path, sub_path->name, len);
 }
 
-uint8_t FileUtil::get_available_file_systems(SdCtrl &sd) {
+uint8_t FileUtil::get_available_file_systems() {
   uint8_t avail = FileSystem::NONE;
 
   // TODO: implement serial files

@@ -15,7 +15,7 @@
 namespace Gui {
 
 /*
- * Class that stores some metadata, can detect if it is pressed, and can draw itself to the TFT screen.
+ * Button class that stores some metadata, can detect if it is pressed, and can draw itself to the TFT screen.
  */
 class Btn {
 public:
@@ -34,9 +34,9 @@ public:
     uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
-  void draw(TftCtrl &tft);
-  void erase(TftCtrl &tft);
-  void draw_highlight(TftCtrl &tft);
+  void draw();
+  void erase();
+  void draw_highlight();
 
   inline uint8_t calc_center_x() { return TftCalc::t_center_x(m_w, m_text, m_font_size); }
   inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size); }
@@ -145,9 +145,9 @@ public:
   }
 
   // Test if button is being pressed (There is a press on `tch` at x to x+w, y to y+h).
-  bool is_pressed(TouchCtrl &tch, TftCtrl &tft);
+  bool is_pressed();
   // Wait for a press on the button, blocks until `is_pressed()` returns true.
-  void wait_for_press(TouchCtrl &tch, TftCtrl &tft);
+  void wait_for_press();
 
 private:
   uint8_t m_font_size = 2;
@@ -166,7 +166,7 @@ private:
 };
 
 /*
- * `Menu` makes creating menus easier; it's basically just a group of `Btn`s with some helpful functions included.
+ * `Menu` makes creating menus easier; it's basically just a collection of `Btn`s with some helpful functions included.
  */
 class Menu {
 public:
@@ -181,19 +181,19 @@ public:
 
   uint8_t get_num_btns();
 
-  void draw(TftCtrl &tft);
-  void erase(TftCtrl &tft);
+  void draw();
+  void erase();
 
-  uint8_t wait_for_press(TouchCtrl &tch, TftCtrl &tft);
-  int16_t get_pressed(TouchCtrl &tch, TftCtrl &tft);
+  uint8_t wait_for_press();
+  int16_t get_pressed();
 
   void deselect_all();
 
 protected:
   bool rm_btn(uint8_t btn_idx);  // Not exposed because unsafe: does not `delete` the button
 
-Btn **m_btns       = nullptr;
-uint8_t m_num_btns = 0;
+  Btn **m_btns       = nullptr;
+  uint8_t m_num_btns = 0;
 };
 
 /*
@@ -234,13 +234,13 @@ public:
   // IMPORTANT - Does not initialize internal value string, do not forget to do so
   // height of button = calculated width of button * param `btn_height`
   MenuKeyboard(
-    TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, KeyboardLayout &layout, float btn_height = 1.2
+    uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, KeyboardLayout &layout, float btn_height = 1.2
   );
 
   ~MenuKeyboard();
 
   void update_val(char c);
-  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg);
+  void show_val(uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg);
 
   void get_val(char *buf, uint8_t len);
   char *get_ptr_val();
@@ -251,7 +251,7 @@ public:
 
   KeyboardLayout &get_layout();
 
-  // REMEMBER TO OVERRIDE BUFFER LENGTH IN CHILD CLASS!
+  // ***** REMEMBER TO OVERRIDE BUFFER LENGTH IN CHILD CLASS! *****
   inline virtual uint8_t BUF_LEN() {
     return 0;
   }
@@ -275,8 +275,8 @@ template<typename T>
 class MenuHexInput : public MenuKeyboard {
 public:
   // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
-  MenuHexInput(TftCtrl &tft, uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h) :
-    MenuKeyboard(tft, t_debounce, pad_v, pad_h, marg_v, marg_h, glob_kbd_hex_layout, 1) {
+  MenuHexInput(uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h) :
+    MenuKeyboard(t_debounce, pad_v, pad_h, marg_v, marg_h, glob_kbd_hex_layout, 1) {
     m_val = (char *) malloc(BUF_LEN() * sizeof(char));  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
     for (uint8_t i = 0; i < BUF_LEN(); ++i) {
@@ -305,8 +305,8 @@ public:
     MenuKeyboard::update_val(c);
   }
 
-  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
-    MenuKeyboard::show_val(tft, x, y, BUF_LEN(), size, fg, bg);
+  void show_val(uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
+    MenuKeyboard::show_val(x, y, BUF_LEN(), size, fg, bg);
   }
 
   T get_int_val() {
@@ -344,12 +344,12 @@ public:
  */
 class MenuStrInput : public MenuKeyboard {
 public:
-  MenuStrInput(TftCtrl &tft, uint16_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
+  MenuStrInput(uint16_t debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h, uint8_t buf_len);
   ~MenuStrInput() {}  // Ensure that base destructor(s) are called.
 
   void update_val(char c);
 
-  void show_val(TftCtrl &tft, uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg);
+  void show_val(uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg);
 
   bool handle_key(uint8_t key);
 
@@ -384,7 +384,7 @@ public:
   ~MenuChoice() {}  // Ensure that base destructor(s) are called.
 
   // Function that gets run when user presses a button
-  typedef void (*Callback)(TftCtrl &tft, uint8_t btn_id, bool is_confirm);
+  typedef void (*Callback)(uint8_t btn_id, bool is_confirm);
 
   void set_callback(Callback callback);
   Callback get_callback();
@@ -392,15 +392,15 @@ public:
   void set_choice(uint8_t choice);
   void select(uint8_t btn);
 
-  void update(TftCtrl &tft);
+  void update();
 
   Btn *add_btn(Btn *btn);
-  Btn *add_btn_calc(TftCtrl &tft, const char *text, uint16_t fg, uint16_t bg);
-  Btn *add_btn_confirm(TftCtrl &tft, bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
+  Btn *add_btn_calc(const char *text, uint16_t fg, uint16_t bg);
+  Btn *add_btn_confirm(bool force_bottom, uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE);
 
   void set_confirm_btn(uint8_t btn_id);
 
-  uint8_t wait_for_value(TouchCtrl &tch, TftCtrl &tft);
+  uint8_t wait_for_value();
 
 protected:
   uint8_t m_pad_v, m_pad_h, m_marg_v, m_marg_h;
@@ -413,8 +413,7 @@ protected:
   uint8_t m_cur_choice  = 0;
   uint8_t m_old_choice  = 0;
 
-  Callback m_callback = [](TftCtrl &tft, uint8_t btn_id, bool is_confirm) -> void {
-    UNUSED_VAR(tft);
+  Callback m_callback = [](uint8_t btn_id, bool is_confirm) -> void {
     UNUSED_VAR(btn_id);
     UNUSED_VAR(is_confirm);
   };
@@ -427,7 +426,7 @@ protected:
 class MenuYesNo : public MenuChoice {
 public:
   MenuYesNo(
-    TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice = 0
+    uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice = 0
   );
 
   ~MenuYesNo() {}  // Ensure that base destructor(s) are called.
@@ -443,7 +442,7 @@ public:
 class ProgressIndicator {
 public:
   ProgressIndicator(
-    TftCtrl &tft, uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+    uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
     uint16_t color_frac = TftColor::DGREEN, uint16_t color_perc = TftColor::BLUE,
     uint16_t color_bar1 = TftColor::DRED, uint16_t color_bar2 = TftColor::WHITE
   );
@@ -470,8 +469,6 @@ public:
   void next();
 
 private:
-  TftCtrl &m_tft;
-
   uint16_t m_max_val, m_cur_val = 0;
   uint16_t m_x, m_y, m_w, m_h;
   uint16_t m_color_frac, m_color_perc, m_color_bar1, m_color_bar2;

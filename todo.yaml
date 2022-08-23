@@ -11,16 +11,13 @@ FIRMWARE:
     fix file write verify segfault/crash
     fix read range
     fix multi write scrolling
-    fix `MenuKeyboard`s
-    pack structs
-    improve "Total" box on Memory
+    improve on Memory:
+      "total" box
+      add XMEM
     put more things in PROGMEM
-    make stuff allow PROGMEM strings
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
-    make Controllers struct so no passing `XXXCtrl&`s everywhere:
-      nvm just make them global
     make progress bars look better:
       unsatisfying off-by-one stuff
       optimize drawing?

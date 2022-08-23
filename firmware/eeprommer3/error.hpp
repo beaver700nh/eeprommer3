@@ -5,8 +5,6 @@
 #include "constants.hpp"
 
 #include "tft.hpp"
-#include "tft_calc.hpp"
-#include "touch.hpp"
 #include "util.hpp"
 
 namespace ErrorLevel {
@@ -26,7 +24,7 @@ namespace ErrorLevel {
 };
 
 namespace Dialog {
-  void show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, uint8_t str_types, const char *title, const char *msg);
+  void show_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg);
 };
 
 #endif

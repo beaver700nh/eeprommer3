@@ -131,16 +131,16 @@ class TouchCtrl;
 /*
  * Debug function for testing touchscreen and TFT screen. Press left edge of screen to quit.
  */
-void tft_draw_test(TouchCtrl &tch, TftCtrl &tft);
+void tft_draw_test();
 
 /*
  * Quick little function to print the character set of the TFT, to help identify special characters like arrows for use in the GUI.
  */
-void tft_print_chars(TftCtrl &tft);
+void tft_print_chars();
 
 /*
  * Function to test showing colors on the TFT screen.
  */
-void tft_show_colors(TftCtrl &tft);
+void tft_show_colors();
 
 #endif

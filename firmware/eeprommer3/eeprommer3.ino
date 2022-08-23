@@ -34,7 +34,7 @@ void setup() {
   uint16_t intro_y = (tft.height() - 240) / 2 - 17;
 
   Gui::Btn skip_btn(80, intro_y + 250, 320, 24, Strings::L_SKIP, TftColor::WHITE, TftColor::DGREEN);
-  skip_btn.draw(tft);
+  skip_btn.draw();
 
   draw_intro(intro_x, intro_y, &skip_btn);
 
@@ -53,7 +53,7 @@ void setup() {
     }
   }
 
-  Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(skip_btn, tch, tft));
+  Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(skip_btn));
 
   Serial.println(F("Hello, world!\n"));
 
@@ -80,7 +80,7 @@ SdCtrl::Status initialize() {
 
 void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn) {
   if (sd.is_enabled()) { // todo - put filename in xram
-    tft.drawRGBBitmapFromFile(x, y, "startup.bin", 320, 240, true, TftUtil::Lambdas::is_tching_btn(*skip_btn, tch, tft));
+    tft.drawRGBBitmapFromFile(x, y, "startup.bin", 320, 240, true, TftUtil::Lambdas::is_tching_btn(*skip_btn));
   }
   else {
     tft.drawThickRect(x, y, 320, 240, TftColor::CYAN, 4);
@@ -94,7 +94,7 @@ void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn) {
 
     tft.drawText_P(x + 10, y + 190, Strings::W_LOAD, TftColor::PURPLE, 3);
 
-    Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(*skip_btn, tch, tft));
+    Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(*skip_btn));
   }
 }
 

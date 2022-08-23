@@ -61,7 +61,10 @@ void TftCtrl::drawText_P(const char *text) {
   free((void *) _text);
 }
 
-void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
+extern TftCtrl tft;
+extern TouchCtrl tch;
+
+void tft_draw_test() {
   static const uint16_t color = TftColor::LGRAY;
 
   TSPoint old;
@@ -86,7 +89,7 @@ void tft_draw_test(TouchCtrl &tch, TftCtrl &tft) {
   }
 }
 
-void tft_print_chars(TftCtrl &tft) {
+void tft_print_chars() {
   uint8_t original_rotation = tft.getRotation();
   tft.setRotation(0);
 
@@ -138,20 +141,19 @@ static const char *const PSTR_NAMES[] PROGMEM {
   PSTR_NAMES_G, PSTR_NAMES_H, PSTR_NAMES_I, PSTR_NAMES_J, PSTR_NAMES_K,
 };
 
-void tft_show_colors(TftCtrl &tft) {
+void tft_show_colors() {
   using namespace TftColor;
 
   for (uint8_t i = 0; i < 21; ++i) {
     auto color = pgm_read_word_near(PSTR_COLORS + i);
 
-    char name[12];
-    strcpy_P(name, (char *) pgm_read_word_near(PSTR_NAMES + i));
+    const char *const name = (char *) pgm_read_word_near(PSTR_NAMES + i);
 
     tft.fillScreen(color);
 
     tft.drawRoundRect(9, 9, 212, 38, 4, WHITE);
     tft.fillRoundRect(10, 10, 210, 36, 4, BLACK);
-    tft.drawText(16, 16, name, WHITE, 3);
+    tft.drawText_P(16, 16, name, WHITE, 3);
 
     delay(1250);
   }

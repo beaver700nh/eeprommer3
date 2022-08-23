@@ -4,12 +4,13 @@
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
-#include "touch.hpp"
 #include "util.hpp"
 
 #include "error.hpp"
 
-void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, uint8_t str_types, const char *title, const char *msg) {
+extern TftCtrl tft;
+
+void Dialog::show_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg) {
   using Printer = void (TftCtrl::*)(uint16_t, uint16_t, const char *, uint16_t, uint8_t);
 
   Printer printer = (str_types & 0x1 ? (Printer) &TftCtrl::drawText_P : (Printer) &TftCtrl::drawText);
@@ -45,5 +46,5 @@ void Dialog::show_error(TftCtrl &tft, TouchCtrl &tch, uint8_t lvl, uint8_t str_t
 
   free(_msg);
 
-  TftUtil::wait_bottom_btn(tft, tch, (lvl >= ErrorLevel::WARNING ? Strings::L_OK : Strings::L_CONTINUE));
+  TftUtil::wait_bottom_btn(lvl >= ErrorLevel::WARNING ? Strings::L_OK : Strings::L_CONTINUE);
 }

@@ -9,7 +9,9 @@
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "tft_util.hpp"
-#include "touch.hpp"
+
+extern TftCtrl tft;
+extern SdCtrl sd;
 
 // Fwd decls just in case (circular dependencies)
 class TftCtrl;
@@ -44,7 +46,7 @@ namespace FileUtil {
   bool go_down_path(char *path, SdFileInfo *sub_path, uint8_t len);
 
   // Scans parameters to find which file systems are available, returns the available ones.
-  uint8_t get_available_file_systems(SdCtrl &sd);
+  uint8_t get_available_file_systems();
 };
 
 // TODO: add serial file support
@@ -117,7 +119,7 @@ namespace Gui {
  */
 class MenuSdFileSel : public MenuChoice {
 public:
-  MenuSdFileSel(TftCtrl &tft, uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols);
+  MenuSdFileSel(uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, uint8_t rows, uint8_t cols);
   ~MenuSdFileSel();
 
   enum Status : uint8_t {
@@ -136,16 +138,16 @@ public:
    * Returns Status::CANCELED if `Cancel` button pressed; Status::FNAME_TOO_LONG if path len >= `max_path_len`.
    * Returns Status::OK if everything fine; sets `file_path` = path to selected file.
    */
-  Status wait_for_value(TouchCtrl &tch, TftCtrl &tft, SdCtrl &sd, char *file_path, uint8_t max_path_len);
+  Status wait_for_value(char *file_path, uint8_t max_path_len);
 
 private:
   // The supplied `cols` or the maximum number of cols that will fit, whichever is smaller
-  static inline uint8_t calc_num_cols(TftCtrl &tft, uint8_t cols) {
+  static inline uint8_t calc_num_cols(uint8_t cols) {
     return MIN(cols, MAX((tft.width() - 10) / (73 + 10), 1));
   }
 
   // Fraction 1/`rows` of allotted vertical space, constrained to at least 16 pixels
-  static inline uint8_t calc_btn_height(TftCtrl &tft, uint8_t rows, uint8_t marg_v, uint8_t pad_v) {
+  static inline uint8_t calc_btn_height(uint8_t rows, uint8_t marg_v, uint8_t pad_v) {
     return MAX(
       16, TftCalc::fraction(
         tft.height()    // take up as much space as possible
@@ -175,16 +177,16 @@ enum AskFileStatus : uint8_t {
 };
 
 // Asks user for path to any file on any available file system. Puts resulting status into `status`. Returns a FileCtrl * for the file.
-FileCtrl *ask_file(TftCtrl &tft, TouchCtrl &tch, const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist, SdCtrl &sd);
+FileCtrl *ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist);
 
 // Asks user for a path to a file on SD card. Writes path into `out`. Returns a status based on user's choice.
-AskFileStatus ask_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, bool must_exist, SdCtrl &sd);
+AskFileStatus ask_fpath_sd(const char *prompt, char *out, uint8_t len, bool must_exist);
 
 // Asks user to select an existing file on SD card. Writes path into `out`. Returns a status based on user's choice.
-Gui::MenuSdFileSel::Status ask_sel_fpath_sd(TftCtrl &tft, TouchCtrl &tch, const char *prompt, char *out, uint8_t len, SdCtrl &sd);
+Gui::MenuSdFileSel::Status ask_sel_fpath_sd(const char *prompt, char *out, uint8_t len);
 
 // Asks user to select a file system out of all the ones that are detected.
-FileSystem ask_fsys(TftCtrl &tft, TouchCtrl &tch, const char *prompt, SdCtrl &sd);
+FileSystem ask_fsys(const char *prompt);
 
 };
 

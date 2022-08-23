@@ -74,7 +74,7 @@ void Memory::print_ram_analysis() {
     SER_LOG_PRINT("+-------------------------+");
 
     if (i < NUM_TYPES) {
-      SER_LOG_PRINTN(" < 0x%s\n", repr_bords[i]);
+      PRINTF_NOBUF(Serial, " < 0x%s\n", repr_bords[i]);
       SER_LOG_PRINT("| %s |\n", repr_sizes[i]);
     }
   }

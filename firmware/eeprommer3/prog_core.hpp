@@ -167,7 +167,7 @@ private:
 
 namespace Dialog {
   // Helper function to get an address; same as `ask_val<uint16_t>` but has built-in validation
-  uint16_t ask_addr(TftCtrl &tft, TouchCtrl &tch, const char *prompt);
+  uint16_t ask_addr(const char *prompt);
 };
 
 #endif
