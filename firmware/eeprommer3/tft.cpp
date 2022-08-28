@@ -137,7 +137,7 @@ void tft_show_colors() {
   for (uint8_t i = 0; i < 21; ++i) {
     auto color = pgm_read_word_near(PSTR_COLORS + i);
 
-    const char *const name = (char *) pgm_read_word_near(PSTR_NAMES + i);
+    auto *const name = (const char *) pgm_read_word_near(PSTR_NAMES + i);
 
     tft.fillScreen(color);
 

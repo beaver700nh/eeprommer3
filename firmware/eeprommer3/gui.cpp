@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <stddef.h>
-
 #include "strfmt.hpp"
 #include "tft.hpp"
 #include "tft_calc.hpp"
@@ -246,17 +244,17 @@ char Gui::KeyboardLayout::get_char(uint8_t x, uint8_t y) {
  */
 
 static const uint16_t glob_kbd_hex_layout_data[] PROGMEM {
-  '\x30', '\x31', '\x32', '\x33', '\x34', '\x35', '\x36', '\x37',
-  '\x38', '\x39', '\x41', '\x42', '\x43', '\x44', '\x45', '\x46',
+  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+  0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46,
 };
 
 Gui::KeyboardLayout Gui::glob_kbd_hex_layout((const uint8_t *) glob_kbd_hex_layout_data, 16, 8);
 
 static const uint16_t glob_kbd_str_layout_data[] PROGMEM {
-  '\x31', '\x32', '\x33', '\x34', '\x35', '\x36', '\x37', '\x38', '\x39', '\x30', '\x7e',
-  '\x51', '\x57', '\x45', '\x52', '\x54', '\x59', '\x55', '\x49', '\x4f', '\x50', '\x11',
-  '\x41', '\x53', '\x44', '\x46', '\x47', '\x48', '\x4a', '\x4b', '\x4c', '\x5f', '\x2d',
-  '\x7f', '\x5a', '\x58', '\x43', '\x56', '\x42', '\x4e', '\x4d', '\xb0', '\x2c', '\x2e',
+  0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x7e,
+  0x51, 0x57, 0x45, 0x52, 0x54, 0x59, 0x55, 0x49, 0x4f, 0x50, 0x11,
+  0x41, 0x53, 0x44, 0x46, 0x47, 0x48, 0x4a, 0x4b, 0x4c, 0x5f, 0x2d,
+  0x7f, 0x5a, 0x58, 0x43, 0x56, 0x42, 0x4e, 0x4d, 0xb0, 0x2c, 0x2e,
 };
 
 Gui::KeyboardLayout Gui::glob_kbd_str_layout((const uint8_t *) glob_kbd_str_layout_data, 44, 11);
@@ -423,27 +421,82 @@ Gui::Btn *Gui::MenuChoice::add_btn(Btn *btn) {
 }
 
 Gui::Btn *Gui::MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t bg) {
-  uint8_t col = m_num_btns % m_num_cols;
-  uint8_t row = m_num_btns / m_num_cols;
+  uint16_t col = m_num_btns % m_num_cols;
+  uint16_t row = m_num_btns / m_num_cols;
 
-  uint16_t w = TftCalc::fraction(tft.width() - 2 * m_marg_h + 2 * m_pad_h, m_pad_h, m_num_cols);
+  uint16_t w = TftCalc::fraction((uint16_t) tft.width() - 2 * (uint16_t)m_marg_h + 2 * (uint16_t)m_pad_h, (uint16_t)m_pad_h, (uint8_t)m_num_cols);
   uint16_t h = (m_btn_height_px ? (uint16_t) m_btn_height : (float) w * m_btn_height);
 
   uint16_t x = m_marg_h + col * (w + m_pad_h);
   uint16_t y = m_marg_v + row * (h + m_pad_v);
 
-  SER_DEBUG_PRINT(TftCalc::fraction(480, 10, 2), 'd');
-  SER_DEBUG_PRINT(m_marg_h, 'd');
-  SER_DEBUG_PRINT(m_pad_h, 'd');
-  SER_DEBUG_PRINT(m_num_cols, 'd');
+  uint16_t a = (uint16_t) tft.width();
+  uint16_t b = (uint16_t) 2 * (uint16_t) m_marg_h;
+  uint16_t c = (uint16_t) 2 * (uint16_t) m_pad_h;
+  uint16_t d = a - b + c;
+  uint16_t k = (uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) m_num_cols);
+  uint16_t k1 = (uint16_t) 225;
 
-  SER_DEBUG_PRINT(tft.width() - 2 * m_marg_h + 2 * m_pad_h, 'd');
-  SER_DEBUG_PRINT(TftCalc::fraction(tft.width() - 2 * m_marg_h + 2 * m_pad_h, m_pad_h, m_num_cols), 'd');
+  uint16_t q1 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) 10, (uint8_t) 2);
+  uint16_t q4 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) m_pad_h, (uint8_t) m_num_cols); // ERROR
+  uint16_t q8 = (uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) m_num_cols); // ERROR
 
-  SER_DEBUG_PRINT(TftCalc::fraction(tft.width() - 2 * 10 + 2 * 10, 10, 2), 'd');
+  uint16_t q1a = (uint16_t) ((uint16_t) 480 - ((uint8_t) 2 + 1) * (uint16_t) 10) / (uint8_t) 2;
+
+  uint16_t q4a = (uint16_t) (
+    (uint16_t) 480 -
+    ((uint8_t) m_num_cols + 1) *
+    (uint16_t) m_pad_h
+  ) / (uint8_t) m_num_cols;
+
+  uint16_t q8a = (uint16_t) (d - ((uint8_t) m_num_cols + 1) * (uint16_t) m_pad_h) / (uint8_t) m_num_cols;
+
+  // uint16_t q2 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) 10, (uint8_t) m_num_cols);
+  // uint16_t q3 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) m_pad_h, (uint8_t) 2);
+  // uint16_t q5 = (uint16_t) TftCalc::fraction(d, (uint16_t) 10, (uint8_t) 2);
+  // uint16_t q6 = (uint16_t) TftCalc::fraction(d, (uint16_t) 10, (uint8_t) m_num_cols);
+  // uint16_t q7 = (uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) 2);
+
+  SER_DEBUG_PRINT(a, 'd');
+  SER_DEBUG_PRINT(b, 'd');
+  SER_DEBUG_PRINT(c, 'd');
+  SER_DEBUG_PRINT(d, 'd');
+  SER_DEBUG_PRINT(k, 'd');
+  SER_DEBUG_PRINT(k1, 'd');
+
+  SER_DEBUG_PRINT(q1, 'd');
+  SER_DEBUG_PRINT(q4, 'd');
+  SER_DEBUG_PRINT(q8, 'd');
+
+  SER_DEBUG_PRINT(q1a, 'd');
+  SER_DEBUG_PRINT(q4a, 'd');
+  SER_DEBUG_PRINT(q8a, 'd');
+
+  // SER_DEBUG_PRINT(q2, 'd');
+  // SER_DEBUG_PRINT(q3, 'd');
+  // SER_DEBUG_PRINT(q5, 'd');
+  // SER_DEBUG_PRINT(q6, 'd');
+  // SER_DEBUG_PRINT(q7, 'd');
 
   SER_DEBUG_PRINT(w, 'd');
   SER_DEBUG_PRINT(x, 'd');
+  SER_DEBUG_PRINT(col, 'd');
+  SER_DEBUG_PRINT(row, 'd');
+
+  // SER_DEBUG_PRINT((uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) m_num_cols), 'd');
+
+  // SER_DEBUG_PRINT((uint16_t)TftCalc::fraction(480, 10, 2), 'd');
+  // SER_DEBUG_PRINT(TftCalc::fraction(480, 10, 2), 'd');
+  // SER_DEBUG_PRINT(m_marg_h, 'd');
+  // SER_DEBUG_PRINT(m_pad_h, 'd');
+  // SER_DEBUG_PRINT(m_num_cols, 'd');
+
+  // SER_DEBUG_PRINT(tft.width() - 2 * m_marg_h + 2 * m_pad_h, 'd');
+  // SER_DEBUG_PRINT((uint16_t) TftCalc::fraction(tft.width() - 2 * m_marg_h + 2 * m_pad_h, m_pad_h, m_num_cols), 'd');
+
+  // SER_DEBUG_PRINT(TftCalc::fraction(tft.width() - 2 * 10 + 2 * 10, 10, 2), 'd');
+
+  // SER_DEBUG_PRINT(m_marg_h + col * (w + m_pad_h), 'd');
 
   return add_btn(new Btn(x, y, w, h, text, fg, bg));
 }

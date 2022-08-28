@@ -13,7 +13,9 @@ TMP_BUILD_DIR := /tmp/arduino-sketch-*/
 
 PROGRAM := eeprommer3.ino
 
-BUILD_FLAGS := '-std=c++17\ -fshort-enums\ -felide-constructors'
+PORT := /dev/ttyACM0
+
+LINKS := -Wl,--gc-sections,-Map,{build.path}/{build.project_name}.map,--defsym,__heap_start=0x808000,--defsym,__heap_end=0x80DFFF
 
 all: build run
 build: compile upload
@@ -27,20 +29,35 @@ define PrintSimple
 	$(PRINTF) "\x1b[1m%s\x1b[0m" $(1)
 endef
 
+define WaitPlugIn
+	while [ ! -e $(PORT) ]; do
+		$(call PrintSimple, "Please plug in your controller board. (Listening on $(PORT)...)")
+		echo
+		sleep 2
+	done
+endef
+
 compile:
 	$(call PrintFancy, "Compiling...")
-	arduino-cli-mega-compile . --warnings=more '--build-property=compiler.cpp.extra_flags=$(BUILD_FLAGS)' $(FLAGS)
-	sleep 3
+
+	flags=""
+
+	while IFS='' read -r flag; do
+		flags=$$($(PRINTF) "%s%s " "$$flags" "$$flag")
+	done < cpp_flags.txt
+
+	arduino-cli-mega-compile . --warnings=all --build-property=compiler.cpp.extra_flags="$$flags" --build-property=compiler.c.elf.extra_flags="$(LINKS)" $(FLAGS)
 
 upload:
 	$(call PrintFancy, "Uploading...")
-	arduino-cli-mega-upload . /dev/ttyACM0 --verbose
+	$(call WaitPlugIn)
+	arduino-cli-mega-upload . $(PORT) --verbose
 
 run:
 ifeq ($(SER_MON), 1)
 ### Map LF to CR+LF to avoid staircase printing
 	$(call PrintFancy, "Launching serial monitor (picocom)... [115200baud:8N1]")
-	picocom --baud=115200 --databits=8 --parity=n --stopbits=1 --flow=n --imap="lfcrlf" /dev/ttyACM0
+	picocom --baud=115200 --databits=8 --parity=n --stopbits=1 --flow=n --imap="lfcrlf" $(PORT)
 else
 	$(call PrintFancy, "Nothing to do because serial monitor is not enabled.")
 endif

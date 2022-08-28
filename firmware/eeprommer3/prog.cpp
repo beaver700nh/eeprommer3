@@ -8,6 +8,7 @@
 #include "gui.hpp"
 #include "new_delete.hpp"
 #include "sd.hpp"
+#include "strfmt.hpp"
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "tft_util.hpp"

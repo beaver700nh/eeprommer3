@@ -41,23 +41,25 @@ namespace Util {
 };
 
 struct Memory {
-  static void calculate();
-  static void repr();
-
+  static void calculate_bords();
   static void print_ram_analysis();
 
-  static constexpr uint8_t NUM_TYPES = 6;
+  static constexpr uint8_t NUM_TYPES = 8;
 
-  enum Types {DATA, BSS, HEAP, FREE, STACK, TOTAL};
-  enum Bords {RAM_START, BSS_START, HEAP_START, HEAP_END, STACK_PTR, RAM_END};
+  static inline const char NAME_0[] PROGMEM = "Data";
+  static inline const char NAME_1[] PROGMEM = "BSS";
+  static inline const char NAME_2[] PROGMEM = "Free";
+  static inline const char NAME_3[] PROGMEM = "Stack";
+  static inline const char NAME_4[] PROGMEM = "Unused";
+  static inline const char NAME_5[] PROGMEM = "Heap";
+  static inline const char NAME_6[] PROGMEM = "Free";
+  static inline const char NAME_7[] PROGMEM = "8k Buf";
 
-  static inline const char *const NAMES[NUM_TYPES] {"Data", "BSS", "Heap", "Free", "Stack", "Total"};
+  static inline const char *NAMES[NUM_TYPES] {
+    NAME_0, NAME_1, NAME_2, NAME_3, NAME_4, NAME_5, NAME_6, NAME_7,
+  };
 
-  static inline int32_t sizes[NUM_TYPES];
-  static inline uint32_t bords[NUM_TYPES];
-
-  static inline char repr_sizes[NUM_TYPES][26];
-  static inline char repr_bords[NUM_TYPES][20];
+  static inline uint16_t bords[NUM_TYPES + 1];
 };
 
 /*
