@@ -4,36 +4,48 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <Adafruit_BusIO_Register.h>
-#include <Adafruit_MCP23X17.h>
-
 #include "ad_array.hpp"
 
-// A wrapper class around Adafruit_MCP23X17 that has optimized methods
-class IoExpCtrl : public Adafruit_MCP23X17 {
-public:
-  ~IoExpCtrl();
+#define PORT_A 0
+#define PORT_B 1
 
-  bool begin(uint8_t addr);
+// A class to interface with MCP23017 I/O expanders
+class IoExpCtrl {
+public:
+  IoExpCtrl() {};
+
+  void init(uint8_t addr);
 
   void set_iodir(uint8_t port, uint8_t mode);
 
   uint8_t read_port(uint8_t port);
   void write_port(uint8_t port, uint8_t value);
 
-protected:
-  Adafruit_BusIO_Register
-    *m_reg_iodir_a, *m_reg_iodir_b,
-    *m_reg_gppu_a,  *m_reg_gppu_b,
-    *m_reg_gpio_a,  *m_reg_gpio_b;
+  bool read_bit(uint8_t port, uint8_t which);
+  void write_bit(uint8_t port, uint8_t which, bool value);
+
+  enum Regs : uint8_t {
+    IODIR   = 0x00,
+    IPOL    = 0x02,
+    GPINTEN = 0x04,
+    DEFVAL  = 0x06,
+    INTCON  = 0x08,
+    IOCON   = 0x0A,
+    GPPU    = 0x0C,
+    INTF    = 0x0E,
+    INTCAP  = 0x10,
+    GPIO    = 0x12,
+    OLAT    = 0x14,
+  };
+
+private:
+  uint8_t m_addr;
 };
 
 // This is a class with functions with low and high level controls of an EEPROM connected
 // on two MCP23X17 I2C IO expanders, defaulting to I2C addresses 0x20 and 0x21
 class EepromCtrl {
 public:
-  EepromCtrl() {};
-
   void init(uint8_t addr_exp_0 = 0x20, uint8_t addr_exp_1 = 0x21);
 
   void set_addr_and_oe(uint16_t addr_and_oe);

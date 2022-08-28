@@ -823,7 +823,7 @@ void ProgrammerOtherCore::monitor_data_bus() {
 
 #ifdef DEBUG_MODE
   while (!close_btn.is_pressed()) {
-    uint8_t val = ee.get_io_exp(true)->read_port(MCP_EE_DATA_PORT);
+    uint8_t val = ee.get_io_exp(true)->read_port(PORT_A);
 
     tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
     delay(500);

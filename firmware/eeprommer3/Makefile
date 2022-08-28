@@ -15,7 +15,7 @@ PROGRAM := eeprommer3.ino
 
 PORT := /dev/ttyACM0
 
-LINKS := -Wl,--gc-sections,-Map,{build.path}/{build.project_name}.map,--defsym,__heap_start=0x808000,--defsym,__heap_end=0x80DFFF
+LINKS := -Wl,--gc-sections,-Map,{build.path}/{build.project_name}.map#,--defsym,__heap_start=0x808000,--defsym,__heap_end=0x80DFFF
 
 all: build run
 build: compile upload

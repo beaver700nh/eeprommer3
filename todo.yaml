@@ -11,11 +11,8 @@ FIRMWARE:
     fix file write verify segfault/crash
     fix read range
     fix multi write scrolling
-    make Btns smaller (packing?)
-    improve on Memory:
-      "total" box
-      add XMEM
     put more things in PROGMEM
+    update documentation
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears

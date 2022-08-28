@@ -3,62 +3,52 @@
 
 #include <util/delay.h>
 
-#include <Adafruit_BusIO_Register.h>
-#include <Adafruit_MCP23X17.h>
+#include <Wire.h>
 
 #include "ad_array.hpp"
 #include "new_delete.hpp"
-
-#include "eeprom.hpp"
 #include "util.hpp"
 
-void EepromCtrl::init(uint8_t addr_exp_0, uint8_t addr_exp_1) {
-  m_exp_0.begin(addr_exp_0);
-  SER_LOG_PRINT("+++ GOT HERE A +++\n");
-  m_exp_1.begin(addr_exp_1);
-  SER_LOG_PRINT("+++ GOT HERE B +++\n");
+#include "eeprom.hpp"
 
-  while (true) {
-  m_exp_1.set_iodir(MCP_EE_WE_PORT, OUTPUT);
-  SER_LOG_PRINT("+++ GOT HERE C +++\n");
-  delay(1000);
+void EepromCtrl::init(uint8_t addr_exp_0, uint8_t addr_exp_1) {
+  m_exp_0.init(addr_exp_0);
+  m_exp_1.init(addr_exp_1);
+
+  m_exp_1.set_iodir(PORT_B, OUTPUT);
 
   set_we(true);
-  SER_LOG_PRINT("+++ GOT HERE D +++\n");
-  }
 
-  m_exp_0.set_iodir(MCP_EE_ADDRL_PORT, OUTPUT);
-  SER_LOG_PRINT("+++ GOT HERE E +++\n");
-  m_exp_0.set_iodir(MCP_EE_ADDRH_PORT, OUTPUT);
-  SER_LOG_PRINT("+++ GOT HERE F +++\n");
+  m_exp_0.set_iodir(PORT_A, OUTPUT);
+  m_exp_0.set_iodir(PORT_B, OUTPUT);
 }
 
 void EepromCtrl::set_addr_and_oe(uint16_t addr_and_oe) {
-  m_exp_0.write_port(MCP_EE_ADDRL_PORT,  addr_and_oe       & 0xFF);
-  m_exp_0.write_port(MCP_EE_ADDRH_PORT, (addr_and_oe >> 8) & 0xFF);
+  m_exp_0.write_port(PORT_A,  addr_and_oe       & 0xFF);
+  m_exp_0.write_port(PORT_B, (addr_and_oe >> 8) & 0xFF);
 }
 
 void EepromCtrl::set_data(uint8_t data) {
   set_ddr(true);
-  m_exp_1.write_port(MCP_EE_DATA_PORT, data);
+  m_exp_1.write_port(PORT_A, data);
 }
 
 uint8_t EepromCtrl::get_data() {
   set_ddr(false);
-  return m_exp_1.read_port(MCP_EE_DATA_PORT);
+  return m_exp_1.read_port(PORT_A);
 }
 
 void EepromCtrl::set_ddr(bool dir) {
   uint8_t _dir = (dir ? OUTPUT : INPUT_PULLUP);
-  m_exp_1.set_iodir(MCP_EE_DATA_PORT, _dir);
+  m_exp_1.set_iodir(PORT_A, _dir);
 }
 
 void EepromCtrl::set_we(bool we) {
-  m_exp_1.write_port(MCP_EE_WE_PORT, (we ? 0xFF : 0x00));
+  m_exp_1.write_port(PORT_B, (we ? 0xFF : 0x00));
 }
 
 void EepromCtrl::set_oe(bool oe) {
-  m_exp_0.digitalWrite(MCP_EE_OE, (oe ? HIGH : LOW));
+  m_exp_0.write_bit(PORT_B, 7, (oe ? HIGH : LOW));
 }
 
 uint8_t EepromCtrl::read(uint16_t addr) {
@@ -124,40 +114,46 @@ void EepromCtrl::write(AddrDataArray *buf) {
   _delay_ms(Timing::WRITE_TIME);
 }
 
-IoExpCtrl::~IoExpCtrl() {
-  delete m_reg_iodir_a;
-  delete m_reg_iodir_b;
-  delete m_reg_gppu_a;
-  delete m_reg_gppu_b;
-  delete m_reg_gpio_a;
-  delete m_reg_gpio_b;
-}
-
-bool IoExpCtrl::begin(uint8_t addr) {
-  bool status = begin_I2C(addr);
-
-  m_reg_iodir_a = new Adafruit_BusIO_Register(i2c_dev, getRegister(MCP23XXX_IODIR, 0));
-  m_reg_iodir_b = new Adafruit_BusIO_Register(i2c_dev, getRegister(MCP23XXX_IODIR, 1));
-  m_reg_gppu_a  = new Adafruit_BusIO_Register(i2c_dev, getRegister(MCP23XXX_GPPU,  0));
-  m_reg_gppu_b  = new Adafruit_BusIO_Register(i2c_dev, getRegister(MCP23XXX_GPPU,  1));
-  m_reg_gpio_a  = new Adafruit_BusIO_Register(i2c_dev, getRegister(MCP23XXX_GPIO,  0));
-  m_reg_gpio_b  = new Adafruit_BusIO_Register(i2c_dev, getRegister(MCP23XXX_GPIO,  1));
-
-  return status;
+void IoExpCtrl::init(uint8_t addr) {
+  m_addr = addr;
 }
 
 void IoExpCtrl::set_iodir(uint8_t port, uint8_t mode) {
-  SER_LOG_PRINT("set_iodir(): 1\n");
-  (port == 0 ? m_reg_iodir_a : m_reg_iodir_b)->write((mode == OUTPUT) ? 0x00 : 0xFF);
-  SER_LOG_PRINT("set_iodir(): 2\n");
-  (port == 0 ? m_reg_gppu_a : m_reg_gppu_b)->write((mode == INPUT_PULLUP) ? 0xFF : 0x00);
+  Wire.beginTransmission(m_addr);
+  Wire.write(Regs::IODIR | port);
+  Wire.write((mode == OUTPUT) ? 0x00 : 0xFF);
+  Wire.endTransmission();
+
+  Wire.beginTransmission(m_addr);
+  Wire.write(Regs::GPPU | port);
+  Wire.write((mode == INPUT_PULLUP) ? 0xFF : 0x00);
+  Wire.endTransmission();
 }
 
 uint8_t IoExpCtrl::read_port(uint8_t port) {
-  return (port == 0 ? m_reg_gpio_a : m_reg_gpio_b)->read() & 0xFF;
+  Wire.beginTransmission(m_addr);
+  Wire.write(Regs::GPIO | port);
+  Wire.endTransmission();
+
+  Wire.requestFrom(m_addr, 1U);
+
+  return Wire.read();
 }
 
 void IoExpCtrl::write_port(uint8_t port, uint8_t value) {
   Memory::print_ram_analysis();
-  (port == 0 ? m_reg_gpio_a : m_reg_gpio_b)->write(value);
+
+  Wire.beginTransmission(m_addr);
+  Wire.write(Regs::GPIO | port);
+  Wire.write(value);
+  Wire.endTransmission();
+}
+
+bool IoExpCtrl::read_bit(uint8_t port, uint8_t which) {
+  return read_port(port) & (1 << which);
+}
+
+void IoExpCtrl::write_bit(uint8_t port, uint8_t which, bool value) {
+  uint8_t temp = (read_port(port) & ~(1 << which)) | (value << which);
+  write_port(port, temp);
 }
