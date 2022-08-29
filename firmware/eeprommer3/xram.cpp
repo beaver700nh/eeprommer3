@@ -32,12 +32,15 @@ xram::TestResults xram::test() {
   auto buf = access(0x8000);
   TestResults res {0, millis()};
 
+  srand(analogRead(A14));
+  uint8_t k = rand() % 256;
+
   for (uint16_t i = 0x0000; i < 0x8000; ++i) {
-    buf[i] = (i & 0xFF);
+    buf[i] = ((k + i) & 0xFF);
   }
 
   for (uint16_t i = 0x0000; i < 0x8000; ++i) {
-    if (buf[i] == (i & 0xFF)) {
+    if (buf[i] == ((k + i) & 0xFF)) {
       ++(res.successes);
     }
   }

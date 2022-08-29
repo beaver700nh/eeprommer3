@@ -35,17 +35,6 @@ public:
     uint16_t fg = TftColor::BLACK, uint16_t bg = TftColor::WHITE
   );
 
-  inline void init_bit_fields() {
-    flags.auto_center = false;
-    flags.operational = true;
-    flags.ram_label   = false;
-
-    appearance.is_highlighted  = false;
-    appearance.was_highlighted = false;
-    appearance.is_visible      = true;
-    appearance.was_visible     = true;
-  }
-
   void draw();
   void erase();
   void draw_highlight();
@@ -168,16 +157,16 @@ public:
   void wait_for_press();
 
   struct {
-    bool auto_center;
-    bool operational;
-    bool ram_label;
+    bool auto_center = false;
+    bool operational = true;
+    bool ram_label   = false;
   } flags;
 
   struct {
-    bool is_highlighted;
-    bool was_highlighted;
-    bool is_visible;
-    bool was_visible;
+    bool is_highlighted  = false;
+    bool was_highlighted = false;
+    bool is_visible      = true;
+    bool was_visible     = true;
   } appearance;
 
 private:

@@ -141,8 +141,6 @@ uint8_t IoExpCtrl::read_port(uint8_t port) {
 }
 
 void IoExpCtrl::write_port(uint8_t port, uint8_t value) {
-  Memory::print_ram_analysis();
-
   Wire.beginTransmission(m_addr);
   Wire.write(Regs::GPIO | port);
   Wire.write(value);

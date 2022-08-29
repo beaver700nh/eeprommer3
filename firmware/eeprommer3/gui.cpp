@@ -17,7 +17,6 @@ Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint1
   m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg), m_text(text) {
   SER_DEBUG_PRINT(x, 'd');
   SER_DEBUG_PRINT(y, 'd');
-  init_bit_fields();
 }
 
 Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg) :

@@ -71,7 +71,7 @@ SdCtrl::Status initialize() {
   SER_DEBUG_PRINT(__malloc_heap_start, 'p');
   SER_DEBUG_PRINT(__malloc_heap_end, 'p');
 
-  xram::init(0x00, 0x01);
+  xram::init(0x02, 0x01);
   auto xr = xram::test();
   SER_LOG_PRINT("Initialized XRAM! %ld%% in %lums\n", lround(xr.successes / 327.68), xr.time);
 
@@ -84,6 +84,8 @@ SdCtrl::Status initialize() {
 
   SdCtrl::Status res = sd.init();
   SER_LOG_PRINT("Initialized SD...\n");
+
+  Memory::print_ram_analysis();
 
   return res;
 }
