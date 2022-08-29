@@ -36,14 +36,14 @@ public:
   );
 
   inline void init_bit_fields() {
-    flags.auto_center = 0;
-    flags.operational = 1;
-    flags.ram_label   = 0;
+    flags.auto_center = false;
+    flags.operational = true;
+    flags.ram_label   = false;
 
-    appearance.is_highlighted  = 0;
-    appearance.was_highlighted = 0;
-    appearance.is_visible      = 1;
-    appearance.was_visible     = 1;
+    appearance.is_highlighted  = false;
+    appearance.was_highlighted = false;
+    appearance.is_visible      = true;
+    appearance.was_visible     = true;
   }
 
   void draw();
@@ -168,16 +168,16 @@ public:
   void wait_for_press();
 
   struct {
-    uint8_t auto_center : 1;
-    uint8_t operational : 1;
-    uint8_t ram_label   : 1;
+    bool auto_center;
+    bool operational;
+    bool ram_label;
   } flags;
 
   struct {
-    uint8_t is_highlighted  : 1;
-    uint8_t was_highlighted : 1;
-    uint8_t is_visible      : 1;
-    uint8_t was_visible     : 1;
+    bool is_highlighted;
+    bool was_highlighted;
+    bool is_visible;
+    bool was_visible;
   } appearance;
 
 private:
