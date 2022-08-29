@@ -73,7 +73,12 @@ SdCtrl::Status initialize() {
 
   xram::init(0x02, 0x01);
   auto xr = xram::test();
-  SER_LOG_PRINT("Initialized XRAM! %ld%% in %lums\n", lround(xr.successes / 327.68), xr.time);
+
+  char percentage[8];
+  dtostrf(lround(xr.successes / 3.2768) / 100.0, 0, 2, percentage);
+
+  SER_LOG_PRINT("Initialized XRAM!\n");
+  SER_LOG_PRINT("- Verified %d/32768 bytes (%s%%) in %lums.\n", xr.successes, percentage, xr.time);
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);

@@ -32,15 +32,21 @@ xram::TestResults xram::test() {
   auto buf = access(0x8000);
   TestResults res {0, millis()};
 
-  srand(analogRead(A14));
-  uint8_t k = rand() % 256;
+  constexpr const auto seed_pin = A14;
+
+  pinMode(seed_pin, INPUT);
+  auto seed = analogRead(seed_pin);
+
+  srand(seed);
 
   for (uint16_t i = 0x0000; i < 0x8000; ++i) {
-    buf[i] = ((k + i) & 0xFF);
+    buf[i] = (rand() & 0xFF);
   }
 
+  srand(seed);
+
   for (uint16_t i = 0x0000; i < 0x8000; ++i) {
-    if (buf[i] == ((k + i) & 0xFF)) {
+    if (buf[i] == (rand() & 0xFF)) {
       ++(res.successes);
     }
   }

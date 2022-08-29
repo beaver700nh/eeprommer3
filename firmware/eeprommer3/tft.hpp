@@ -87,37 +87,41 @@ public:
 
   template<typename Func>
   bool drawRGBBitmapFromFile(uint16_t x, uint16_t y, const char *file, uint16_t width, uint16_t height, bool swap_endian, Func check_skip) {
-    bool success = true;
+    constexpr const uint8_t CHUNK_HEIGHT = 32;
+    const uint16_t CHUNK_SIZE = CHUNK_HEIGHT * 2 * width;
+
+    const uint16_t y0 = y; // Save original value
+    const uint16_t x1 = x + width - 1;
+
+    auto *buf = (uint16_t *) malloc(CHUNK_SIZE);
+    if (buf == nullptr) return false;
 
     File f = SD.open(file);
     if (!f) return false;
 
-    const size_t row_size_bytes = width * sizeof(uint16_t);
-    auto *buf = (uint16_t *) malloc(row_size_bytes);
+    bool success = true;
 
-    if (buf == nullptr) {
-      success = false;
-    }
-    else {
-      for (uint16_t j = 0; j < height; ++j) {
-        int16_t res = f.read((uint8_t *) buf, row_size_bytes);
+    for (/* no init clause */; y < (y0 + height); y += CHUNK_HEIGHT) {
+      int16_t res = f.read((uint8_t *) buf, CHUNK_SIZE);
 
-        if (res < 0) {
-          success = false;
-          break;
-        }
-
-        if (swap_endian) {
-          for (uint16_t i = 0; i < width; ++i) {
-            buf[i] = (buf[i] << 8) | (buf[i] >> 8);
-          }
-        }
-
-        setAddrWindow(x, y + j, x + width, y + j);
-        pushColors(buf, width, true);
-
-        if (check_skip()) break;
+      if (res < 0) {
+        success = false;
+        break;
       }
+
+      if (swap_endian) {
+        for (uint16_t i = 0; i < (CHUNK_SIZE / 2); ++i) {
+          buf[i] = (buf[i] << 8) | (buf[i] >> 8);
+        }
+      }
+
+      const uint16_t dy = min(CHUNK_HEIGHT, y0 + height - y);
+      const uint16_t y1 = y + dy - 1;
+
+      setAddrWindow(x, y, x1, y1);
+      pushColors(buf, width * dy, true);
+
+      if (check_skip()) break;
     }
 
     f.close();
