@@ -27,12 +27,12 @@ SdCtrl sd(SD_CS, SD_EN);
 EepromCtrl ee;
 
 void setup() {
-  delay(1000);
+  delay(1000); // Stabilization delay or else stuff like Serial can be glitchy
 
   SdCtrl::Status sd_status = initialize();
 
-  uint16_t intro_x = (tft.width() - 320) / 2;
-  uint16_t intro_y = (tft.height() - 240) / 2 - 17;
+  const uint16_t intro_x = (tft.width() - 320) / 2;
+  const uint16_t intro_y = (tft.height() - 240) / 2 - 17;
 
   Gui::Btn skip_btn(80, intro_y + 250, 320, 24, Strings::L_SKIP, TftColor::WHITE, TftColor::DGREEN);
   skip_btn.draw();
@@ -54,7 +54,10 @@ void setup() {
     }
   }
 
-  Util::skippable_delay(2000, TftUtil::Lambdas::is_tching_btn(skip_btn));
+  skip_btn.set_text(Strings::L_CONTINUE);
+  skip_btn.draw();
+  delay(1000);
+  skip_btn.wait_for_press();
 
   Serial.println(F("Hello, world!\n"));
 
@@ -74,8 +77,8 @@ SdCtrl::Status initialize() {
   xram::init(0x02, 0x01);
   auto xr = xram::test();
 
-  char percentage[8];
-  dtostrf(lround(xr.successes / 3.2768) / 100.0, 0, 2, percentage);
+  char percentage[10];
+  dtostrf(lround(xr.successes / 3.2768) / 100.0, 0, 3, percentage);
 
   SER_LOG_PRINT("Initialized XRAM!\n");
   SER_LOG_PRINT("- Verified %d/32768 bytes (%s%%) in %lums.\n", xr.successes, percentage, xr.time);

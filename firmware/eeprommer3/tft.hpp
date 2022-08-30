@@ -111,7 +111,7 @@ public:
 
       if (swap_endian) {
         for (uint16_t i = 0; i < (CHUNK_SIZE / 2); ++i) {
-          buf[i] = (buf[i] << 8) | (buf[i] >> 8);
+          buf[i] = __builtin_bswap16(buf[i]);
         }
       }
 
