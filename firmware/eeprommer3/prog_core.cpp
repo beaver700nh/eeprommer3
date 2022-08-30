@@ -141,7 +141,7 @@ Status ProgrammerFileCore::read() {
 void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
   uint8_t this_page[256];
 
-  tft.drawText(10, 10, Strings::W_OFILE, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, Strings::W_OFILE, TftColor::CYAN, 3);
 
   Gui::ProgressIndicator bar(0x80, 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
@@ -156,7 +156,7 @@ void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
     }
   );
 
-  tft.drawText(10, 110, Strings::F_READ, TftColor::CYAN);
+  tft.drawText_P(10, 110, Strings::F_READ, TftColor::CYAN);
   TftUtil::wait_continue();
 }
 
@@ -218,7 +218,7 @@ void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
   uint16_t cur_addr = addr;
   uint8_t this_page[256];
 
-  tft.drawText(10, 10, Strings::W_IFILE, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, Strings::W_IFILE, TftColor::CYAN, 3);
 
   Gui::ProgressIndicator bar(ceil((float) file->size() / 256.0), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
@@ -235,7 +235,7 @@ void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
     }
   );
 
-  tft.drawText(10, 110, Strings::F_WRITE, TftColor::CYAN);
+  tft.drawText_P(10, 110, Strings::F_WRITE, TftColor::CYAN);
   TftUtil::wait_continue();
 }
 
@@ -265,7 +265,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
     }
   );
 
-  tft.drawText(10, 110, Strings::F_VERIFY, TftColor::CYAN);
+  tft.drawText_P(10, 110, Strings::F_VERIFY, TftColor::CYAN);
   TftUtil::wait_continue();
 
   file->close();
@@ -418,7 +418,7 @@ void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uin
     }
   );
 
-  tft.drawText(10, 110, Strings::F_READ, TftColor::CYAN);
+  tft.drawText_P(10, 110, Strings::F_READ, TftColor::CYAN);
   TftUtil::wait_continue();
 }
 
@@ -607,7 +607,7 @@ Status ProgrammerMultiCore::write() {
   bool done = false;
 
   while (!done) {
-    tft.drawText(10, 10, Strings::T_WMULTI, TftColor::CYAN, 3);
+    tft.drawText_P(10, 10, Strings::T_WMULTI, TftColor::CYAN, 3);
 
     menu.draw();
     draw_pairs(44, 44, 74, 44, 22, 8, num_pairs, scroll, buf, del_btns);
@@ -638,8 +638,8 @@ void ProgrammerMultiCore::draw_pairs(
   }
 
   if (buf.get_len() == 0) {
-    tft.drawText(margin_l, margin_u +  0, Strings::L_NO_PAIRS1, TftColor::LGRAY);
-    tft.drawText(margin_l, margin_u + 30, Strings::L_NO_PAIRS2, TftColor::LGRAY);
+    tft.drawText_P(margin_l, margin_u +  0, Strings::L_NO_PAIRS1, TftColor::LGRAY);
+    tft.drawText_P(margin_l, margin_u + 30, Strings::L_NO_PAIRS2, TftColor::LGRAY);
     return;
   }
 
@@ -653,7 +653,7 @@ void ProgrammerMultiCore::draw_pairs(
     uint16_t h  = height;
     uint16_t ty = TftCalc::t_center_y(h, 2) + y;
 
-    AddrDataArrayPair pair;
+    AddrDataArrayPair pair {0, 0};
     buf.get_pair(this_pair, &pair);
 
     tft.fillRect(x, y, w, h, TftColor::ORANGE);
@@ -689,8 +689,9 @@ bool ProgrammerMultiCore::poll_menus_and_react(
       case 2:  add_pair_from_user(buf);             break;
       case 3:
         tft.fillRect(10, 10, TftCalc::fraction_x(tft, 10, 1), 24, TftColor::BLACK);
-        tft.drawText(10, 12, Strings::W_WMULTI, TftColor::CYAN, 2);
+        tft.drawText_P(10, 12, Strings::W_WMULTI, TftColor::CYAN, 3);
         ee.write(buf);
+        TftUtil::wait_continue();
         [[fallthrough]];
       default: return true;
       }

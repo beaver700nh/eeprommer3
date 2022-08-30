@@ -81,7 +81,7 @@ SdCtrl::Status initialize() {
   auto xr = xram::test();
 
   char percentage[10];
-  dtostrf(lround(xr.successes / 3.2768) / 100.0, 0, 3, percentage);
+  dtostrf(lround(xr.successes / 0.32768) / 1000.0, 0, 3, percentage);
 
   SER_LOG_PRINT("Initialized XRAM!\n");
   SER_LOG_PRINT("- Verified %d/32768 bytes (%s%%) in %lums.\n", xr.successes, percentage, xr.time);

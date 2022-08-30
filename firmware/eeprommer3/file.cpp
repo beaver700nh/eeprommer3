@@ -78,7 +78,9 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(char *file_path, u
     return Status::CANCELED;
   }
 
-  if (strlen(m_files[btn_id].name) + 7 >= max_path_len) return Status::FNAME_TOO_LONG;
+  if (strlen(Strings::M_FILE_DIR) + strlen(m_files[btn_id].name) >= max_path_len) {
+    return Status::FNAME_TOO_LONG;
+  }
 
   snprintf(file_path, max_path_len, "%s%s", Strings::M_FILE_DIR, m_files[btn_id].name);
   return Status::OK;

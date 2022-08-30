@@ -192,9 +192,9 @@ namespace Strings {
 
   ADD_STRING(I, SUBTITLE,  "- hardware/firmware side");
   ADD_STRING(I, LINE_1,    "AT28C256 EEPROM programmer using 2 I2C");
-  ADD_STRING(I, LINE_2,    "MCP23017 chips. Use: standalone device");
-  ADD_STRING(I, LINE_3,    "or computer peripheral via USB. Allows");
-  ADD_STRING(I, LINE_4,    "access to SD card connected on SPI bus");
+  ADD_STRING(I, LINE_2,    "MCP23017 chips. Use by itself, or plug");
+  ADD_STRING(I, LINE_3,    "into computer. File access: connection");
+  ADD_STRING(I, LINE_4,    "over USB or from microSD card in slot.");
   ADD_STRING(I, LINE_5,    "Made by beaver700nh (GitHub) 2021-2022");
 
   inline const char *const M_FILE_DIR = "/ERMR3/";
