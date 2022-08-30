@@ -86,25 +86,15 @@ void show_help(uint8_t btn_id, bool is_confirm) {
 
 void Programmer::init() {
   m_menu.add_btn_calc(Strings::A_R_BYTE,    TftColor::BLUE,           TftColor::CYAN          );
-  SER_LOG_PRINT("A\n");
   m_menu.add_btn_calc(Strings::A_W_BYTE,    TftColor::RED,            TftColor::PINKK         );
-  SER_LOG_PRINT("B\n");
   m_menu.add_btn_calc(Strings::A_R_FILE,    TftColor::CYAN,           TftColor::BLUE          );
-  SER_LOG_PRINT("C\n");
   m_menu.add_btn_calc(Strings::A_W_FILE,    TftColor::PINKK,          TftColor::RED           );
-  SER_LOG_PRINT("D\n");
   m_menu.add_btn_calc(Strings::A_R_VECTOR,  TO_565(0x00, 0x17, 0x00), TftColor::LGREEN        );
-  SER_LOG_PRINT("E\n");
   m_menu.add_btn_calc(Strings::A_W_VECTOR,  TO_565(0x3F, 0x2F, 0x03), TO_565(0xFF, 0xEB, 0x52));
-  SER_LOG_PRINT("F\n");
   m_menu.add_btn_calc(Strings::A_R_MULTI,   TftColor::LGREEN,         TftColor::DGREEN        );
-  SER_LOG_PRINT("G\n");
   m_menu.add_btn_calc(Strings::A_W_MULTI,   TftColor::BLACK,          TftColor::ORANGE        );
-  SER_LOG_PRINT("H\n");
   m_menu.add_btn_calc(Strings::A_DRAW_TEST, TftColor::DGRAY,          TftColor::GRAY          );
-  SER_LOG_PRINT("I\n");
   m_menu.add_btn_calc(Strings::A_DEBUGS,    TftColor::DGRAY,          TftColor::GRAY          );
-  SER_LOG_PRINT("J\n");
 
   m_menu.add_btn(new Gui::Btn(TftCalc::right(tft, 24, 10), 10, 24, 24, Strings::A_INFO, TftColor::WHITE, TftColor::BLUE));
 

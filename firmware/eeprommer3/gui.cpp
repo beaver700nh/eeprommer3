@@ -15,13 +15,11 @@ extern TouchCtrl tch;
 
 Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg) :
   m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg), m_text(text) {
-  SER_DEBUG_PRINT(x, 'd');
-  SER_DEBUG_PRINT(y, 'd');
 }
 
 Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg) :
   Btn(x, y, w, h, 0, 0, text, fg, bg) {
-  flags.auto_center = 1;  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
+  flags.auto_center = true;
 
   // Pass `tx/ty` as (0, 0) temporarily in init list
   // Overwrite dummy (0, 0) with real center here
@@ -428,74 +426,6 @@ Gui::Btn *Gui::MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t 
 
   uint16_t x = m_marg_h + col * (w + m_pad_h);
   uint16_t y = m_marg_v + row * (h + m_pad_v);
-
-  uint16_t a = (uint16_t) tft.width();
-  uint16_t b = (uint16_t) 2 * (uint16_t) m_marg_h;
-  uint16_t c = (uint16_t) 2 * (uint16_t) m_pad_h;
-  uint16_t d = a - b + c;
-  uint16_t k = (uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) m_num_cols);
-  uint16_t k1 = (uint16_t) 225;
-
-  uint16_t q1 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) 10, (uint8_t) 2);
-  uint16_t q4 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) m_pad_h, (uint8_t) m_num_cols); // ERROR
-  uint16_t q8 = (uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) m_num_cols); // ERROR
-
-  uint16_t q1a = (uint16_t) ((uint16_t) 480 - ((uint8_t) 2 + 1) * (uint16_t) 10) / (uint8_t) 2;
-
-  uint16_t q4a = (uint16_t) (
-    (uint16_t) 480 -
-    ((uint8_t) m_num_cols + 1) *
-    (uint16_t) m_pad_h
-  ) / (uint8_t) m_num_cols;
-
-  uint16_t q8a = (uint16_t) (d - ((uint8_t) m_num_cols + 1) * (uint16_t) m_pad_h) / (uint8_t) m_num_cols;
-
-  // uint16_t q2 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) 10, (uint8_t) m_num_cols);
-  // uint16_t q3 = (uint16_t) TftCalc::fraction((uint16_t) 480, (uint16_t) m_pad_h, (uint8_t) 2);
-  // uint16_t q5 = (uint16_t) TftCalc::fraction(d, (uint16_t) 10, (uint8_t) 2);
-  // uint16_t q6 = (uint16_t) TftCalc::fraction(d, (uint16_t) 10, (uint8_t) m_num_cols);
-  // uint16_t q7 = (uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) 2);
-
-  SER_DEBUG_PRINT(a, 'd');
-  SER_DEBUG_PRINT(b, 'd');
-  SER_DEBUG_PRINT(c, 'd');
-  SER_DEBUG_PRINT(d, 'd');
-  SER_DEBUG_PRINT(k, 'd');
-  SER_DEBUG_PRINT(k1, 'd');
-
-  SER_DEBUG_PRINT(q1, 'd');
-  SER_DEBUG_PRINT(q4, 'd');
-  SER_DEBUG_PRINT(q8, 'd');
-
-  SER_DEBUG_PRINT(q1a, 'd');
-  SER_DEBUG_PRINT(q4a, 'd');
-  SER_DEBUG_PRINT(q8a, 'd');
-
-  // SER_DEBUG_PRINT(q2, 'd');
-  // SER_DEBUG_PRINT(q3, 'd');
-  // SER_DEBUG_PRINT(q5, 'd');
-  // SER_DEBUG_PRINT(q6, 'd');
-  // SER_DEBUG_PRINT(q7, 'd');
-
-  SER_DEBUG_PRINT(w, 'd');
-  SER_DEBUG_PRINT(x, 'd');
-  SER_DEBUG_PRINT(col, 'd');
-  SER_DEBUG_PRINT(row, 'd');
-
-  // SER_DEBUG_PRINT((uint16_t) TftCalc::fraction(d, (uint16_t) m_pad_h, (uint8_t) m_num_cols), 'd');
-
-  // SER_DEBUG_PRINT((uint16_t)TftCalc::fraction(480, 10, 2), 'd');
-  // SER_DEBUG_PRINT(TftCalc::fraction(480, 10, 2), 'd');
-  // SER_DEBUG_PRINT(m_marg_h, 'd');
-  // SER_DEBUG_PRINT(m_pad_h, 'd');
-  // SER_DEBUG_PRINT(m_num_cols, 'd');
-
-  // SER_DEBUG_PRINT(tft.width() - 2 * m_marg_h + 2 * m_pad_h, 'd');
-  // SER_DEBUG_PRINT((uint16_t) TftCalc::fraction(tft.width() - 2 * m_marg_h + 2 * m_pad_h, m_pad_h, m_num_cols), 'd');
-
-  // SER_DEBUG_PRINT(TftCalc::fraction(tft.width() - 2 * 10 + 2 * 10, 10, 2), 'd');
-
-  // SER_DEBUG_PRINT(m_marg_h + col * (w + m_pad_h), 'd');
 
   return add_btn(new Btn(x, y, w, h, text, fg, bg));
 }

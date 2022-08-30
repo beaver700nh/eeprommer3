@@ -71,10 +71,13 @@ SdCtrl::Status initialize() {
   Serial.println(F("=== EEPROMMER3 ==="));
   Serial.println(F("> Starting up... <"));
 
-  SER_DEBUG_PRINT(__malloc_heap_start, 'p');
-  SER_DEBUG_PRINT(__malloc_heap_end, 'p');
+  SER_LOG_PRINT(
+    "Heap configured at addresses 0x%X-0x%X.\n",  // Using %X because the output is more customizable than %p
+    reinterpret_cast<uintptr_t>(__malloc_heap_start),
+    reinterpret_cast<uintptr_t>(__malloc_heap_end)
+  );
 
-  xram::init(0x02, 0x01);
+  xram::init(0x00, 0x01);
   auto xr = xram::test();
 
   char percentage[10];
@@ -92,8 +95,6 @@ SdCtrl::Status initialize() {
 
   SdCtrl::Status res = sd.init();
   SER_LOG_PRINT("Initialized SD...\n");
-
-  Memory::print_ram_analysis();
 
   return res;
 }

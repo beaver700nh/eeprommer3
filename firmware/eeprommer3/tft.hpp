@@ -106,7 +106,7 @@ public:
 
       if (res < 0) {
         success = false;
-        break;
+        memset(buf, 0xF8, CHUNK_SIZE); // Display magenta chunk to signify read failure
       }
 
       if (swap_endian) {
