@@ -238,6 +238,7 @@ char Gui::KeyboardLayout::get_char(uint8_t x, uint8_t y) {
 
 /*
  * Layout data is uint16_t[] to insert NULs between the elements when casting back to uint8_t[]
+ * Makes for simpler code but it's an ugly hack relying on the system being little-endian
  */
 
 static const uint16_t glob_kbd_hex_layout_data[] PROGMEM {
@@ -262,7 +263,6 @@ Gui::MenuKeyboard::MenuKeyboard(
 ) :
   m_t_debounce(t_debounce), m_layout(layout),
   m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h) {
-  SER_LOG_PRINT("Hey there\n");
   const uint16_t cell_width  = TftCalc::fraction(tft.width() - 2 * marg_h + 2 * pad_h, pad_h, layout.get_width());
   const uint16_t cell_height = (float) cell_width * btn_height;
 
@@ -271,9 +271,7 @@ Gui::MenuKeyboard::MenuKeyboard(
       const uint16_t x = marg_h + col * (cell_width + pad_h);
       const uint16_t y = marg_v + row * (cell_height + pad_v);
 
-      SER_LOG_PRINT("MenuKeyboard::MenuKeyboard(): r%dc%d\n", row, col);
       add_btn(new Btn(x, y, cell_width, cell_height, layout.get_ptr_char(col, row), TftColor::WHITE, TftColor::BLUE));
-      Memory::print_ram_analysis();
     }
   }
 
@@ -335,7 +333,6 @@ Gui::MenuStrInput::MenuStrInput(
   uint16_t marg_v, uint16_t marg_h, uint8_t buf_len
 ) :
   MenuKeyboard(debounce, pad_v, pad_h, marg_v, marg_h, glob_kbd_str_layout), m_buf_len(buf_len) {
-  SER_DEBUG_PRINT((BUF_LEN() + 1) * sizeof(char), 'd');
   m_val    = (char *) malloc((BUF_LEN() + 1) * sizeof(char));
   m_val[0] = '\0';
 }
