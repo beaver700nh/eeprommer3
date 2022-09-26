@@ -28,6 +28,7 @@ static const char PSTR_HELP_7[] PROGMEM = "Write multiple bytes to EEPROM.";
 static const char PSTR_HELP_8[] PROGMEM = "";
 static const char PSTR_HELP_9[] PROGMEM = "";
 static const char PSTR_HELP_A[] PROGMEM = "Show info/about/credits menu.";
+static const char PSTR_HELP_B[] PROGMEM = "Restart EEPROMMER3.";
 
 static const char PSTR_DETAILS_0[] PROGMEM = "There were no errors.";
 static const char PSTR_DETAILS_1[] PROGMEM = "Attempted to perform\nan invalid action.";
@@ -57,6 +58,7 @@ Programmer::Programmer() : m_menu(10, 10, 50, 10, 2, 30, true) {
   m_cores[ 8] = core_other;
   m_cores[ 9] = core_other;
   m_cores[10] = core_other;
+  m_cores[11] = core_other;
 }
 
 Programmer::~Programmer() {
@@ -75,7 +77,7 @@ void show_help(uint8_t btn_id, bool is_confirm) {
     PSTR_HELP_4, PSTR_HELP_5,
     PSTR_HELP_6, PSTR_HELP_7,
     PSTR_HELP_8, PSTR_HELP_9,
-    PSTR_HELP_A,
+    PSTR_HELP_A, PSTR_HELP_B,
   };  // todo make this progmem + global
 
   bool has_help = btn_id < ARR_LEN(helps) && strlen_P(helps[btn_id]) != 0;
@@ -96,7 +98,8 @@ void Programmer::init() {
   m_menu.add_btn_calc(Strings::A_DRAW_TEST, TftColor::DGRAY,          TftColor::GRAY          );
   m_menu.add_btn_calc(Strings::A_DEBUGS,    TftColor::DGRAY,          TftColor::GRAY          );
 
-  m_menu.add_btn(new Gui::Btn(TftCalc::right(tft, 24, 10), 10, 24, 24, Strings::A_INFO, TftColor::WHITE, TftColor::BLUE));
+  m_menu.add_btn(new Gui::Btn(TftCalc::right(tft, 24, 10), 10, 24, 24, Strings::A_INFO,    TftColor::WHITE,  TftColor::BLUE));
+  m_menu.add_btn(new Gui::Btn(TftCalc::right(tft, 24, 44), 10, 24, 24, Strings::A_X_CLOSE, TftColor::YELLOW, TftColor::RED));
 
   m_menu.add_btn_confirm(true);
 
@@ -138,7 +141,8 @@ void Programmer::run() {
       status_code = (the_core->*the_action)();
     }
 
-    SER_LOG_PRINT("Action returned status code %d.\n\n", status_code);
+    SER_LOG_PRINT("Action returned status code %d.\n", status_code);
+    SER_LOG_PRINT("\n");
 
     show_status(status_code);
 

@@ -32,6 +32,10 @@ void Util::validate_addrs(uint16_t *addr1, uint16_t *addr2) {
   if (*addr1 > *addr2) swap(addr1, addr2);
 }
 
+void Util::restart() {
+  ((void (*)(void)) 0x0000)();
+}
+
 void Memory::calculate_bords() {
   // Internal
   bords[0] = RAMSTART;
@@ -70,6 +74,6 @@ void Memory::print_ram_analysis() {
     free((void *) name);
   }
 
-  Serial.println();
+  SER_LOG_PRINT("\n");
 #endif
 }

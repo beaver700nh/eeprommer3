@@ -878,6 +878,14 @@ Status ProgrammerOtherCore::about() {
   return Status::OK;
 }
 
+Status ProgrammerOtherCore::restart() {
+  SER_LOG_PRINT("Restarting...\n\n");
+  delay(1000);
+  Util::restart();
+
+  return Status::OK;
+}
+
 uint16_t Dialog::ask_addr(const char *prompt) {
   uint16_t addr = ask_int<uint16_t>(prompt);
   Util::validate_addr(&addr);

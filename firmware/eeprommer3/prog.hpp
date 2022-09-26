@@ -27,7 +27,7 @@ public:
   void run();
   void show_status(ProgrammerBaseCore::Status code);
 
-  static constexpr uint8_t NUM_ACTIONS = 11;
+  static constexpr uint8_t NUM_ACTIONS = 12;
 
   ProgrammerBaseCore *m_cores[NUM_ACTIONS];
 
@@ -45,6 +45,7 @@ public:
     FUNC(Other,  paint),
     FUNC(Other,  debug),
     FUNC(Other,  about),
+    FUNC(Other,  restart),
   };
 
 #undef FUNC

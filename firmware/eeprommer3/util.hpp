@@ -38,6 +38,9 @@ namespace Util {
 
   // Function to validate two addresses (and make sure first is not greater than second)
   void validate_addrs(uint16_t *addr1, uint16_t *addr2);
+
+  // Wrapper around built-in reset() function
+  void restart();
 };
 
 struct Memory {
@@ -177,6 +180,7 @@ namespace Strings {
   ADD_STRING(A, DRAW_TEST, "Draw Test");
   ADD_STRING(A, DEBUGS,    "Debug Tools");
   ADD_STRING(A, INFO,      "i");
+  ADD_STRING(A, X_CLOSE,   "x");
 
   ADD_STRING(D, WE_HI,     "WE Hi (Disable)");
   ADD_STRING(D, WE_LO,     "WE Lo (Enable)");

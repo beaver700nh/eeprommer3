@@ -135,6 +135,7 @@ public:
   Status debug();
 
   Status about();
+  Status restart();
 
 private:
   // Helper functions of debug()

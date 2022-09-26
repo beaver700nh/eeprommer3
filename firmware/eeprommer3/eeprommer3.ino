@@ -56,10 +56,10 @@ void setup() {
 
   skip_btn.set_text(Strings::L_CONTINUE);
   skip_btn.draw();
-  delay(1000);
+  delay(1000);  // Delay so button isn't accidentally pressed too early
   skip_btn.wait_for_press();
 
-  Serial.println(F("Hello, world!\n"));
+  SER_LOG_PRINT("\n");
 
   mainprog();
 }
@@ -70,6 +70,7 @@ SdCtrl::Status initialize() {
   Serial.begin(115200);
   Serial.println(F("=== EEPROMMER3 ==="));
   Serial.println(F("> Starting up... <"));
+  Serial.println(F(""));
 
   SER_LOG_PRINT(
     "Heap configured at addresses 0x%X-0x%X.\n",  // Using %X because the output is more customizable than %p
@@ -81,7 +82,7 @@ SdCtrl::Status initialize() {
   auto xr = xram::test();
 
   char percentage[10];
-  dtostrf(lround(xr.successes / 0.32768) / 1000.0, 0, 3, percentage);
+  dtostrf(lround(xr.successes / 32768.0 * 1000.0 * 100.0) / 1000.0, 0, 3, percentage);
 
   SER_LOG_PRINT("Initialized XRAM!\n");
   SER_LOG_PRINT("- Verified %d/32768 bytes (%s%%) in %lums.\n", xr.successes, percentage, xr.time);
@@ -122,7 +123,7 @@ void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn) {
 void mainprog() {
   tft.fillScreen(TftColor::BLACK);
 
-  SER_LOG_PRINT("> COMMENCE PROGRAMMING <\n");
+  SER_LOG_PRINT("> HELLO WORLD <\n");
 
   Programmer prog;
   prog.init();
