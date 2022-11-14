@@ -33,7 +33,7 @@ void Util::validate_addrs(uint16_t *addr1, uint16_t *addr2) {
 }
 
 void Util::restart() {
-  ((void (*)(void)) 0x0000)();
+  asm volatile ("jmp 0");
 }
 
 void Memory::calculate_bords() {
