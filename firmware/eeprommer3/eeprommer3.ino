@@ -37,7 +37,7 @@ void setup() {
   Gui::Btn skip_btn(80, intro_y + 250, 320, 24, Strings::L_SKIP, TftColor::WHITE, TftColor::DGREEN);
   skip_btn.draw();
 
-  draw_intro(intro_x, intro_y, &skip_btn);
+  // draw_intro(intro_x, intro_y, &skip_btn);
 
   if (sd_status == SdCtrl::Status::OK) {
     SER_LOG_PRINT("... success!\n");
@@ -78,14 +78,14 @@ SdCtrl::Status initialize() {
     reinterpret_cast<uintptr_t>(__malloc_heap_end)
   );
 
-  xram::init(0x00, 0x01);
-  auto xr = xram::test();
+  // xram::init(0x00, 0x01);
+  // auto xr = xram::test();
 
-  char percentage[10];
-  dtostrf(lround(xr.successes / 32768.0 * 1000.0 * 100.0) / 1000.0, 0, 3, percentage);
+  // char percentage[10];
+  // dtostrf(lround(xr.successes / 32768.0 * 1000.0 * 100.0) / 1000.0, 0, 3, percentage);
 
-  SER_LOG_PRINT("Initialized XRAM!\n");
-  SER_LOG_PRINT("- Verified %d/32768 bytes (%s%%) in %lums.\n", xr.successes, percentage, xr.time);
+  // SER_LOG_PRINT("Initialized XRAM!\n");
+  // SER_LOG_PRINT("- Verified %d/32768 bytes (%s%%) in %lums.\n", xr.successes, percentage, xr.time);
 
   tft.init(TFT_DRIVER, 1);
   tft.fillScreen(TftColor::BLACK);
