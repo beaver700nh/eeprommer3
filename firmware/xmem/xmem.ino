@@ -5,13 +5,18 @@ static auto *extmem = (volatile uint8_t *) 0x8000;
 
 uint16_t test() {
   uint16_t wrong = 0;
+  uint16_t seed = analogRead(A15);
+
+  srand(seed);
 
   for (uint16_t i = 0; i < 0x8000; ++i) {
-    extmem[i] = (i & 0xFF);
+    extmem[i] = rand() & 0xFF;
   }
 
+  srand(seed);
+
   for (uint16_t i = 0; i < 0x8000; ++i) {
-    if (extmem[i] != (i & 0xFF)) {
+    if (extmem[i] != (rand() & 0xFF)) {
       ++wrong;
     }
   }
