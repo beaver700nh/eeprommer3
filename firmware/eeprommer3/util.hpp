@@ -167,6 +167,8 @@ namespace Strings {
   ADD_STRING(L, FILE_SER,  "Serial File");
   ADD_STRING(L, NO_FILES,  "Hmm, no files here...");
   ADD_STRING(L, X_CLOSE,   "x");
+  ADD_STRING(L, INDIC_MAJ, "A");
+  ADD_STRING(L, INDIC_MIN, "a");
   ADD_STRING(L, EMPTY_STR, "");
 
   ADD_STRING(A, R_BYTE,    "Read Byte");

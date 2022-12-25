@@ -30,6 +30,7 @@ uint16_t TftCalc::t_center_y(TftCtrl &tft, uint8_t size) {
   return t_center_y(tft.height(), size);
 }
 
+// Get width in pixels of a PROGMEM string
 uint16_t TftCalc::t_width(const char *text, uint8_t size) {
   return t_width(strlen_P(text), size);
 }

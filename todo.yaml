@@ -7,10 +7,8 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
-    fix memory bug (leak probably) with ask_file
     fix file write verify segfault/crash
     fix file write verify overflow with empty file
-    fix file write not accepting cancel
     fix read range
     fix multi write scrolling
     fix multi write (timing?) causing unreliable writes
