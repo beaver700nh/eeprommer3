@@ -14,7 +14,6 @@ export ARDUINO_DIR_3RDPARTY := ~/Arduino
 export MMCU_NAME := atmega2560
 export MMCU_ARCH := avr6
 export MMCU_VARIANT := mega
-export MMCU_MACRO := __AVR_ATmega2560__
 export MMCU_FREQ := 16000000
 
 define PrintFancy
@@ -49,9 +48,9 @@ compile:
 
 .PHONY: upload
 upload:
-	$(call PrintFancy, "Uploading...")
-	$(call WaitPlugIn)
-	$(AVR_BIN)/avrdude -v -c wiring -p $(MMCU_NAME) -P $(PORT) -b 115200 -D -U flash:w:$(BIN_OUTPUT)/$(PROJECT_NAME).hex:i -U flash:v:$(BIN_OUTPUT)/$(PROJECT_NAME).hex:i
+	@$(call PrintFancy, "Uploading...")
+	@$(call WaitPlugIn)
+	$(AVR_BIN)/avrdude -v -c wiring -p $(MMCU_NAME) -P $(PORT) -b 115200 -D -U flash:w:$(BIN_OUTPUT)/$(PROJECT_NAME).hex:i
 
 .PHONY: run
 run:

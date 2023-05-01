@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.12)
 
 set(PROJECT_NAME $ENV{PROJECT_NAME})
 
@@ -13,11 +13,64 @@ set(CMAKE_C_STANDARD 17)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
+set(
+  COMPILE_OPTIONS
+  -g
+  -CC
+  -mmcu=$ENV{MMCU_NAME}
+  -DARDUINO=10607
+  -DARDUINO_AVR_MEGA2560
+  -DARDUINO_ARCH_AVR
+  -D__AVR__
+  -D__AVR_ATmega2560__
+  -DF_CPU=$ENV{MMCU_FREQ}
+  -Wall
+  -Wextra
+  -Wno-error=narrowing
+  -fpermissive
+  -fno-exceptions
+  -ffunction-sections
+  -fdata-sections
+  -fno-threadsafe-statics
+  -O1
+)
+
+set(
+  COMPILE_INCLUDES
+  $ENV{ARDUINO_DIR}/cores/arduino
+  $ENV{ARDUINO_DIR}/variants/mega
+)
+
 project(${PROJECT_NAME})
 
 link_directories(
   /usr/lib/gcc/avr/${CMAKE_CXX_COMPILER_VERSION}/$ENV{MMCU_ARCH}
   /usr/avr/lib/$ENV{MMCU_ARCH}
+)
+
+file(
+  GLOB CORE_SOURCES CONFIGURE_DEPENDS
+  "$ENV{ARDUINO_DIR}/cores/arduino/*.S"
+  "$ENV{ARDUINO_DIR}/cores/arduino/*.c"
+  "$ENV{ARDUINO_DIR}/cores/arduino/*.cpp"
+)
+
+add_library(
+  ${PROJECT_NAME}.core
+  STATIC
+  ${CORE_SOURCES}
+)
+
+target_include_directories(
+  ${PROJECT_NAME}.core
+  PUBLIC
+  ${COMPILE_INCLUDES}
+)
+
+target_compile_options(
+  ${PROJECT_NAME}.core
+  PUBLIC
+  ${COMPILE_OPTIONS}
 )
 
 add_executable(
@@ -42,14 +95,6 @@ add_executable(
   src/util.cpp
   src/vector.cpp
   src/xram.cpp
-  $ENV{ARDUINO_DIR}/cores/arduino/HardwareSerial.cpp
-  $ENV{ARDUINO_DIR}/cores/arduino/HardwareSerial0.cpp
-  $ENV{ARDUINO_DIR}/cores/arduino/Print.cpp
-  $ENV{ARDUINO_DIR}/cores/arduino/WMath.cpp
-  $ENV{ARDUINO_DIR}/cores/arduino/hooks.c
-  $ENV{ARDUINO_DIR}/cores/arduino/wiring.c
-  $ENV{ARDUINO_DIR}/cores/arduino/wiring_analog.c
-  $ENV{ARDUINO_DIR}/cores/arduino/wiring_digital.c
   $ENV{ARDUINO_DIR}/libraries/SPI/src/SPI.cpp
   $ENV{ARDUINO_DIR}/libraries/Wire/src/Wire.cpp
   $ENV{ARDUINO_DIR}/libraries/Wire/src/utility/twi.c
@@ -59,7 +104,7 @@ add_executable(
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/SdFile.cpp
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/SdVolume.cpp
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/MCUFRIEND_kbv/MCUFRIEND_kbv.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/MCUFRIEND_kbv/extras/unused/ADA_GFX_kbv.cpp
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_TouchScreen/TouchScreen.cpp
 )
 
@@ -67,39 +112,39 @@ add_custom_command(
   TARGET ${PROJECT_NAME}.elf
   POST_BUILD
   COMMAND avr-objcopy
-  ARGS -O ihex ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.elf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.hex
+  ARGS -O ihex -R .eeprom ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.elf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.hex
+  COMMAND avr-size
+  ARGS -A ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.elf
 )
 
 target_include_directories(
   ${PROJECT_NAME}.elf
   PUBLIC
-  $ENV{ARDUINO_DIR}/cores/arduino
-  $ENV{ARDUINO_DIR}/variants/$ENV{MMCU_VARIANT}
+  ${COMPILE_INCLUDES}
   $ENV{ARDUINO_DIR}/libraries
   $ENV{ARDUINO_DIR}/libraries/SPI/src
+  $ENV{ARDUINO_DIR}/libraries/Wire/src
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/MCUFRIEND_kbv/extras/unused
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_BusIO
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_GFX_Library
 )
 
 target_compile_options(
   ${PROJECT_NAME}.elf
   PUBLIC
-  -mmcu=$ENV{MMCU_NAME}
-  -DARDUINO=100
-  -D__AVR__
-  -D$ENV{MMCU_MACRO}
-  -DF_CPU=$ENV{MMCU_FREQ}
-  -Wall
-  -Wextra
-  -fshort-enums
-  -fno-threadsafe-statics
-  -O1
+  ${COMPILE_OPTIONS}
 )
 
 target_link_libraries(
   ${PROJECT_NAME}.elf
   PUBLIC
+  ${PROJECT_NAME}.core
+  -g
+  -mmcu=$ENV{MMCU_NAME}
+  -fuse-linker-plugin
+  -flto
+  -O1
   -Wl,-m$ENV{MMCU_ARCH},--gc-sections,-Map,${CMAKE_RUNTIME_OUTPUT_DIRECTORY},--defsym,__heap_start=0x808000,--defsym,__heap_end=0x80DFFF
 )
