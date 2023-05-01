@@ -1,4 +1,0 @@
--Wall
--Wextra
--fshort-enums
--O1
