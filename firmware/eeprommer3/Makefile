@@ -59,8 +59,27 @@ run:
 
 .PHONY: clean
 clean:
-	@$(call PrintFancy, "Removing build directory...")
-	rm -r build
+	@$(call PrintFancy, "Removing build files...")
+	if [ $(level) -gt 0 ]; then
+		@$(call PrintSimple, "- The final ELF and related files")
+		echo
+		rm build/bin/*
+	fi
+	if [ $(level) -gt 1 ]; then
+		@$(call PrintSimple, "- Library compiled archives")
+		echo
+		rm build/lib/lib*.lib*.a
+	fi
+	if [ $(level) -gt 2 ]; then
+		@$(call PrintSimple, "- Core compiled archive")
+		echo
+		rm build/lib/lib*.core.a
+	fi
+	if [ $(level) -gt 3 ]; then
+		@$(call PrintSimple, "- The entire build directory")
+		echo
+		rm -r build
+	fi
 
 .ONESHELL: new
 .PHONY: new
