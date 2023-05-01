@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <SPI.h>
-#include <SD.h>
+#include <SPI/src/SPI.h>
+#include <SD/src/SD.h>
 
 /*
  * Simple little helper struct to store name of file and whether it is a directory.

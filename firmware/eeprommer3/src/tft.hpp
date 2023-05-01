@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <MCUFRIEND_kbv.h>
-#include <SD.h>
+#include <MCUFRIEND_kbv/MCUFRIEND_kbv.h>
+#include <SD/src/SD.h>
 
 #include "touch.hpp"
 

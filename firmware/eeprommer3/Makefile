@@ -1,25 +1,21 @@
-.SILENT: all build compile upload run new del search lsyms lsegs plmap objdump love
-.PHONY: all build compile upload run new del search lsyms lsegs plmap objdump love
-
 .SHELL := /bin/bash
 
+AVR_BIN := /usr/bin
 PRINTF := /usr/bin/printf
 
-AVR_NM      := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-nm
-AVR_SIZE    := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-size
-AVR_OBJDUMP := ~/.arduino15/packages/arduino/tools/avr-gcc/*/bin/avr-objdump
-
-TMP_BUILD_DIR := /tmp/arduino-sketch-*/
-
-PROGRAM := eeprommer3.ino
+PROJECT_NAME := eeprommer3
+BIN_OUTPUT := build/bin
 
 PORT := /dev/ttyACM0
 
-LINKS := -Wl,--gc-sections,-Map,{build.path}/{build.project_name}.map,--defsym,__heap_start=0x808000,--defsym,__heap_end=0x80DFFF
-
-all: build run
-build: compile upload
-go: upload run
+export PROJECT_NAME := $(PROJECT_NAME)
+export ARDUINO_DIR := /usr/share/arduino/hardware/archlinux-arduino/avr
+export ARDUINO_DIR_3RDPARTY := ~/Arduino
+export MMCU_NAME := atmega2560
+export MMCU_ARCH := avr6
+export MMCU_VARIANT := mega
+export MMCU_MACRO := __AVR_ATmega2560__
+export MMCU_FREQ := 16000000
 
 define PrintFancy
 	$(PRINTF) "\x1b[1m***\n*** %s\n***\x1b[0m\n" $(1)
@@ -37,112 +33,116 @@ define WaitPlugIn
 	done
 endef
 
+.PHONY: all
+all: build run
+
+.PHONY: build
+build: compile upload
+
+.PHONY: go
+go: upload run
+
+.PHONY: compile
 compile:
-	$(call PrintFancy, "Compiling...")
+	@$(call PrintFancy, "Compiling...")
+	(mkdir -p build; cd build; cmake ..; make -j4)
 
-	flags=""
-
-	while IFS='' read -r flag; do
-		flags=$$($(PRINTF) "%s%s " "$$flags" "$$flag")
-	done < cpp_flags.txt
-
-	arduino-cli-mega-compile . --warnings=all --build-property=compiler.cpp.extra_flags="$$flags" --build-property=compiler.c.elf.extra_flags="$(LINKS)" $(FLAGS)
-
+.PHONY: upload
 upload:
 	$(call PrintFancy, "Uploading...")
 	$(call WaitPlugIn)
-	arduino-cli-mega-upload . $(PORT) --verbose
+	$(AVR_BIN)/avrdude -v -c wiring -p $(MMCU_NAME) -P $(PORT) -b 115200 -D -U flash:w:$(BIN_OUTPUT)/$(PROJECT_NAME).hex:i -U flash:v:$(BIN_OUTPUT)/$(PROJECT_NAME).hex:i
 
+.PHONY: run
 run:
-ifeq ($(SER_MON), 1)
-### Map LF to CR+LF to avoid staircase printing
-	$(call PrintFancy, "Launching serial monitor (picocom)... [115200baud:8N1]")
+	@$(call PrintFancy, "Launching serial monitor picocom... [115200baud:8N1]")
 	picocom --baud=115200 --databits=8 --parity=n --stopbits=1 --flow=n --imap="lfcrlf" $(PORT)
-else
-	$(call PrintFancy, "Nothing to do because serial monitor is not enabled.")
-endif
 
-.ONESHELL:
+.PHONY: clean
+clean:
+	@$(call PrintFancy, "Removing build directory...")
+	rm -r build
+
+.ONESHELL: new
+.PHONY: new
 new:
-	$(call PrintSimple, "Name of cpp/hpp pair to create? ")
+	@$(call PrintSimple, "Name of cpp/hpp pair to create? ")
 	read name
 	upper_name=$$(echo $$name | tr "[:lower:]" "[:upper:]")
+	cat file_template/hpp | sed "s/<%upper_name%>/$$upper_name/g" | sed "s/<%name%>/$$name/g" >$$name.hpp
+	cat file_template/cpp | sed "s/<%upper_name%>/$$upper_name/g" | sed "s/<%name%>/$$name/g" >$$name.cpp
 
-	hpp=$$(cat file_template/hpp | sed "s/<%upper_name%>/$$upper_name/g" | sed "s/<%name%>/$$name/g")
-	cpp=$$(cat file_template/cpp | sed "s/<%upper_name%>/$$upper_name/g" | sed "s/<%name%>/$$name/g")
-
-	printf "$$hpp" >$$name.hpp
-	printf "$$cpp" >$$name.cpp
-
-.ONESHELL:
+.ONESHELL: del
+.PHONY: del
 del:
-	$(call PrintSimple, "Name of cpp/hpp pair to delete? ")
+	@$(call PrintSimple, "Name of cpp/hpp pair to delete? ")
 	read name
-
 	rm $$name.cpp
 	rm $$name.hpp
 
-.ONESHELL:
+.ONESHELL: search
+.PHONY: search
 search:
 	result=`grep -Gn --color=always '$(PATTERN)' *.?pp *.ino`
-
+	
 	if [ $$? = 1 ]; then
-		$(call PrintFancy, "No matches found.")
+		@$(call PrintFancy, "No matches found.")
 		exit
 	fi
-
-### This line fixes a bug but I have no idea how
+	
+	### This line fixes a bug but I have no idea how
 	result=`printf "%s\n " "$$result"`
-
+	
 	printf "%s" "$$result" | while IFS="\n" read -r line; do
 		location=`printf "%s\n" "$$line" | grep -oP '^[^:]+:[^:]+:[^K]+K'`
 		contents=`printf "%s\n" "$$line" | grep -oP '^[^:]+:[^:]+:[^K]+K\K.*'`
 		locplain=`printf "%s\n" "$$location" | sed 's/\x1b\[[0-9]*[mK]//g'`
-
+	
 		padding=$$((24-$${#locplain}))
 		spaces=`perl -E "say \".\" x $$padding"`
-
+	
 		printf "%s%s|%s\n" "$$location" "$$spaces" "$$contents"
 	done
 
-.ONESHELL:
+.ONESHELL: lsyms
+.PHONY: lsyms
 lsyms:
-	$(call PrintFancy, "Listing largest symbols in program")
-
-	result=`$(AVR_NM) -C -r -t d -f sysv --size-sort $(TMP_BUILD_DIR)/$(PROGRAM).elf | grep -i ' [dbv] '`
-
+	@$(call PrintFancy, "Listing largest symbols in PROJECT_NAME")
+	
+	result=`$(AVR_BIN)/avr-nm -C -r -t d -f sysv --size-sort $(BIN_OUTPUT)/$(PROJECT_NAME).elf | grep -i ' [dbv] '`
+	
 	printf "%s" "$$result" | while IFS="\n" read -r line; do
 		IFS="|"
 		set -- $$line
-
+		
 		padding=$$((100-$${#1}))
 		spaces=`perl -E "say \" \" x $$padding"`
 		$(PRINTF) "\x1b[1m%s\x1b[0m%s" "$$1" "$$spaces"
-
+		
 		for col in 2 3 4 5 6 7; do
 			text=`eval echo "\$$"$$col`
-
+			
 			if [ $$col = 5 ]; then
 				$(PRINTF) " | \x1b[1m$$text\x1b[0m"
 			else
 				echo -n " | $$text"
 			fi
 		done
-
+		
 		echo
 	done
 
+.PHONY: lsegs
 lsegs:
-	$(call PrintFancy, "Listing sizes of static segments")
-	$(AVR_SIZE) $(TMP_BUILD_DIR)/$(PROGRAM).elf
+	@$(call PrintFancy, "Listing sizes of static segments")
+	$(AVR_BIN)/avr-size $(BIN_OUTPUT)/$(PROJECT_NAME).elf
 
+.PHONY: plmap
 plmap:
-	$(call PrintFancy, "Printing linker .map file")
-	cat $(TMP_BUILD_DIR)/$(PROGRAM).map
+	@$(call PrintFancy, "Printing linker .map file")
+	cat $(BIN_OUTPUT)/$(PROJECT_NAME).map
 
+.PHONY: objdump
 objdump:
-	$(call PrintFancy, "Running avr-objdump on program")
-	$(AVR_OBJDUMP) -t $(TMP_BUILD_DIR)/$(PROGRAM).elf
-
-love:
-	$(call PrintFancy, "... not war!")
+	@$(call PrintFancy, "Running avr-objdump on PROJECT_NAME")
+	$(AVR_BIN)/avr-objdump -t $(BIN_OUTPUT)/$(PROJECT_NAME).elf

@@ -3,7 +3,7 @@
 
 #include <util/delay.h>
 
-#include <Wire.h>
+#include <Wire/src/Wire.h>
 
 #include "ad_array.hpp"
 #include "new_delete.hpp"

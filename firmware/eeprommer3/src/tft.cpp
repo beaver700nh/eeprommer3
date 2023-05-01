@@ -3,8 +3,8 @@
 
 #include <avr/pgmspace.h>
 
-#include <MCUFRIEND_kbv.h>
-#include <TouchScreen.h>
+#include <MCUFRIEND_kbv/MCUFRIEND_kbv.h>
+#include <Adafruit_TouchScreen/TouchScreen.h>
 
 #include "touch.hpp"
 #include "new_delete.hpp"

@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <SD.h>
+#include <SD/src/SD.h>
 
 #include "eeprom.hpp"
 #include "error.hpp"

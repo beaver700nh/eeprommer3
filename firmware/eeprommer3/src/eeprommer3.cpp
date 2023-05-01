@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <Wire.h>
+#include <Wire/src/Wire.h>
 
 #include "comm.hpp"
 #include "eeprom.hpp"

@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <TouchScreen.h>
+#include <Adafruit_TouchScreen/TouchScreen.h>
 
 // Forward declaration because of circular dependency
 class TftCtrl;

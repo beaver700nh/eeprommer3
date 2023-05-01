@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#include <TouchScreen.h>
+#include <Adafruit_TouchScreen/TouchScreen.h>
 
 #include "tft.hpp"
 #include "touch.hpp"
