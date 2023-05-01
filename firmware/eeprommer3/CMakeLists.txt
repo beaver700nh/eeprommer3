@@ -48,6 +48,10 @@ link_directories(
   /usr/avr/lib/$ENV{MMCU_ARCH}
 )
 
+################################################################
+## Core
+################################################################
+
 file(
   GLOB CORE_SOURCES CONFIGURE_DEPENDS
   "$ENV{ARDUINO_DIR}/cores/arduino/*.S"
@@ -73,6 +77,140 @@ target_compile_options(
   ${COMPILE_OPTIONS}
 )
 
+################################################################
+## Libraries
+################################################################
+
+add_library(
+  ${PROJECT_NAME}.libSPI
+  STATIC
+  $ENV{ARDUINO_DIR}/libraries/SPI/src/SPI.cpp
+)
+
+target_include_directories(
+  ${PROJECT_NAME}.libSPI
+  PUBLIC
+  ${COMPILE_INCLUDES}
+  $ENV{ARDUINO_DIR}/libraries/SPI/src
+)
+
+target_compile_options(
+  ${PROJECT_NAME}.libSPI
+  PUBLIC
+  ${COMPILE_OPTIONS}
+)
+
+add_library(
+  ${PROJECT_NAME}.libWire
+  STATIC
+  $ENV{ARDUINO_DIR}/libraries/Wire/src/Wire.cpp
+  $ENV{ARDUINO_DIR}/libraries/Wire/src/utility/twi.c
+)
+
+target_include_directories(
+  ${PROJECT_NAME}.libWire
+  PUBLIC
+  ${COMPILE_INCLUDES}
+  $ENV{ARDUINO_DIR}/libraries/Wire/src
+)
+
+target_compile_options(
+  ${PROJECT_NAME}.libWire
+  PUBLIC
+  ${COMPILE_OPTIONS}
+)
+
+add_library(
+  ${PROJECT_NAME}.libSD
+  STATIC
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/SD.cpp
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/File.cpp
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/Sd2Card.cpp
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/SdFile.cpp
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/SdVolume.cpp
+)
+
+target_include_directories(
+  ${PROJECT_NAME}.libSD
+  PUBLIC
+  ${COMPILE_INCLUDES}
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src
+)
+
+target_compile_options(
+  ${PROJECT_NAME}.libSD
+  PUBLIC
+  ${COMPILE_OPTIONS}
+)
+
+add_library(
+  ${PROJECT_NAME}.libMCUFRIEND_kbv
+  STATIC
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/MCUFRIEND_kbv/MCUFRIEND_kbv.cpp
+)
+
+target_include_directories(
+  ${PROJECT_NAME}.libMCUFRIEND_kbv
+  PUBLIC
+  ${COMPILE_INCLUDES}
+  $ENV{ARDUINO_DIR}/libraries/SPI/src
+  $ENV{ARDUINO_DIR}/libraries/Wire/src
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/MCUFRIEND_kbv/extras/unused
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_GFX_Library
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_BusIO
+)
+
+target_compile_options(
+  ${PROJECT_NAME}.libMCUFRIEND_kbv
+  PUBLIC
+  ${COMPILE_OPTIONS}
+)
+
+add_library(
+  ${PROJECT_NAME}.libAdafruit_GFX_Library
+  STATIC
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp
+)
+
+target_include_directories(
+  ${PROJECT_NAME}.libAdafruit_GFX_Library
+  PUBLIC
+  ${COMPILE_INCLUDES}
+  $ENV{ARDUINO_DIR}/libraries/SPI/src
+  $ENV{ARDUINO_DIR}/libraries/Wire/src
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_GFX_Library
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_BusIO
+)
+
+target_compile_options(
+  ${PROJECT_NAME}.libAdafruit_GFX_Library
+  PUBLIC
+  ${COMPILE_OPTIONS}
+)
+
+add_library(
+  ${PROJECT_NAME}.libAdafruit_TouchScreen
+  STATIC
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_TouchScreen/TouchScreen.cpp
+)
+
+target_include_directories(
+  ${PROJECT_NAME}.libAdafruit_TouchScreen
+  PUBLIC
+  ${COMPILE_INCLUDES}
+  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_TouchScreen
+)
+
+target_compile_options(
+  ${PROJECT_NAME}.libAdafruit_TouchScreen
+  PUBLIC
+  ${COMPILE_OPTIONS}
+)
+
+################################################################
+## Executable
+################################################################
+
 add_executable(
   ${PROJECT_NAME}.elf
   src/eeprommer3.cpp
@@ -95,17 +233,6 @@ add_executable(
   src/util.cpp
   src/vector.cpp
   src/xram.cpp
-  $ENV{ARDUINO_DIR}/libraries/SPI/src/SPI.cpp
-  $ENV{ARDUINO_DIR}/libraries/Wire/src/Wire.cpp
-  $ENV{ARDUINO_DIR}/libraries/Wire/src/utility/twi.c
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/SD.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/File.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/Sd2Card.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/SdFile.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src/utility/SdVolume.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/MCUFRIEND_kbv/MCUFRIEND_kbv.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_TouchScreen/TouchScreen.cpp
 )
 
 add_custom_command(
@@ -122,13 +249,7 @@ target_include_directories(
   PUBLIC
   ${COMPILE_INCLUDES}
   $ENV{ARDUINO_DIR}/libraries
-  $ENV{ARDUINO_DIR}/libraries/SPI/src
-  $ENV{ARDUINO_DIR}/libraries/Wire/src
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/MCUFRIEND_kbv/extras/unused
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_BusIO
-  $ENV{ARDUINO_DIR_3RDPARTY}/libraries/Adafruit_GFX_Library
 )
 
 target_compile_options(
@@ -141,6 +262,12 @@ target_link_libraries(
   ${PROJECT_NAME}.elf
   PUBLIC
   ${PROJECT_NAME}.core
+  ${PROJECT_NAME}.libSPI
+  ${PROJECT_NAME}.libWire
+  ${PROJECT_NAME}.libSD
+  ${PROJECT_NAME}.libMCUFRIEND_kbv
+  ${PROJECT_NAME}.libAdafruit_GFX_Library
+  ${PROJECT_NAME}.libAdafruit_TouchScreen
   -g
   -mmcu=$ENV{MMCU_NAME}
   -fuse-linker-plugin
