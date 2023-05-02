@@ -4,7 +4,6 @@
 #include <avr/io.h>
 
 #include "strfmt.hpp"
-#include "tft.hpp"
 #include "util.hpp"
 
 #undef swap
@@ -60,16 +59,9 @@ void Memory::print_ram_analysis() {
 
 #ifdef LOGGING
   SER_LOG_PRINT("RAM Analysis:\n");
-#else
-  extern TftCtrl tft;
-#endif
 
   for (uint8_t i = 0; i <= NUM_TYPES; ++i) {
-#ifdef LOGGING
     SER_LOG_PRINT("+----------------------+ < 0x%04X\n", bords[i]);
-#else
-    tft.drawText(0, 16 * i, STRFMT_NOBUF("+----------------------+ < 0x%04X\n", bords[i]), TftColor::WHITE, 1);
-#endif
 
     if (i >= NUM_TYPES) break;
 
@@ -77,16 +69,11 @@ void Memory::print_ram_analysis() {
     uint16_t size = bords[i + 1] - bords[i];
     uint8_t percentage = 100 * ((float) size / (float) bords[8]);
 
-#ifdef LOGGING
     SER_LOG_PRINT("| %-6s %5db (%3d%%) |\n", name, size, percentage);
-#else
-    tft.drawText(0, 16 * i + 8, STRFMT_NOBUF("| %-6s %5db (%3d%%) |\n", name, size, percentage), TftColor::WHITE, 1);
-#endif
 
     free((void *) name);
   }
 
-#ifdef LOGGING
   SER_LOG_PRINT("\n");
 #endif
 }
