@@ -106,7 +106,7 @@ namespace Strings {
   ADD_STRING(E, INV_FSYS,  "The selected filesystem\ndoes not exist.");
   ADD_STRING(E, NO_DB_MON, "Data bus monitor is not\nsupported because DEBUG_MODE\nis disabled.");
 
-  ADD_STRING(P, ACTION,    "Choose an action:");
+  ADD_STRING(P, ACTION,    "EEPROMMER3: Main Menu");
   ADD_STRING(P, ADDR_GEN,  "Type an address:");
   ADD_STRING(P, DATA_GEN,  "Type the data:");
   ADD_STRING(P, VAL_GEN,   "Type a value:");

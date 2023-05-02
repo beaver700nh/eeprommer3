@@ -56,30 +56,12 @@ void Gui::Btn::erase() {
 }
 
 void Gui::Btn::draw_highlight() {
-  auto color = ([=]() -> uint16_t {
-    if (!appearance.is_highlighted) {
-      return TftColor::BLACK;
-    }
-
-    if (!flags.operational) {
-      return TftColor::LGRAY;
-    }
-
-    uint16_t res = ~m_bg;
-
-    // Prevent gray-ish colors
-    if (IN_RANGE(RED_565(res), 0x0C, 0x10) || IN_RANGE(GRN_565(res), 0x18, 0x20) || IN_RANGE(BLU_565(res), 0x0C, 0x10)) {
-      res &= ~0x2104;
-    }
-    else if (IN_RANGE(RED_565(res), 0x10, 0x14) || IN_RANGE(GRN_565(res), 0x20, 0x28) || IN_RANGE(BLU_565(res), 0x10, 0x14)) {
-      res |= 0x39E7;
-    }
-
-    // Prevent too-dark colors
-    if (res < 0x4000) res |= 0x39E7;
-
-    return res;
-  })();
+  uint16_t color = (
+    !appearance.is_highlighted     ? TftColor::BLACK :
+    !flags.operational             ? TftColor::LGRAY :
+    ((m_bg >> 11) > (m_bg & 0x1F)) ? TftColor::CYAN :
+                                     TftColor::YELLOW
+  );
 
   tft.drawThickRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, color, 3);
 }
