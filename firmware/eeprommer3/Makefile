@@ -101,7 +101,7 @@ del:
 .ONESHELL: search
 .PHONY: search
 search:
-	result=`grep -Gn --color=always '$(PATTERN)' *.?pp *.ino`
+	result=`grep -Gn --color=always '$(PATTERN)' src/*.?pp`
 	
 	if [ $$? = 1 ]; then
 		@$(call PrintFancy, "No matches found.")
@@ -158,9 +158,9 @@ lsegs:
 .PHONY: plmap
 plmap:
 	@$(call PrintFancy, "Printing linker .map file")
-	cat $(BIN_OUTPUT)/$(PROJECT_NAME).map
+	cat $(BIN_OUTPUT)/$(PROJECT_NAME).elf.map
 
 .PHONY: objdump
 objdump:
 	@$(call PrintFancy, "Running avr-objdump on PROJECT_NAME")
-	$(AVR_BIN)/avr-objdump -t $(BIN_OUTPUT)/$(PROJECT_NAME).elf
+	$(AVR_BIN)/avr-objdump -t -C gnu-v3 $(BIN_OUTPUT)/$(PROJECT_NAME).elf

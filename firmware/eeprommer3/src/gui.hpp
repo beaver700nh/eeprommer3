@@ -176,7 +176,7 @@ private:
   uint16_t m_fg, m_bg;
 
   const char *m_text;
-} __attribute__((packed, aligned(1)));
+};
 
 /*
  * `Menu` makes creating menus easier; it's basically just a collection of `Btn`s with some helpful functions included.
