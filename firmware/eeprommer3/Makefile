@@ -50,12 +50,12 @@ compile:
 upload:
 	@$(call PrintFancy, "Uploading...")
 	@$(call WaitPlugIn)
-	$(AVR_BIN)/avrdude -v -c wiring -p $(MMCU_NAME) -P $(PORT) -b 115200 -D -U flash:w:$(BIN_OUTPUT)/$(PROJECT_NAME).hex:i
+	$(AVR_BIN)/avrdude -c wiring -p $(MMCU_NAME) -P $(PORT) -b 115200 -D -U flash:w:$(BIN_OUTPUT)/$(PROJECT_NAME).hex:i
 
 .PHONY: run
 run:
 	@$(call PrintFancy, "Launching serial monitor picocom... [115200baud:8N1]")
-	picocom --baud=115200 --databits=8 --parity=n --stopbits=1 --flow=n --imap="lfcrlf" $(PORT)
+	picocom --quiet --baud=115200 --databits=8 --parity=n --stopbits=1 --flow=n --imap="lfcrlf" $(PORT)
 
 .PHONY: clean
 clean:

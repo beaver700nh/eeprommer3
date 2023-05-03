@@ -34,7 +34,7 @@ set(
   -fdata-sections
   -fno-threadsafe-statics
   -flto
-  -O1
+  -Os
 )
 
 set(
