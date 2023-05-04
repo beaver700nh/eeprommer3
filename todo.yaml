@@ -22,7 +22,6 @@ FIRMWARE:
     make progress bars look better:
       unsatisfying off-by-one stuff
       optimize drawing?
-    switch repr mode on ReadRange
   start work on serial file io:
     add FileCtrlSerial
   add EEPROM SDP feature?

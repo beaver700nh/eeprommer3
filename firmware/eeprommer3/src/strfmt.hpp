@@ -1,40 +1,26 @@
 #ifndef STRFMT_HPP
 #define STRFMT_HPP
 
+#include <stdarg.h>
+#include <stddef.h>
+
 extern char custom_printf_buf[128];
 extern char custom_strfmt_buf[128];
 
-#define SNPRINTF(buf, fmt, ...) snprintf(buf, ARR_LEN(buf), fmt, ##__VA_ARGS__)
-#define STRNCPY(dst, src)       strncpy(dst, src, ARR_LEN(dst))
+#define snprintf_sz(buf, fmt, ...) snprintf(buf, ARR_LEN(buf), fmt, ##__VA_ARGS__)
+#define vsnprintf_sz(buf, fmt, args) vsnprintf(buf, ARR_LEN(buf), fmt, args)
+#define strncpy_sz(dst, src) strncpy(dst, src, ARR_LEN(dst))
 
-#define PRINTF_NOBUF(obj, fmt, ...) (              \
-  SNPRINTF(custom_printf_buf, fmt, ##__VA_ARGS__), \
-  obj.print(custom_printf_buf)                     \
-)
+class Print;
 
-#define PRINTF(buf, obj, fmt, ...) ( \
-  SNPRINTF(buf, fmt, ##__VA_ARGS__), \
-  obj.print(buf)                     \
-)
+int PRINTF(char *buf, size_t len, Print *obj, const char *fmt, ...);
+int PRINTF_NOBUF(Print *obj, const char *fmt, ...);
 
-#define PRINTF_BUFLEN(buf, len, obj, fmt, ...) ( \
-  snprintf(buf, len, fmt, ##__VA_ARGS__),        \
-  obj.print(buf)                                 \
-)
+#define PRINTF_sz(buf, obj, fmt, ...) PRINTF(buf, ARR_LEN(buf), obj, fmt, ##__VA_ARGS__)
 
-#define STRFMT_NOBUF(fmt, ...) (                   \
-  SNPRINTF(custom_strfmt_buf, fmt, ##__VA_ARGS__), \
-  custom_strfmt_buf                                \
-)
+const char *STRFMT(char *buf, size_t len, const char *fmt, ...);
+const char *STRFMT_NOBUF(const char *fmt, ...);
 
-#define STRFMT(buf, fmt, ...) (      \
-  SNPRINTF(buf, fmt, ##__VA_ARGS__), \
-  buf                                \
-)
-
-#define STRFMT_BUFLEN(buf, len, fmt, ...) ( \
-  snprintf(buf, len, fmt, ##__VA_ARGS__),   \
-  buf                                       \
-)
+#define STRFMT_sz(buf, fmt, ...) STRFMT(buf, ARR_LEN(buf), fmt, ##__VA_ARGS__)
 
 #endif

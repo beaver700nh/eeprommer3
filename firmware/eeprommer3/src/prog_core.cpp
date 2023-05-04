@@ -46,7 +46,7 @@ Status ProgrammerByteCore::read() {
   tft.fillScreen(TftColor::BLACK);
 
   char title[32];
-  SNPRINTF(title, "Value at addr %04X", addr);
+  snprintf_sz(title, "Value at addr %04X", addr);
 
   Dialog::show_error(
     ErrorLevel::INFO, 0x0, title,
@@ -286,7 +286,7 @@ Status ProgrammerVectorCore::read() {
   const char *const name = Util::strdup_P(Vector::NAMES[vec.m_id]);
 
   char title[16];
-  SNPRINTF(title, "Value of %s", name);
+  snprintf_sz(title, "Value of %s", name);
 
   free((void *) name);
 
@@ -380,12 +380,15 @@ Status ProgrammerMultiCore::read() {
   }
 
   read_operation_core(data, addr1, addr2);
-
   tft.fillScreen(TftColor::BLACK);
 
-  Status status = handle_data(data, addr1, addr2);
+  Status status = Status::OK;
+  bool done = false;
 
-  tft.fillScreen(TftColor::BLACK);
+  while (!done) {
+    status = handle_data(data, addr1, addr2, &done);
+    tft.fillScreen(TftColor::BLACK);
+  }
 
   free(data);
 
@@ -422,14 +425,13 @@ void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uin
   TftUtil::wait_continue();
 }
 
-Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2) {
-  uint16_t nbytes = (addr2 - addr1 + 1);
-
+Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, bool *done) {
   uint8_t viewing_method = Dialog::ask_choice(
-    Strings::P_VIEW_METH, 1, 30, 0, 3,
+    Strings::P_VIEW_METH, 1, 30, 0, 4,
     Strings::L_VM_HEX,  TftColor::BLACK,  TftColor::ORANGE,
     Strings::L_VM_CHAR, TftColor::LGREEN, TftColor::DGREEN,
-    Strings::L_VM_FILE, TftColor::CYAN,   TftColor::BLUE
+    Strings::L_VM_FILE, TftColor::CYAN,   TftColor::BLUE,
+    Strings::L_CLOSE,   TftColor::BLACK,  TftColor::WHITE
   );
 
   tft.fillScreen(TftColor::BLACK);
@@ -437,7 +439,8 @@ Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t 
   switch (viewing_method) {
   case 0:  return (show_range(data, addr1, addr2, &multi_byte_repr_hex),   Status::OK);
   case 1:  return (show_range(data, addr1, addr2, &multi_byte_repr_chars), Status::OK);
-  case 2:  return store_file(data, nbytes);
+  case 2:  return store_file(data, addr2 - addr1 + 1);
+  case 3:  return (*done = true, Status::OK);
   default: return Status::ERR_INVALID;
   }
 }
@@ -498,7 +501,7 @@ void ProgrammerMultiCore::show_page(
   tft.fillRect(tft.width() / 2 +   1, 57, 145, 162, TftColor::DGRAY);
 
   tft.drawTextBg(
-    10, 256, STRFMT_NOBUF("Page #%d of %d", cur_page, max_page),
+    10, 256, STRFMT_NOBUF("Page #%d (max %d)", cur_page, max_page),
     TftColor::PURPLE, TftColor::BLACK
   );
 
@@ -550,7 +553,6 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
   using AFStatus = Dialog::AskFileStatus;
 
   AFStatus substatus;
-  Status status  = Status::OK;
   FileCtrl *file = Dialog::ask_file(Strings::P_STORE, O_WRITE | O_CREAT | O_TRUNC, &substatus, false);
 
   if (substatus == AFStatus::OK) {
@@ -561,20 +563,12 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
     file->flush();
     file->close();
   }
-  else if (substatus == AFStatus::CANCELED) {
-    Dialog::show_error(ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
-  }
-  else if (substatus == AFStatus::FNAME_TOO_LONG) {
-    Dialog::show_error(ErrorLevel::ERROR, 0x3, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
-    status = Status::ERR_FILE;
-  }
-  else if (substatus == AFStatus::FSYS_INVALID) {
-    Dialog::show_error(ErrorLevel::ERROR, 0x3, Strings::T_INV_FSYS, Strings::E_INV_FSYS);
-    status = Status::ERR_FILE;
-  }
 
   delete file;
-  return status;
+  return (
+    substatus == AFStatus::OK || substatus == AFStatus::CANCELED ?
+    Status::OK : Status::ERR_FILE
+  );
 }
 
 Status ProgrammerMultiCore::write() {

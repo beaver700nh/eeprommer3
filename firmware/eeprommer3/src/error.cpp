@@ -19,7 +19,7 @@ void Dialog::show_error(uint8_t lvl, uint8_t str_types, const char *title, const
   uint16_t color = ErrorLevel::COLORS[lvl];
 
   char tag[16];
-  SNPRINTF(tag, "[%s]", name);
+  snprintf_sz(tag, "[%s]", name);
 
   free((void *) name);
 

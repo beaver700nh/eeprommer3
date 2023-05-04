@@ -102,7 +102,7 @@ private:
   static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte);    // Shows byte as white raw hex
   static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte);  // Shows byte as white char if printable, gray "?" if not
 
-  Status handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2);  // Shows read data to user nicely
+  Status handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, bool *done);  // Shows read data to user nicely
 
   void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);                                     // Show whole range on TFT
   void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page);  // One page at a time
