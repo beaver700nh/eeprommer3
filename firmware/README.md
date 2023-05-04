@@ -7,20 +7,28 @@ TFT LCD touchscreen). The code is in C++ with a C-like style and uses the SPI,
 Wire, SD, MCUFRIEND\_kbv, and Adafruit\_TouchScreen, libraries, as well as AVR's
 `<util/delay.h>` header.
 
-\[TODO - briefly mention heap in external RAM]
+Due to the heavy RAM consumption of so much GUI code, and also to help speed up
+large data transfer operations, the heap has been relocated by the linker to reside
+in an external RAM chip.
 
 ## Directories
 
-\[TODO - explain addrlatchtest]
+The `addrlatchtest/` directory contains a test program for the latch chip
+used to drive the external RAM chip. Due to pin constraints, the low address
+pins are shared with the data pins. This program makes sure the multiplexing
+mechanism works properly.
 
 The `eeprommer3/` directory contains code for the actual firmware.
 
-\[TODO - explain memory]
+The `memory/` directory contains a small test program to print some memory
+tracking variables, for the purpose of calculating memory usage.
 
 The `serialcxx/` directory contains code for a basic test of the serial
 communication between the firmware and the software.
 
-\[TODO - explain xmem]
+The `xmem/` directory contains code to test the external RAM interface to
+make sure it is working separately, as the main program does not function
+without a functioning heap.
 
 ## Files
 
@@ -151,4 +159,5 @@ is added to the Dialog namespace.
 
 ### `xram.cpp`/`xram.hpp`
 
-\[TODO - explain more deeply how it works]
+These files define the `xram` namespace, with utility functions to control the
+Arduino's XMEM interface.
