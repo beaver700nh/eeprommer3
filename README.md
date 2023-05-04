@@ -2,15 +2,18 @@
 
 ## About
 
-\[TODO - backstory, explain what ermr3 is]
+eeprommer3 is my third attempt at a project that I started on a whim
+back in 2021 because I didn't want to buy a commercial EEPROM programmer
+for my 6502-based computer inspired by Ben Eater. Since then this code
+base has grown into a massive, overengineered system.
 
 This repository contains the code for both the interface and hardware
 sides of eeprommer3, as well as the schematics and EAGLE files for the
 hardware.
 
-[See `software/README.md`](software/README.md)
-[See `hardware/README.md`](hardware/README.md)
-[See `firmware/README.md`](firmware/README.md)
+- [See `software/README.md`](software/README.md)
+- [See `hardware/README.md`](hardware/README.md)
+- [See `firmware/README.md`](firmware/README.md)
 
 ## Obtaining the eeprommer3 software
 
