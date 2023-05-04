@@ -1,5 +1,11 @@
 # eeprommer3 | hardware
 
+The hardware provided is an Arduino Mega 2560 driving a 3.5" TFT LCD
+display (ILI9486) with a resistive touchscreen. The PCB contains the
+actual EEPROM programming hardware. Note that you can also use other
+hardware, but you will have to modify/redesign/fork some parts of the
+code (mostly just the hardware/firmware side, though).
+
 ## v2.y - August 2022
 
 This directory contains images and LibrePCB files for each revision of

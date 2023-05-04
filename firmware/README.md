@@ -2,18 +2,25 @@
 
 ## Brief Description
 
-This directory contains code for the hardware (an Arduino Mega 2560 in the
-files provided). The code is in C++ with a C-like style and uses the SD, SPI,
-Wire, MCUFRIEND_kbv, TouchScreen, Adafruit_MCP23XXX, and Adafruit_BusIO
-libraries, as well as AVR's `<util/delay.h>` header.
+This directory contains code for the hardware (an Arduino Mega 2560 and a 3.5"
+TFT LCD touchscreen). The code is in C++ with a C-like style and uses the SPI,
+Wire, SD, MCUFRIEND\_kbv, and Adafruit\_TouchScreen, libraries, as well as AVR's
+`<util/delay.h>` header.
 
-The hardware allows for a 3.5" TFT LCD screen (with a resistive touch screen).
+\[TODO - briefly mention heap in external RAM]
+
+## Directories
+
+\[TODO - explain addrlatchtest]
+
+The `eeprommer3/` directory contains code for the actual firmware.
+
+\[TODO - explain memory]
 
 The `serialcxx/` directory contains code for a basic test of the serial
 communication between the firmware and the software.
 
-The `eeprommer3/` directory contains code for the real program which puts data
-into an EEPROM.
+\[TODO - explain xmem]
 
 ## Files
 
@@ -46,11 +53,9 @@ defined in `gui.cpp`/`gui.hpp`.
 These files define the `EepromCtrl` class which acts as the core back end of
 eeprommer3, and handles the actual hardware interfacing with the EEPROM chip.
 
-### `eeprommer3.ino`
+### `eeprommer3.cpp`
 
-This is the main file in that it is the file from which code execution starts.
-As implied by the `.ino` file extension, this is the main file and the other
-files are the secondary files in the eyes of Arduino software.
+This is the main file from which code execution starts.
 
 ### `error.cpp`/`error.hpp`
 
@@ -75,15 +80,16 @@ These files contain the `Gui` namespace which contains many classes for GUI-
 related things like buttons, menus, and progress bars. Some other files add
 things to the `Gui` namespace.
 
-### `Makefile`
-
-This file is used for development of eeprommer3 and makes it easier to compile
-the code, as well as containing a few other useful development tools.
-
 ### `new_delete.cpp`/`new_delete.hpp`
 
 These files add better support for C++'s `new` and `delete` operators, because
 the default Arduino support for these can be glitchy and spotty.
+
+### `prog.cpp`/`prog.hpp`
+
+These files define the class `Programmer` which is the main firmware class. It
+hooks together all the Cores and uses a menu to let the user call functions
+defined in them.
 
 ### `prog_core.cpp`/`prog_core.hpp`
 
@@ -91,12 +97,6 @@ These files contain classes called Cores, each handling one way of programming
 the EEPROM. These classes tie together the front end and back end. For example,
 `ProgrammerByteCore` contains functions for letting the user read and write a
 single byte to and from the EEPROM.
-
-### `prog.cpp`/`prog.hpp`
-
-These files define the class `Programmer` which is the main firmware class. It
-hooks together all the Cores and uses a menu to let the user call functions
-defined in them.
 
 ### `sd.cpp`/`sd.hpp`
 
@@ -112,8 +112,15 @@ image is encoded as a series of 16-bit values that encode colors in 565 format.
 
 ### `strfmt.cpp`/`strfmt.hpp`
 
-These files contain useful macros for pretty and convenient inline string
-formatting, for use in things like printing to the serial port or the TFT.
+These files contain useful functions and macros for string manipulation, such as
+inline string formatting and auto-computed xxprintf buffer lengths, useful in
+printing messages to the serial port or the TFT.
+
+### `tft.cpp`/`tft.hpp`
+
+These files contain the `TftCtrl` class, a wrapper around MCUFRIEND\_kbv, and
+the `TftColor` namespace, which contains an enumeration for many 565-format
+colors used across the firmware code.
 
 ### `tft_calc.cpp`/`tft_calc.hpp`
 
@@ -124,12 +131,6 @@ calculating TFT coordinates.
 
 These files contain the namespace `TftUtil`, which contains miscellaneous
 utilities relating to the TFT screen.
-
-### `tft.cpp`/`tft.hpp`
-
-These files contain the `TftCtrl` class, a wrapper around MCUFRIEND_kbv, and
-the `TftColor` namespace, which contains an enumeration for many 565-format
-colors used across the firmware code.
 
 ### `touch.cpp`/`touch.hpp`
 
@@ -148,6 +149,6 @@ These files define the `Vector` struct, which stores information about one of
 the three 6502 jump vectors IRQ, RST, and NMI. Also, the function `ask_vector`
 is added to the Dialog namespace.
 
-## Other
+### `xram.cpp`/`xram.hpp`
 
-See `../software/README.md` for more information about code.
+\[TODO - explain more deeply how it works]

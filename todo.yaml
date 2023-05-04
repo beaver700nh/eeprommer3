@@ -15,7 +15,8 @@ FIRMWARE:
     fix file write freeze
     use 8k buffer in large I/O operations
     put more things in PROGMEM
-    update documentation
+    update documentation:
+      fix TODOs
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
