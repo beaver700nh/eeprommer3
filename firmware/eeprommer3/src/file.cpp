@@ -82,7 +82,7 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(char *file_path, u
     return Status::FNAME_TOO_LONG;
   }
 
-  snprintf(file_path, max_path_len, "%s%s", Strings::M_FILE_DIR, m_files[btn_id].name);
+  snprintf_P(file_path, max_path_len, PSTR("%s%s"), Strings::M_FILE_DIR, m_files[btn_id].name);
   return Status::OK;
 }
 
@@ -107,7 +107,7 @@ FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *st
 
   default:
     *status = AskFileStatus::FSYS_INVALID;
-    Dialog::show_error(ErrorLevel::ERROR, 0x1, Strings::E_INV_FSYS, STRFMT_NOBUF("No such filesystem: %d.", (uint8_t) fsys));
+    Dialog::show_error(ErrorLevel::ERROR, 0x1, Strings::E_INV_FSYS, STRFMT_P_NOBUF(PSTR("No such filesystem: %d."), (uint8_t) fsys));
     return nullptr;
   }
 }

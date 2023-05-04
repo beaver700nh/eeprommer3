@@ -46,18 +46,11 @@ Status ProgrammerByteCore::read() {
   tft.fillScreen(TftColor::BLACK);
 
   char title[32];
-  snprintf_sz(title, "Value at addr %04X", addr);
+  snprintf_P_sz(title, Strings::T_VALUE_AT, addr);
 
   Dialog::show_error(
     ErrorLevel::INFO, 0x0, title,
-    STRFMT_NOBUF(
-      "BIN: " BYTE_FMT "\n"
-      "OCT: %03o\n"
-      "HEX: %02X\n"
-      "DEC: %-3d\n"
-      "CHR: %c",
-      BYTE_FMT_VAL(data), data, data, data, data
-    )
+    STRFMT_P_NOBUF(Strings::G_REPR_8, BYTE_FMT_VAL(data), data, data, data, (data == '\0' ? ' ' : data))
   );
 
   tft.fillScreen(TftColor::BLACK);
@@ -76,11 +69,7 @@ Status ProgrammerByteCore::write() {
 
   Dialog::show_error(
     ErrorLevel::INFO, 0x1, Strings::T_DONE,
-    STRFMT_NOBUF(
-      "Wrote data %02X\n"
-      "to address %04X.",
-      data, addr
-    )
+    STRFMT_P_NOBUF(Strings::G_W_BYTE, data, addr)
   );
 
   tft.fillScreen(TftColor::BLACK);
@@ -93,12 +82,8 @@ Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
 
   if (actual != *(uint8_t *) data) {
     Dialog::show_error(
-      ErrorLevel::INFO, 0x1, Strings::T_MISMATCH,
-      STRFMT_NOBUF(
-        "Expected: %02X\n"
-        "Actual:   %02X",
-        *(uint8_t *) data, actual
-      )
+      ErrorLevel::INFO, 0x1, Strings::T_MSMCH,
+      STRFMT_NOBUF(Strings::G_VERIFY_8, *(uint8_t *) data, actual)
     );
 
     tft.fillScreen(TftColor::BLACK);
@@ -244,7 +229,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
 
   uint8_t expected[256], reality[256];
 
-  tft.drawText(10, 10, STRFMT_NOBUF("Verifying `%s' at %04X...", file->name(), addr), TftColor::CYAN);
+  tft.drawText(10, 10, STRFMT_P_NOBUF(Strings::W_VERIFY, file->name(), addr), TftColor::CYAN);
 
   Gui::ProgressIndicator bar(ceil((float) file->size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
@@ -256,7 +241,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
       ee.read(addr, addr + nbytes, reality);
 
       if (memcmp(expected, reality, nbytes) != 0) {
-        tft.drawText(10, 150, STRFMT_NOBUF("Mismatch between %04X and %04X!", addr, addr + 0xFF), TftColor::RED);
+        tft.drawText(10, 150, STRFMT_P_NOBUF(Strings::E_MISMATCH, addr, addr + 0xFF), TftColor::RED);
         return true;  // Request to quit loop
       }
 
@@ -285,20 +270,14 @@ Status ProgrammerVectorCore::read() {
 
   const char *const name = Util::strdup_P(Vector::NAMES[vec.m_id]);
 
-  char title[16];
-  snprintf_sz(title, "Value of %s", name);
+  char title[32];
+  snprintf_P_sz(title, Strings::T_VALUE_OF, name, vec.m_addr, vec.m_addr + 1);
 
   free((void *) name);
 
   Dialog::show_error(
     ErrorLevel::INFO, 0x0, title,
-    STRFMT_NOBUF(
-      "Addr: %04X-%04X\n"
-      "HEX: %04X\n"
-      "BIN: " BYTE_FMT "\n"
-      ".... " BYTE_FMT,
-      vec.m_addr, vec.m_addr + 1, vec.m_val, BYTE_FMT_VAL(vec.m_hi), BYTE_FMT_VAL(vec.m_lo)
-    )
+    STRFMT_P_NOBUF(Strings::G_REPR_16, BYTE_FMT_VAL(vec.m_hi), BYTE_FMT_VAL(vec.m_lo), vec.m_val, vec.m_val, vec.m_val)
   );
 
   tft.fillScreen(TftColor::BLACK);
@@ -322,12 +301,7 @@ Status ProgrammerVectorCore::write() {
 
   Dialog::show_error(
     ErrorLevel::INFO, 0x1, Strings::T_DONE,
-    STRFMT_NOBUF(
-      "Wrote value %04X\n"
-      "to vector %s\n"
-      "at %04X-%04X.",
-      new_val, name, vec.m_addr, vec.m_addr + 1
-    )
+    STRFMT_P_NOBUF(Strings::G_W_VECTOR, new_val, name, vec.m_addr, vec.m_addr + 1)
   );
 
   free((void *) name);
@@ -342,12 +316,8 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
 
   if (actual != *(uint16_t *) data) {
     Dialog::show_error(
-      ErrorLevel::ERROR, 0x1, Strings::T_MISMATCH,
-      STRFMT_NOBUF(
-        "Expected: %04X\n"
-        "Actual:   %04X",
-        *(uint16_t *) data, actual
-      )
+      ErrorLevel::ERROR, 0x1, Strings::T_MSMCH,
+      STRFMT_P_NOBUF(Strings::G_VERIFY_16, *(uint16_t *) data, actual)
     );
 
     TftUtil::wait_continue();
@@ -447,7 +417,7 @@ Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t 
 
 void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
   // Draw frame for the data
-  tft.drawText(10, 10, STRFMT_NOBUF("%d bytes", addr2 - addr1 + 1), TftColor::CYAN, 3);
+  tft.drawText(10, 10, STRFMT_P_NOBUF(Strings::T_N_BYTES, addr2 - addr1 + 1), TftColor::CYAN, 3);
   tft.drawThickRect(tft.width() / 2 - 147, 55, 295, 166, TftColor::WHITE, 2);
   tft.drawFastVLine(tft.width() / 2, 57, 162, TftColor::GRAY);
 
@@ -482,15 +452,18 @@ void ProgrammerMultiCore::draw_page_axis_labels() {
 
     const uint16_t y = tft.height() / 2 - 100 + 10 * row;
 
-    tft.drawText(x1, y, STRFMT_NOBUF("%1Xx", row), TftColor::DCYAN, 1);
-    tft.drawText(x2, y, STRFMT_NOBUF("%1Xx", row), TftColor::DCYAN, 1);
+    char label[3];
+    STRFMT_P_sz(label, PSTR("%1Xx"), row);
+
+    tft.drawText(x1, y, label, TftColor::DCYAN, 1);
+    tft.drawText(x2, y, label, TftColor::DCYAN, 1);
   }
 
   for (uint8_t col = 0x00; col < 0x10; ++col) {
     const uint8_t split_offset = (col < 8 ? 0 : 3);
     const uint16_t x = tft.width() / 2 - 141 + 18 * col + split_offset;
 
-    tft.drawText(x, tft.height() / 2 + 64, STRFMT_NOBUF("x%1X", col), TftColor::DCYAN, 1);
+    tft.drawText(x, tft.height() / 2 + 64, STRFMT_P_NOBUF(PSTR("x%1X"), col), TftColor::DCYAN, 1);
   }
 }
 
@@ -501,7 +474,7 @@ void ProgrammerMultiCore::show_page(
   tft.fillRect(tft.width() / 2 +   1, 57, 145, 162, TftColor::DGRAY);
 
   tft.drawTextBg(
-    10, 256, STRFMT_NOBUF("Page #%d (max %d)", cur_page, max_page),
+    10, 256, STRFMT_P_NOBUF(Strings::L_PAGE_N_N, cur_page, max_page),
     TftColor::PURPLE, TftColor::BLACK
   );
 
@@ -510,7 +483,7 @@ void ProgrammerMultiCore::show_page(
   uint16_t glob_page_end    = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
 
   tft.drawTextBg(
-    TftCalc::right(tft, 130, 12), 12, STRFMT_NOBUF("%04X - %04X", glob_page_start, glob_page_end),
+    TftCalc::right(tft, 130, 12), 12, STRFMT_P_NOBUF(PSTR("%04X - %04X"), glob_page_start, glob_page_end),
     TftColor::ORANGE, TftColor::BLACK
   );
 
@@ -533,7 +506,7 @@ inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_hex(ui
 
   repr.offset = 0;
   repr.color  = TftColor::WHITE;
-  sprintf(repr.text, "%02X", input_byte);
+  sprintf_P(repr.text, PSTR("%02X"), input_byte);
 
   return repr;
 }
@@ -544,7 +517,7 @@ inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_chars(
 
   repr.offset = 3;
   repr.color  = (printable ? TftColor::WHITE : TftColor::GRAY);
-  sprintf(repr.text, "%c", (printable ? input_byte : '?'));
+  sprintf_P(repr.text, PSTR("%c"), (printable ? input_byte : '?'));
 
   return repr;
 }
@@ -566,7 +539,8 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
 
   delete file;
   return (
-    substatus == AFStatus::OK || substatus == AFStatus::CANCELED ?
+    substatus == AFStatus::OK ||
+    substatus == AFStatus::CANCELED ?
     Status::OK : Status::ERR_FILE
   );
 }
@@ -641,17 +615,18 @@ void ProgrammerMultiCore::draw_pairs(
   uint16_t last_pair = MIN(offset + n - 1U, buf.get_len() - 1U);
 
   do {
-    uint16_t x  = margin_l;
-    uint16_t y  = margin_u + (this_pair - offset) * (height + padding);
-    uint16_t w  = tft.width() - margin_l - margin_r;
-    uint16_t h  = height;
-    uint16_t ty = TftCalc::t_center_y(h, 2) + y;
+    const uint16_t x  = margin_l;
+    const uint16_t y  = margin_u + (this_pair - offset) * (height + padding);
+    const uint16_t w  = tft.width() - margin_l - margin_r;
+    const uint16_t h  = height;
+    const uint16_t tx = margin_l + 3;
+    const uint16_t ty = TftCalc::t_center_y(h, 2) + y;
 
     AddrDataArrayPair pair {0, 0};
     buf.get_pair(this_pair, &pair);
 
     tft.fillRect(x, y, w, h, TftColor::ORANGE);
-    tft.drawText(margin_l + 3, ty, STRFMT_NOBUF("#%05d: %04X, %02X", this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
+    tft.drawText(tx, ty, STRFMT_NOBUF(Strings::L_FMT_PAIR, this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
 
     // Show all buttons that have pairs
     auto cur_btn = del_btns.get_btn(this_pair - offset);
@@ -719,14 +694,12 @@ Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
     uint8_t real_data = ee.read(pair.addr);
 
     if (pair.data != real_data) {
+      char title[32];
+      snprintf_P_sz(title, Strings::T_MSMCH_AT, pair.addr);
+
       Dialog::show_error(
-        ErrorLevel::ERROR, 0x1, Strings::T_MISMATCH,
-        STRFMT_NOBUF(
-          "Expected: %02X\n"
-          "Actual:   %02X"
-          "Address:  %04X",
-          pair.data, real_data, pair.addr
-        )
+        ErrorLevel::ERROR, 0x0, title,
+        STRFMT_P_NOBUF(Strings::G_VERIFY_8, pair.data, real_data)
       );
 
       tft.fillScreen(TftColor::BLACK);
@@ -806,7 +779,7 @@ void ProgrammerOtherCore::do_debug_action(DebugAction action) {
 void ProgrammerOtherCore::show_data_bus() {
   Dialog::show_error(
     ErrorLevel::INFO, 0x1, Strings::T_VALUE,
-    STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(ee.get_data()))
+    STRFMT_P_NOBUF(PSTR(BYTE_FMT), BYTE_FMT_VAL(ee.get_data()))
   );
 }
 

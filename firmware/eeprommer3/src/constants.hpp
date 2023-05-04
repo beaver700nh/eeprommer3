@@ -76,8 +76,8 @@ extern HardwareSerial Serial;
 // Prints text over Serial if logging is enabled
 // - SER_DEBUG_PRINT(foo, 's') where foo = "bar" => prints "SER_DEBUG_PRINT: foo = bar"
 #ifdef LOGGING
-#define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(&Serial, STRFMT_NOBUF("SER_DEBUG_PRINT: %%s = %%%c\n", type), #var, var)
-#define SER_LOG_PRINT(text, ...) PRINTF_NOBUF(&Serial, "*!* - SER_LOG_PRINT: ...%-12s :%-4d || " text, __FILE__ + max(strlen(__FILE__), 12) - 12, __LINE__, ##__VA_ARGS__)
+#define SER_DEBUG_PRINT(var, type) PRINTF_NOBUF(&Serial, STRFMT_P_NOBUF(PSTR("SER_DEBUG_PRINT: %%s = %%%c\n"), type), #var, var)
+#define SER_LOG_PRINT(text, ...) PRINTF_P_NOBUF(&Serial, PSTR("*!* - SER_LOG_PRINT: ...%-12s :%-4d || " text), __FILE__ + max(strlen(__FILE__), 12) - 12, __LINE__, ##__VA_ARGS__)
 #else
 #define SER_DEBUG_PRINT(var, type)
 #define SER_LOG_PRINT(text, ...)

@@ -74,6 +74,7 @@ struct Memory {
  * W_ - Working
  * F_ - Finished
  * L_ - Label
+ * G_ - Dialog
  * A_ - Action
  * D_ - Debug
  * I_ - Info
@@ -83,9 +84,13 @@ namespace Strings {
 #define ADD_STRING(type, name, value) inline const char type##_##name[] PROGMEM = value
 
   ADD_STRING(T, DONE,      "Done");
-  ADD_STRING(T, MISMATCH,  "Mismatch");
+  ADD_STRING(T, MSMCH,     "Mismatch");
+  ADD_STRING(T, MSMCH_AT,  "Mismatch at %04X");
   ADD_STRING(T, CANCELED,  "Canceled");
   ADD_STRING(T, VALUE,     "Value");
+  ADD_STRING(T, VALUE_AT,  "Value at %04X");
+  ADD_STRING(T, VALUE_OF,  "%s, %04X-%04X");
+  ADD_STRING(T, N_BYTES,   "%d bytes");
   ADD_STRING(T, TOO_BIG,   "EEPROM Overflow");
   ADD_STRING(T, TOO_LONG,  "String Overflow");
   ADD_STRING(T, INV_FSYS,  "Invalid Filesystem");
@@ -105,6 +110,7 @@ namespace Strings {
   ADD_STRING(E, TOO_LONG,  "File name was too long\nto fit in the buffer.");
   ADD_STRING(E, INV_FSYS,  "The selected filesystem\ndoes not exist.");
   ADD_STRING(E, NO_DB_MON, "Data bus monitor is not\nsupported because DEBUG_MODE\nis disabled.");
+  ADD_STRING(E, MISMATCH,  "Mismatch between %04X and %04X!");
 
   ADD_STRING(P, ACTION,    "EEPROMMER3: Main Menu");
   ADD_STRING(P, ADDR_GEN,  "Type an address:");
@@ -129,6 +135,7 @@ namespace Strings {
   ADD_STRING(W, WMULTI,    "Writing EEPROM bytes...");
   ADD_STRING(W, WAIT,      "Please wait...");
   ADD_STRING(W, LOAD,      "Loading...");
+  ADD_STRING(W, VERIFY,    "Verifying `%s' at %04X...");
 
   ADD_STRING(F, READ,      "Done reading!");
   ADD_STRING(F, WRITE,     "Done writing!");
@@ -155,9 +162,11 @@ namespace Strings {
   ADD_STRING(L, YES,       "Yes");
   ADD_STRING(L, NO,        "No");
   ADD_STRING(L, OK,        "OK");
+  ADD_STRING(L, PAGE_N_N,  "Page %d (max %d)");
   ADD_STRING(L, ADD_PAIR,  "Add Pair");
   ADD_STRING(L, NO_PAIRS1, "No pairs yet!");
   ADD_STRING(L, NO_PAIRS2, "Click `Add Pair' to add a pair!");
+  ADD_STRING(L, FMT_PAIR,  "#%05d: %04X, %02X");
   ADD_STRING(L, VM_HEX,    "Show as Raw Hexadecimal");
   ADD_STRING(L, VM_CHAR,   "Show Printable Characters");
   ADD_STRING(L, VM_FILE,   "Write Data to a File");
@@ -170,6 +179,13 @@ namespace Strings {
   ADD_STRING(L, INDIC_MAJ, "A");
   ADD_STRING(L, INDIC_MIN, "a");
   ADD_STRING(L, EMPTY_STR, "");
+
+  ADD_STRING(G, W_BYTE,    "Wrote data %02X\nto address %04X.");
+  ADD_STRING(G, W_VECTOR,  "Wrote value %04X\nto vector %s\nat %04X-%04X.");
+  ADD_STRING(G, VERIFY_8,  "Expected: %02X\nActual:   %02X");
+  ADD_STRING(G, VERIFY_16, "Expected: %04X\nActual:   %04X");
+  ADD_STRING(G, REPR_8,    "bin: " BYTE_FMT "\noct: %03o\nhex: %02X\ndec: %-3u\nchr: `%c'");
+  ADD_STRING(G, REPR_16,   "bin: " BYTE_FMT "\n.... " BYTE_FMT "\noct: %06o\nhex: %04X\ndec: %-5u");
 
   ADD_STRING(A, R_BYTE,    "Read Byte");
   ADD_STRING(A, W_BYTE,    "Write Byte");

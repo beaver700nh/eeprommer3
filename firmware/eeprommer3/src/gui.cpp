@@ -277,7 +277,7 @@ void Gui::MenuKeyboard::show_val(uint16_t x, uint16_t y, uint8_t len, uint8_t si
   tft.fillRect(x, y, tft.width() - x, 8 * size, bg);
 
   char fmt_str[16];
-  sprintf(fmt_str, "[%%-%d.%ds]", len, len);
+  sprintf_P(fmt_str, PSTR("[%%-%d.%ds]"), len, len);
   tft.drawText(x, y, STRFMT_NOBUF(fmt_str, m_val), fg, size);
 }
 
@@ -485,7 +485,7 @@ void Gui::ProgressIndicator::show() {
   double fraction   = (double) m_cur_val / (double) m_max_val;
   uint16_t progress = (m_w - 4) * fraction;
 
-  const char *text = STRFMT_NOBUF("%d/%d       ", m_cur_val, m_max_val);
+  const char *text = STRFMT_P_NOBUF(PSTR("%d/%d       "), m_cur_val, m_max_val);
 
   uint16_t ty = m_y + TftCalc::t_center_y(m_h, 2);
   uint16_t tx = m_x + TftCalc::t_center_x_l(m_w, strlen(text), 2);
@@ -495,7 +495,7 @@ void Gui::ProgressIndicator::show() {
 
   tft.drawText(tx, ty, text, m_color_frac);
   tx += TftCalc::t_width(strlen(text) - 6, 2);  // 6 spaces
-  tft.drawText(tx, ty, STRFMT_NOBUF("(%03d%%)", uint8_t(fraction * 100.0)), m_color_perc);
+  tft.drawText(tx, ty, STRFMT_P_NOBUF(PSTR("(%03d%%)"), uint8_t(fraction * 100.0)), m_color_perc);
 }
 
 void Gui::ProgressIndicator::next() {

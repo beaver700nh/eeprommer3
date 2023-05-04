@@ -86,7 +86,7 @@ void tft_print_chars() {
   uint8_t i = 0;
 
   do {
-    tft.drawText(10 + 18 * (i & 0x0F), 10 + 24 * (i >> 4), STRFMT_NOBUF("%c", i));
+    tft.drawText(10 + 18 * (i & 0x0F), 10 + 24 * (i >> 4), STRFMT_P_NOBUF(PSTR("%c"), i));
   }
   while (i++ != 0xFF);
 
