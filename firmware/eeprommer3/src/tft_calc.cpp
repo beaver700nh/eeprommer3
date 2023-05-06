@@ -22,12 +22,12 @@ uint16_t TftCalc::t_center_x_P(TftCtrl &tft, const char *text, uint8_t size) {
   return t_center_x_P(tft.width(), text, size);
 }
 
-uint16_t TftCalc::t_center_x_l(uint16_t box, uint8_t len, uint8_t size) {
+uint16_t TftCalc::t_center_x(uint16_t box, uint8_t len, uint8_t size) {
   return (box - t_width(len, size)) / 2;
 }
 
-uint16_t TftCalc::t_center_x_l(TftCtrl &tft, uint8_t len, uint8_t size) {
-  return t_center_x_l(tft.width(), len, size);
+uint16_t TftCalc::t_center_x(TftCtrl &tft, uint8_t len, uint8_t size) {
+  return t_center_x(tft.width(), len, size);
 }
 
 uint16_t TftCalc::t_center_y(uint16_t box, uint8_t size) {

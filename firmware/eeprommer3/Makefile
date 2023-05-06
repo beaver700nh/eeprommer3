@@ -99,6 +99,7 @@ del:
 	rm $$name.hpp
 
 .ONESHELL: search
+.SILENT: search
 .PHONY: search
 search:
 	result=`grep -Gn --color=always '$(PATTERN)' src/*.?pp`

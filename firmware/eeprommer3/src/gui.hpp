@@ -42,7 +42,7 @@ public:
   inline uint8_t calc_center_y() { return TftCalc::t_center_y(m_h, m_font_size); }
   inline uint8_t calc_center_x() {
     auto len_fn = (flags.ram_label ? strlen : strlen_P);
-    return TftCalc::t_center_x_l(m_w, len_fn(m_text), m_font_size);
+    return TftCalc::t_center_x(m_w, len_fn(m_text), m_font_size);
   }
 
   inline uint16_t get_x() { return m_x; }
@@ -454,15 +454,11 @@ public:
  */
 class ProgressIndicator {
 public:
-  ProgressIndicator(
-    uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-    uint16_t color_frac = TftColor::DGREEN, uint16_t color_perc = TftColor::BLUE,
-    uint16_t color_bar1 = TftColor::DRED, uint16_t color_bar2 = TftColor::WHITE
-  );
+  ProgressIndicator(uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
   // Is a template func because lambdas without libstdc++ are annoying.
   // Returns true if loop completed succesfully, false if canceled.
-  // `action` is a lambda like TFT_PROGRESS_INDICATOR_LAMBDA
+  // `action` is a lambda like GUI_PROGRESS_INDICATOR_LAMBDA
   template<typename Func>
   bool for_each(Func action) {
     show();
@@ -484,7 +480,8 @@ public:
 private:
   uint16_t m_max_val, m_cur_val = 0;
   uint16_t m_x, m_y, m_w, m_h;
-  uint16_t m_color_frac, m_color_perc, m_color_bar1, m_color_bar2;
+
+  char m_buffer[18];
 };
 
 };

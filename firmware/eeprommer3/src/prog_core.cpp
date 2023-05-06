@@ -231,7 +231,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
 
   tft.drawText(10, 10, STRFMT_P_NOBUF(Strings::W_VERIFY, file->name(), addr), TftColor::CYAN);
 
-  Gui::ProgressIndicator bar(ceil((float) file->size() / 256.0) - 1, 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(ceil((float) file->size() / 256.0), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
   bool complete = bar.for_each(
     [&expected, &reality, &file, &addr] GUI_PROGRESS_INDICATOR_LAMBDA {
@@ -372,7 +372,7 @@ void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uin
 
   tft.drawText_P(10, 10, Strings::W_RMULTI, TftColor::CYAN, 3);
 
-  Gui::ProgressIndicator bar(ceil((float) nbytes / 256.0) - 1, 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(ceil((float) nbytes / 256.0), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
   uint16_t cur_addr_offset = 0x0000;
 
@@ -396,13 +396,22 @@ void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uin
 }
 
 Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, bool *done) {
-  uint8_t viewing_method = Dialog::ask_choice(
-    Strings::P_VIEW_METH, 1, 30, 0, 4,
-    Strings::L_VM_HEX,  TftColor::BLACK,  TftColor::ORANGE,
-    Strings::L_VM_CHAR, TftColor::LGREEN, TftColor::DGREEN,
-    Strings::L_VM_FILE, TftColor::CYAN,   TftColor::BLUE,
-    Strings::L_CLOSE,   TftColor::BLACK,  TftColor::WHITE
-  );
+  tft.drawText_P(10, 10, Strings::P_VIEW_METH, TftColor::CYAN, 3);
+
+  static Gui::MenuChoice menu(10, 10, 50, 10, 1, 30, true);
+  static bool first_time = true;
+
+  if (first_time) {
+    menu.add_btn_calc(Strings::L_VM_HEX,  TftColor::BLACK,  TftColor::ORANGE);
+    menu.add_btn_calc(Strings::L_VM_CHAR, TftColor::LGREEN, TftColor::DGREEN);
+    menu.add_btn_calc(Strings::L_VM_FILE, TftColor::CYAN,   TftColor::BLUE  );
+    menu.add_btn_calc(Strings::L_CLOSE,   TftColor::BLACK,  TftColor::WHITE );
+    menu.add_btn_confirm(true);
+
+    first_time = false;
+  }
+
+  uint8_t viewing_method = menu.wait_for_value();
 
   tft.fillScreen(TftColor::BLACK);
 

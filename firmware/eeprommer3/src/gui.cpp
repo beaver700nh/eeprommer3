@@ -460,8 +460,7 @@ void Gui::MenuChoice::update() {
 }
 
 Gui::MenuYesNo::MenuYesNo(
-  uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h,
-  bool force_bottom, uint8_t initial_choice
+  uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice
 ) :
   Gui::MenuChoice(pad_v, pad_h, marg_v, marg_h, 2, 0.7, false, initial_choice) {
   add_btn_calc(Strings::L_YES, TftColor::BLACK, TftColor::GREEN);
@@ -469,33 +468,28 @@ Gui::MenuYesNo::MenuYesNo(
   add_btn_confirm(force_bottom);
 }
 
-Gui::ProgressIndicator::ProgressIndicator(
-  uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-  uint16_t color_frac, uint16_t color_perc, uint16_t color_bar1, uint16_t color_bar2
-) :
-  m_max_val(max_val), m_x(x), m_y(y), m_w(w), m_h(h),
-  m_color_frac(color_frac), m_color_perc(color_perc), m_color_bar1(color_bar1), m_color_bar2(color_bar2) {
-  tft.drawRect(x, y, w, h, m_color_bar1);
-  tft.drawRect(x + 1, y + 1, w - 2, h - 2, m_color_bar1);
+Gui::ProgressIndicator::ProgressIndicator(uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+  : m_max_val(max_val ? max_val : 1), m_x(x), m_y(y), m_w(w), m_h(h) {
+  tft.drawThickRect(x, y, w, h, TftColor::DGRAY, 2);
 }
 
 void Gui::ProgressIndicator::show() {
-  if (m_cur_val > m_max_val) return;
+  const double fraction = (double) m_cur_val / m_max_val;
 
-  double fraction   = (double) m_cur_val / (double) m_max_val;
-  uint16_t progress = (m_w - 4) * fraction;
+  if (fraction > 1.0) return;
 
-  const char *text = STRFMT_P_NOBUF(PSTR("%d/%d       "), m_cur_val, m_max_val);
+  const uint16_t progress = (m_w - 4) * fraction;
 
-  uint16_t ty = m_y + TftCalc::t_center_y(m_h, 2);
-  uint16_t tx = m_x + TftCalc::t_center_x_l(m_w, strlen(text), 2);
+  const uint8_t length = snprintf_P_sz(m_buffer, PSTR("%d/%d (%03d%%)"), m_cur_val, m_max_val, (uint8_t) (fraction * 100.0));
+
+  const uint16_t ty = m_y + TftCalc::t_center_y(m_h, 2);
+  const uint16_t tx = m_x + TftCalc::t_center_x(m_w, length, 2);
 
   tft.fillRect(m_x + 2 + progress, ty, m_w - 4 - progress, 16, TftColor::BLACK);
-  tft.fillRect(m_x + 2, m_y + 2, progress, m_h - 4, m_color_bar2);
+  tft.fillRect(m_x + 2, m_y + 2, progress, m_h - 4, TftColor::WHITE);
 
-  tft.drawText(tx, ty, text, m_color_frac);
-  tx += TftCalc::t_width(strlen(text) - 6, 2);  // 6 spaces
-  tft.drawText(tx, ty, STRFMT_P_NOBUF(PSTR("(%03d%%)"), uint8_t(fraction * 100.0)), m_color_perc);
+  tft.drawText(tx + 1, ty + 1, m_buffer, TftColor::LGRAY);
+  tft.drawText(tx, ty, m_buffer, TftColor::BLACK);
 }
 
 void Gui::ProgressIndicator::next() {

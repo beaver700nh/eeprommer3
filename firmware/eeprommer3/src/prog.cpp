@@ -71,7 +71,7 @@ void show_help(uint8_t btn_id, bool is_confirm) {
 
   if (btn_id >= ARR_LEN(helps)) {
 no_help:
-    tft.drawText_P(10, 250, Strings::L_NO_HELP, TftColor::LGRAY, 2);
+    tft.drawText_P(10, 250, Strings::L_NO_HELP, TftColor::GRAY, 2);
     return;
   }
 

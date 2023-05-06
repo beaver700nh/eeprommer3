@@ -106,9 +106,9 @@ void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn) {
   }
   else {
     tft.drawThickRect(x, y, 320, 240, TftColor::CYAN, 4);
-    tft.drawText_P(TftCalc::t_center_x_l(tft, 10, 4), y + 10, Strings::L_PROJ_NAME, TftColor::ORANGE, 4);
-    tft.drawText_P(TftCalc::t_center_x_l(tft, 15, 2), y + 50, Strings::L_INTRO1,    TftColor::BLUE,   2);
-    tft.drawText_P(TftCalc::t_center_x_l(tft, 18, 2), y + 90, Strings::L_INTRO2,    TftColor::CYAN,   2);
+    tft.drawText_P(TftCalc::t_center_x(tft, 10, 4), y + 10, Strings::L_PROJ_NAME, TftColor::ORANGE, 4);
+    tft.drawText_P(TftCalc::t_center_x(tft, 15, 2), y + 50, Strings::L_INTRO1,    TftColor::BLUE,   2);
+    tft.drawText_P(TftCalc::t_center_x(tft, 18, 2), y + 90, Strings::L_INTRO2,    TftColor::CYAN,   2);
 
     tft.fillCircle   (x + 135, y + 140, 20,     TftColor::CYAN);
     tft.fillRect     (x + 175, y + 120, 40, 40, TftColor::DGRAY);
