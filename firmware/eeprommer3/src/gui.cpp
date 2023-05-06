@@ -352,7 +352,7 @@ void Gui::MenuStrInput::update_val(char c) {
 
 void Gui::MenuStrInput::show_val(uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
   // Show caps indicator
-  tft.drawTextBg(TftCalc::right(tft, 10, 10), 10, (m_capitalize ? Strings::L_INDIC_MAJ : Strings::L_INDIC_MIN));
+  tft.drawTextBg_P(TftCalc::right(tft, 10, 10), 10, (m_capitalize ? Strings::L_INDIC_MAJ : Strings::L_INDIC_MIN));
 
   uint8_t char_width = 6 * (size == 0 ? 1 : size);  // Prevent divide-by-zero
   uint8_t maxfit_len = (tft.width() - size - 2 * m_marg_h) / char_width - 2;

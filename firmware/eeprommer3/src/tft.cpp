@@ -47,7 +47,7 @@ void TftCtrl::drawTextBg(uint16_t x, uint16_t y, const char *text, uint16_t colo
 }
 
 void TftCtrl::drawTextBg_P(uint16_t x, uint16_t y, const char *text, uint16_t color, uint16_t bg, uint8_t size) {
-  fillRect(x, y, TftCalc::t_width(text, size), size * 8, bg);
+  fillRect(x, y, TftCalc::t_width_P(text, size), size * 8, bg);
   drawText_P(x, y, text, color, size);
 }
 

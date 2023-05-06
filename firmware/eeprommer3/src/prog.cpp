@@ -17,25 +17,6 @@
 
 #include "prog.hpp"
 
-static const char PSTR_HELP_0[] PROGMEM = "Read a byte from EEPROM.";
-static const char PSTR_HELP_1[] PROGMEM = "Write a byte to EEPROM.";
-static const char PSTR_HELP_2[] PROGMEM = "Read entire EEPROM to a file.";
-static const char PSTR_HELP_3[] PROGMEM = "Write file to EEPROM somewhere.";
-static const char PSTR_HELP_4[] PROGMEM = "Read 6502 jump vector contents.";
-static const char PSTR_HELP_5[] PROGMEM = "Write to a 6502 jump vector.";
-static const char PSTR_HELP_6[] PROGMEM = "Read multiple bytes from EEPROM.";
-static const char PSTR_HELP_7[] PROGMEM = "Write multiple bytes to EEPROM.";
-static const char PSTR_HELP_8[] PROGMEM = "";
-static const char PSTR_HELP_9[] PROGMEM = "";
-static const char PSTR_HELP_A[] PROGMEM = "Show info/about/credits menu.";
-static const char PSTR_HELP_B[] PROGMEM = "Restart EEPROMMER3.";
-
-static const char PSTR_DETAILS_0[] PROGMEM = "There were no errors.";
-static const char PSTR_DETAILS_1[] PROGMEM = "Attempted to perform\nan invalid action.";
-static const char PSTR_DETAILS_2[] PROGMEM = "Unable to open file.";
-static const char PSTR_DETAILS_3[] PROGMEM = "Verification failed.\nContent read did not match\nwhat was written.";
-static const char PSTR_DETAILS_4[] PROGMEM = "Memory allocation failed.\n(malloc() probably\nreturned null)";
-
 extern TftCtrl tft;
 extern TouchCtrl tch;
 
@@ -71,19 +52,36 @@ Programmer::~Programmer() {
 void show_help(uint8_t btn_id, bool is_confirm) {
   if (is_confirm) return;
 
-  static const char *const helps[] {
-    PSTR_HELP_0, PSTR_HELP_1,
-    PSTR_HELP_2, PSTR_HELP_3,
-    PSTR_HELP_4, PSTR_HELP_5,
-    PSTR_HELP_6, PSTR_HELP_7,
-    PSTR_HELP_8, PSTR_HELP_9,
-    PSTR_HELP_A, PSTR_HELP_B,
-  };  // todo make this progmem + global
+  static const char *const helps[] PROGMEM {
+    Strings::H_R_BYTE,
+    Strings::H_W_BYTE,
+    Strings::H_R_FILE,
+    Strings::H_W_FILE,
+    Strings::H_R_VECTOR,
+    Strings::H_W_VECTOR,
+    Strings::H_R_MULTI,
+    Strings::H_W_MULTI,
+    Strings::H_DRAW_TEST,
+    Strings::H_DEBUGS,
+    Strings::H_INFO,
+    Strings::H_X_CLOSE,
+  };
 
-  bool has_help = btn_id < ARR_LEN(helps) && strlen_P(helps[btn_id]) != 0;
+  tft.fillRect(10, 250, tft.width() - 10, 16, TftColor::BLACK);
 
-  tft.fillRect(10, 250, tft.width(), 16, TftColor::BLACK);
-  tft.drawText_P(10, 250, (has_help ? helps[btn_id] : Strings::L_NO_HELP), TftColor::PURPLE, 2);
+  if (btn_id >= ARR_LEN(helps)) {
+no_help:
+    tft.drawText_P(10, 250, Strings::L_NO_HELP, TftColor::LGRAY, 2);
+    return;
+  }
+
+  const char *const help = pgm_read_word_near(helps + btn_id);
+
+  if (strlen_P(help) == 0) {
+    goto no_help;
+  }
+
+  tft.drawText_P(10, 250, help, TftColor::PURPLE, 2);
 }
 
 void Programmer::init() {
@@ -151,13 +149,13 @@ void Programmer::run() {
 }
 
 void Programmer::show_status(ProgrammerBaseCore::Status code) {
-  static const char *const details[] {
-    PSTR_DETAILS_0,
-    PSTR_DETAILS_1,
-    PSTR_DETAILS_2,
-    PSTR_DETAILS_3,
-    PSTR_DETAILS_4,
-  }; // todo make this progmem + global
+  static const char *const details[] PROGMEM {
+    Strings::S_CODE_0,
+    Strings::S_CODE_1,
+    Strings::S_CODE_2,
+    Strings::S_CODE_3,
+    Strings::S_CODE_4,
+  };
 
   bool success = (code == ProgrammerBaseCore::Status::OK);
 
@@ -166,7 +164,7 @@ void Programmer::show_status(ProgrammerBaseCore::Status code) {
 
   tft.drawText_P(15, TftCalc::bottom(tft, 16, 44), success_str, success_color, 2);
 
-  const char *const code_text = (code < ARR_LEN(details) ? details[code] : Strings::L_UNK_REAS);
+  const char *const status_text = (code < ARR_LEN(details) ? (const char *) pgm_read_word_near(details + code) : Strings::L_UNK_REAS);
 
-  Dialog::show_error(ErrorLevel::INFO, 0x3, Strings::T_RESULT, code_text);
+  Dialog::show_error(ErrorLevel::INFO, 0x3, Strings::T_RESULT, status_text);
 }

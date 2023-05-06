@@ -530,7 +530,7 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
 
   if (substatus == AFStatus::OK) {
     tft.fillScreen(TftColor::BLACK);
-    tft.drawText(10, 10, Strings::W_WAIT, TftColor::PURPLE);
+    tft.drawText_P(10, 10, Strings::W_WAIT, TftColor::PURPLE);
 
     file->write(data, len);
     file->flush();
@@ -793,7 +793,7 @@ void ProgrammerOtherCore::monitor_data_bus() {
   while (!close_btn.is_pressed()) {
     uint8_t val = ee.get_io_exp(true)->read_port(PORT_A);
 
-    tft.drawTextBg(10, 10, STRFMT_NOBUF(BYTE_FMT, BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
+    tft.drawTextBg(10, 10, STRFMT_P_NOBUF(PSTR(BYTE_FMT), BYTE_FMT_VAL(val)), TftColor::CYAN, TftColor::BLACK, 3);
     delay(500);
   }
 #else

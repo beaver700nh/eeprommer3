@@ -76,6 +76,8 @@ struct Memory {
  * L_ - Label
  * G_ - Dialog
  * A_ - Action
+ * H_ - Help
+ * S_ - Status
  * D_ - Debug
  * I_ - Info
  * M_ - Misc (Non-PROGMEM)
@@ -200,6 +202,25 @@ namespace Strings {
   ADD_STRING(A, INFO,      "i");
   ADD_STRING(A, X_CLOSE,   "x");
 
+  ADD_STRING(H, R_BYTE,    "Read a byte from EEPROM.");
+  ADD_STRING(H, W_BYTE,    "Write a byte to EEPROM.");
+  ADD_STRING(H, R_FILE,    "Read entire EEPROM to a file.");
+  ADD_STRING(H, W_FILE,    "Write file to EEPROM somewhere.");
+  ADD_STRING(H, R_VECTOR,  "Read 6502 jump vector contents.");
+  ADD_STRING(H, W_VECTOR,  "Write to a 6502 jump vector.");
+  ADD_STRING(H, R_MULTI,   "Read multiple bytes from EEPROM.");
+  ADD_STRING(H, W_MULTI,   "Write multiple bytes to EEPROM.");
+  ADD_STRING(H, DRAW_TEST, "");
+  ADD_STRING(H, DEBUGS,    "");
+  ADD_STRING(H, INFO,      "Show info/about/credits menu.");
+  ADD_STRING(H, X_CLOSE,   "Restart EEPROMMER3.");
+
+  ADD_STRING(S, CODE_0,    "There were no errors.");
+  ADD_STRING(S, CODE_1,    "Attempted to perform\nan invalid action.");
+  ADD_STRING(S, CODE_2,    "Unable to open file.");
+  ADD_STRING(S, CODE_3,    "Verification failed.\nContent read did not match\nwhat was written.");
+  ADD_STRING(S, CODE_4,    "Memory allocation failed.\n(malloc() probably\nreturned null)");
+
   ADD_STRING(D, WE_HI,     "WE Hi (Disable)");
   ADD_STRING(D, WE_LO,     "WE Lo (Enable)");
   ADD_STRING(D, SET_ADDR,  "Set Address/OE");
@@ -217,7 +238,7 @@ namespace Strings {
   ADD_STRING(I, LINE_2,    "MCP23017 chips. Use by itself, or plug");
   ADD_STRING(I, LINE_3,    "into computer. File access: connection");
   ADD_STRING(I, LINE_4,    "over USB or from microSD card in slot.");
-  ADD_STRING(I, LINE_5,    "Made by beaver700nh (GitHub) 2021-2022");
+  ADD_STRING(I, LINE_5,    "Made by beaver700nh (GitHub) 2021-2023");
 
   inline const char *const M_FILE_DIR = "/ERMR3/";
 
