@@ -400,7 +400,7 @@ Gui::Btn *Gui::MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t 
   uint16_t col = m_num_btns % m_num_cols;
   uint16_t row = m_num_btns / m_num_cols;
 
-  uint16_t w = TftCalc::fraction((uint16_t) tft.width() - 2 * (uint16_t)m_marg_h + 2 * (uint16_t)m_pad_h, (uint16_t)m_pad_h, (uint8_t)m_num_cols); // TODO
+  uint16_t w = TftCalc::fraction(tft.width() + 2 * (m_pad_h - m_marg_h), m_pad_h, m_num_cols);
   uint16_t h = (m_btn_height_px ? (uint16_t) m_btn_height : (float) w * m_btn_height);
 
   uint16_t x = m_marg_h + col * (w + m_pad_h);
@@ -483,18 +483,29 @@ void Gui::ProgressIndicator::show() {
 
   if (fraction > 1.0) return;
 
-  const uint16_t progress = (m_w - 4) * fraction;
+  if (m_cur_val > 0) {
+    tft.drawText(m_tx + 1, m_ty + 1, m_buffer, TftColor::WHITE);
+    tft.drawText(m_tx, m_ty, m_buffer, TftColor::WHITE);
+  }
+
+  const uint16_t old_progress = m_progress;
+  m_progress = (m_w - 4) * fraction;
 
   const uint8_t length = snprintf_P_sz(m_buffer, PSTR("%d/%d (%03d%%)"), m_cur_val, m_max_val, (uint8_t) (fraction * 100.0));
 
-  const uint16_t ty = m_y + TftCalc::t_center_y(m_h, 2);
-  const uint16_t tx = m_x + TftCalc::t_center_x(m_w, length, 2);
+  m_tx = m_x + TftCalc::t_center_x(m_w, length, 2);
+  m_ty = m_y + TftCalc::t_center_y(m_h, 2);
 
-  tft.fillRect(m_x + 2 + progress, ty, m_w - 4 - progress, 16, TftColor::BLACK);
-  tft.fillRect(m_x + 2, m_y + 2, progress, m_h - 4, TftColor::WHITE);
+  tft.fillRect(m_x + 2 + old_progress, m_y + 2, m_progress - old_progress, m_h - 4, TftColor::WHITE);
 
-  tft.drawText(tx + 1, ty + 1, m_buffer, TftColor::LGRAY);
-  tft.drawText(tx, ty, m_buffer, TftColor::BLACK);
+  const uint16_t text_end = m_tx + TftCalc::t_width(length, 2);
+
+  if (m_progress <= text_end) {
+    tft.fillRect(m_x + 2 + m_progress, m_y + 2, text_end - m_progress, m_h - 4, TftColor::BLACK);
+  }
+
+  tft.drawText(m_tx + 1, m_ty + 1, m_buffer, TftColor::LGRAY);
+  tft.drawText(m_tx, m_ty, m_buffer, TftColor::BLACK);
 }
 
 void Gui::ProgressIndicator::next() {

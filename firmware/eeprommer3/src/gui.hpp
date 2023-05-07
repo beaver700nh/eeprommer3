@@ -479,10 +479,10 @@ public:
   void next();
 
 private:
-  uint16_t m_max_val, m_cur_val = 0;
-  uint16_t m_x, m_y, m_w, m_h;
+  uint16_t m_max_val, m_cur_val = 0, m_progress = 0;
+  uint16_t m_x, m_y, m_w, m_h, m_tx, m_ty;
 
-  char m_buffer[18];
+  char m_buffer[32] = {'\0'};
 };
 
 };
