@@ -87,6 +87,8 @@ extern HardwareSerial Serial;
 /** Constants ****************************/
 /*****************************************/
 
+#define XRAM_8K_BUF 0xE000
+
 #define SD_CS 10
 #define SD_EN A15
 

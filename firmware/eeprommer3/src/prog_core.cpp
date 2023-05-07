@@ -13,6 +13,7 @@
 #include "touch.hpp"
 #include "util.hpp"
 #include "vector.hpp"
+#include "xram.hpp"
 
 #include "prog_core.hpp"
 
@@ -124,18 +125,18 @@ Status ProgrammerFileCore::read() {
 }
 
 void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
-  uint8_t this_page[256];
+  volatile uint8_t *buffer = xram::access(XRAM_8K_BUF);
 
   tft.drawText_P(10, 10, Strings::W_OFILE, TftColor::CYAN, 3);
 
-  Gui::ProgressIndicator bar(0x80, 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(4, 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
   bar.for_each(
-    [&this_page, &file] GUI_PROGRESS_INDICATOR_LAMBDA {
-      uint16_t addr = progress << 8;
+    [&buffer, &file] GUI_PROGRESS_INDICATOR_LAMBDA {
+      uint16_t addr = progress << 13;
 
-      ee.read(addr, addr + 0xFF, this_page);
-      file->write(this_page, 256);
+      ee.read(addr, addr + 0x1FFF, (uint8_t *) buffer);
+      file->write((uint8_t *) buffer, 0x2000);
 
       return tch.is_touching();
     }
