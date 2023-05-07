@@ -199,8 +199,12 @@ bool FileCtrl::check_valid(FileCtrl *file) {
 }
 
 FileCtrlSd::FileCtrlSd(const char *path, uint8_t access) {
+  if ((access | O_TRUNC) && SD.exists(path)) {
+    SD.remove(path);
+  }
+
   m_file = SD.open(path, access);
-  fsys   = FileSystem::ON_SD_CARD;
+  fsys = FileSystem::ON_SD_CARD;
 }
 
 FileCtrlSd::~FileCtrlSd() {

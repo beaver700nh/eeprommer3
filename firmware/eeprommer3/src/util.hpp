@@ -164,7 +164,7 @@ namespace Strings {
   ADD_STRING(L, YES,       "Yes");
   ADD_STRING(L, NO,        "No");
   ADD_STRING(L, OK,        "OK");
-  ADD_STRING(L, PAGE_N_N,  "Page %d (max %d)");
+  ADD_STRING(L, PAGE_N_N,  "Page %02X (max %02X)");
   ADD_STRING(L, ADD_PAIR,  "Add Pair");
   ADD_STRING(L, NO_PAIRS1, "No pairs yet!");
   ADD_STRING(L, NO_PAIRS2, "Click `Add Pair' to add a pair!");
