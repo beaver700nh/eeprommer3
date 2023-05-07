@@ -7,10 +7,8 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
-    fix file write verify segfault/crash
     fix multi write scrolling
     fix multi write (timing?) causing unreliable writes
-    fix file write freeze
     use 8k buffer in large I/O operations
     update documentation:
       fix TODOs

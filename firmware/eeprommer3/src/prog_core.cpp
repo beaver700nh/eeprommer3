@@ -135,7 +135,7 @@ void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
       uint16_t addr = progress << 8;
 
       ee.read(addr, addr + 0xFF, this_page);
-      file->write(this_page, 0xFF);
+      file->write(this_page, 256);
 
       return tch.is_touching();
     }
@@ -211,8 +211,8 @@ void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
     [&this_page, &file, &cur_addr] GUI_PROGRESS_INDICATOR_LAMBDA {
       UNUSED_VAR(progress);
 
-      auto len = file->read(this_page, 0xFF);
-      ee.write(cur_addr, this_page, MIN(len, 0xFF));
+      uint16_t len = file->read(this_page, 256);
+      ee.write(cur_addr, this_page, len);
 
       cur_addr += 0x0100;  // Next page
 
@@ -226,6 +226,7 @@ void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
 
 Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   auto *file = (FileCtrl *) data;
+  file->seek(0);
 
   uint8_t expected[256], reality[256];
 
@@ -237,8 +238,16 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
     [&expected, &reality, &file, &addr] GUI_PROGRESS_INDICATOR_LAMBDA {
       UNUSED_VAR(progress);
 
-      auto nbytes = file->read(expected, 256);
-      ee.read(addr, addr + nbytes, reality);
+      uint16_t nbytes = file->read(expected, 256);
+
+      if (nbytes == 0) {
+        return false;  // Nothing to check
+      }
+
+      ee.read(addr, (addr + nbytes) - 1, reality);
+
+      Util::hexdump(expected, nbytes);
+      Util::hexdump(reality, nbytes);
 
       if (memcmp(expected, reality, nbytes) != 0) {
         tft.drawText(10, 150, STRFMT_P_NOBUF(Strings::E_MISMATCH, addr, addr + 0xFF), TftColor::RED);
@@ -590,7 +599,7 @@ Status ProgrammerMultiCore::write() {
   menu.add_btn(new Gui::Btn(10, 74, 24, _h, Strings::L_ARROW_U,  TftColor::WHITE, TftColor::DGRAY ));
   menu.add_btn(new Gui::Btn(x1, 74, 24, _h, Strings::L_ARROW_D,  TftColor::WHITE, TftColor::DGRAY ));
   menu.add_btn(new Gui::Btn(10, 40, w1, 24, Strings::L_ADD_PAIR, TftColor::WHITE, TftColor::PURPLE));
-  menu.add_btn(new Gui::Btn(10, _y, w2, 24, Strings::L_CONFIRM,  TftColor::RED,   TftColor::PINKK ));
+  menu.add_btn(new Gui::Btn(10, _y, w2, 24, Strings::L_CONFIRM,  TftColor::PINKK, TftColor::RED   ));
   menu.add_btn(new Gui::Btn(x2, _y, w2, 24, Strings::L_CANCEL,   TftColor::CYAN,  TftColor::BLUE  ));
 
   Gui::Menu del_btns;
@@ -602,7 +611,6 @@ Status ProgrammerMultiCore::write() {
   }
 
   uint16_t scroll = 0;
-
   bool done = false;
 
   while (!done) {
@@ -631,7 +639,7 @@ void ProgrammerMultiCore::draw_pairs(
 
   for (uint8_t i = 0; i < n; ++i) {
     // Hide all the delete buttons here, later show the ones that are needed
-    auto cur_btn = del_btns.get_btn(i - offset);
+    auto *cur_btn = del_btns.get_btn(i);
     cur_btn->visibility(false);
     cur_btn->operation(false);
   }
@@ -657,10 +665,10 @@ void ProgrammerMultiCore::draw_pairs(
     buf.get_pair(this_pair, &pair);
 
     tft.fillRect(x, y, w, h, TftColor::ORANGE);
-    tft.drawText(tx, ty, STRFMT_NOBUF(Strings::L_FMT_PAIR, this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
+    tft.drawText(tx, ty, STRFMT_P_NOBUF(Strings::L_FMT_PAIR, this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
 
     // Show all buttons that have pairs
-    auto cur_btn = del_btns.get_btn(this_pair - offset);
+    auto *cur_btn = del_btns.get_btn(this_pair - offset);
     cur_btn->visibility(true);
     cur_btn->operation(true);
   }
@@ -668,7 +676,7 @@ void ProgrammerMultiCore::draw_pairs(
 }
 
 bool ProgrammerMultiCore::poll_menus_and_react(
-  Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll
+  Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll
 ) {
   int16_t pressed, deleted;
 
@@ -676,7 +684,7 @@ bool ProgrammerMultiCore::poll_menus_and_react(
     deleted = del_btns.get_pressed();
 
     if (deleted >= 0) {
-      buf->remove(deleted);
+      buf->remove(deleted + *scroll);
       break;
     }
 
@@ -684,15 +692,10 @@ bool ProgrammerMultiCore::poll_menus_and_react(
 
     if (pressed >= 0) {
       switch (pressed) {
-      case 0:  if (*scroll > 0)          --*scroll; break;
-      case 1:  if (*scroll < max_scroll) ++*scroll; break;
-      case 2:  add_pair_from_user(buf);             break;
-      case 3:
-        tft.fillRect(10, 10, TftCalc::fraction_x(tft, 10, 1), 24, TftColor::BLACK);
-        tft.drawText_P(10, 12, Strings::W_WMULTI, TftColor::CYAN, 3);
-        ee.write(buf);
-        TftUtil::wait_continue();
-        [[fallthrough]];
+      case 0: if (*scroll > 0)          --*scroll; break;
+      case 1: if (*scroll < max_scroll) ++*scroll; break;
+      case 2: add_pair_from_user(buf);             break;
+      case 3: write_operation_core(buf); [[fallthrough]];
       default: return true;
       }
 
@@ -701,6 +704,24 @@ bool ProgrammerMultiCore::poll_menus_and_react(
   }
 
   return false;
+}
+
+void ProgrammerMultiCore::write_operation_core(AddrDataArray *buf) {
+  tft.fillScreen(TftColor::BLACK);
+
+  Dialog::show_error(
+    ErrorLevel::INFO, 0x1,
+    Strings::W_WMULTI, STRFMT_P_NOBUF(Strings::L_W_N_PAIRS, buf->get_len())
+  );
+
+  ee.write(buf);
+
+  tft.fillScreen(TftColor::BLACK);
+
+  Dialog::show_error(
+    ErrorLevel::INFO, 0x3,
+    Strings::F_WRITE, Strings::L_CONTINUE
+  );
 }
 
 void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {

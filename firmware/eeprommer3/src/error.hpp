@@ -12,7 +12,7 @@ namespace ErrorLevel {
 
   // NOLINTBEGIN: not unused
 
-  static inline const char *const NAMES[] {
+  static inline constexpr const char *const NAMES[] {
     Strings::T_EL_INFO, Strings::T_EL_WARN, Strings::T_EL_ERR,
   };
 

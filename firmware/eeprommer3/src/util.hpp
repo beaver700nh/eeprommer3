@@ -20,6 +20,9 @@ namespace Util {
   // Caller is responsible for freeing.
   char *strdup_P(const char *pstr);
 
+  // Prints `len` bytes of `buf` using `SER_LOG_PRINT`
+  void hexdump(uint8_t *buf, uint16_t len);
+
   // `exit_condition` is a template type
   // to get around annoying lambda errors
   template<typename Func>
@@ -39,7 +42,7 @@ namespace Util {
   // Function to validate two addresses (and make sure first is not greater than second)
   void validate_addrs(uint16_t *addr1, uint16_t *addr2);
 
-  // Wrapper around built-in reset() function
+  // Calls assembler instruction to restart program
   void restart();
 };
 
@@ -169,6 +172,7 @@ namespace Strings {
   ADD_STRING(L, NO_PAIRS1, "No pairs yet!");
   ADD_STRING(L, NO_PAIRS2, "Click `Add Pair' to add a pair!");
   ADD_STRING(L, FMT_PAIR,  "#%05d: %04X, %02X");
+  ADD_STRING(L, W_N_PAIRS, "Press `Continue' to write\n%d bytes to EEPROM");
   ADD_STRING(L, VM_HEX,    "Show as Raw Hexadecimal");
   ADD_STRING(L, VM_CHAR,   "Show Printable Characters");
   ADD_STRING(L, VM_FILE,   "Write Data to a File");
@@ -218,7 +222,7 @@ namespace Strings {
   ADD_STRING(S, CODE_0,    "There were no errors.");
   ADD_STRING(S, CODE_1,    "Attempted to perform\nan invalid action.");
   ADD_STRING(S, CODE_2,    "Unable to open file.");
-  ADD_STRING(S, CODE_3,    "Verification failed.\nContent read did not match\nwhat was written.");
+  ADD_STRING(S, CODE_3,    "Verification failed.\nMismatch between written\nand read data.");
   ADD_STRING(S, CODE_4,    "Memory allocation failed.\n(malloc() probably\nreturned null)");
 
   ADD_STRING(D, WE_HI,     "WE Hi (Disable)");

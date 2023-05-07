@@ -108,7 +108,9 @@ private:
   );
 
   // Helper that polls `menu` and reacts to it: deletes/adds buttons, scrolls menu, and writes to EEPROM as requested
-  static bool poll_menus_and_react(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll);
+  static bool poll_menus_and_react(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll);
+
+  static void write_operation_core(AddrDataArray *buf);
 
   // Helper function of poll_menus_and_react() that requests and adds a pair to `buf`
   static void add_pair_from_user(AddrDataArray *buf);

@@ -199,10 +199,6 @@ bool FileCtrl::check_valid(FileCtrl *file) {
 }
 
 FileCtrlSd::FileCtrlSd(const char *path, uint8_t access) {
-  if ((access | O_TRUNC) && SD.exists(path)) {
-    SD.remove(path);
-  }
-
   m_file = SD.open(path, access);
   fsys = FileSystem::ON_SD_CARD;
 }
@@ -221,6 +217,10 @@ const char *FileCtrlSd::name() {
 
 uint16_t FileCtrlSd::size() {
   return m_file.size();
+}
+
+bool FileCtrlSd::seek(uint16_t position) {
+  return m_file.seek(position);
 }
 
 uint8_t FileCtrlSd::read() {

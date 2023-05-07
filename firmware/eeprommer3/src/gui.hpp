@@ -290,7 +290,7 @@ public:
   // param `val_size`: 1 = 8 bits, 2 = 16 bits, etc
   MenuHexInput(uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h, uint16_t marg_v, uint16_t marg_h) :
     MenuKeyboard(t_debounce, pad_v, pad_h, marg_v, marg_h, glob_kbd_hex_layout, 1) {
-    m_val = (char *) malloc(BUF_LEN() * sizeof(char));  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
+    m_val = (char *) malloc((BUF_LEN() + 1) * sizeof(char));  // NOLINT(cppcoreguidelines-prefer-member-initializer): init list taken by delegated ctor
 
     for (uint8_t i = 0; i < BUF_LEN(); ++i) {
       m_val[i] = '0';

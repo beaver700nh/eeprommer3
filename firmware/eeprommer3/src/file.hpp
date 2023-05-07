@@ -48,6 +48,8 @@ public:
 
   virtual uint16_t size();
 
+  virtual bool seek(uint16_t position);
+
   virtual uint8_t read();
   virtual uint16_t read(uint8_t *buf, uint16_t size);  // Reads `size` bytes from file into `buf`. Returns number of bytes read.
 
@@ -80,6 +82,8 @@ public:
   const char *name() override;
 
   uint16_t size() override;
+
+  bool seek(uint16_t position) override;
 
   uint8_t read() override;
   uint16_t read(uint8_t *buf, uint16_t size) override;

@@ -14,27 +14,53 @@ extern int __heap_start, __heap_end;
 extern int *__brkval;
 // NOLINTEND
 
-char *Util::strdup_P(const char *pstr) {
+namespace Util {
+
+char *strdup_P(const char *pstr) {
   auto *buf = (char *) malloc(strlen_P(pstr) * sizeof(char));
   strcpy_P(buf, pstr);
 
   return buf;
 }
 
-void Util::validate_addr(uint16_t *addr) {
+void hexdump(uint8_t *buf, uint16_t len) {
+  SER_LOG_PRINT("Hexdump of 0x%0X:\n", buf);
+
+  for (uint16_t i = 0; i < len; ++i) {
+    if ((i % 16) == 0) {
+      SER_LOG_PRINT("");
+    }
+
+    PRINTF_P_NOBUF(&Serial, PSTR("%02X "), buf[i]);
+
+    if (((i + 1) % 8) == 0) {
+      Serial.print(" ");
+    }
+
+    if (((i + 1) % 16) == 0) {
+      Serial.println();
+    }
+  }
+
+  SER_LOG_PRINT("\n");
+}
+
+void validate_addr(uint16_t *addr) {
   *addr &= ~0x8000;
 }
 
-void Util::validate_addrs(uint16_t *addr1, uint16_t *addr2) {
+void validate_addrs(uint16_t *addr1, uint16_t *addr2) {
   validate_addr(addr1);
   validate_addr(addr2);
 
   if (*addr1 > *addr2) swap(addr1, addr2);
 }
 
-void Util::restart() {
+void restart() {
   asm volatile ("jmp 0");
 }
+
+};
 
 void Memory::calculate_bords() {
   // Internal
