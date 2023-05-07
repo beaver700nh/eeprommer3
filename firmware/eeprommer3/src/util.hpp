@@ -223,7 +223,7 @@ namespace Strings {
   ADD_STRING(S, CODE_1,    "Attempted to perform\nan invalid action.");
   ADD_STRING(S, CODE_2,    "Unable to open file.");
   ADD_STRING(S, CODE_3,    "Verification failed.\nMismatch between written\nand read data.");
-  ADD_STRING(S, CODE_4,    "Memory allocation failed.\n(malloc() probably\nreturned null)");
+  ADD_STRING(S, CODE_4,    "Memory allocation failed.\nThere is not enough RAM\nfor the operation.");
 
   ADD_STRING(D, WE_HI,     "WE Hi (Disable)");
   ADD_STRING(D, WE_LO,     "WE Lo (Enable)");

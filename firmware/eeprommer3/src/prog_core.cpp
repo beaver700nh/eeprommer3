@@ -125,7 +125,7 @@ Status ProgrammerFileCore::read() {
 }
 
 void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
-  volatile uint8_t *buffer = xram::access(XRAM_8K_BUF);
+  uint8_t *buffer = (uint8_t *) xram::access(XRAM_8K_BUF);
 
   tft.drawText_P(10, 10, Strings::W_OFILE, TftColor::CYAN, 3);
 
@@ -135,8 +135,8 @@ void ProgrammerFileCore::read_operation_core(FileCtrl *file) {
     [&buffer, &file] GUI_PROGRESS_INDICATOR_LAMBDA {
       uint16_t addr = progress << 13;
 
-      ee.read(addr, addr + 0x1FFF, (uint8_t *) buffer);
-      file->write((uint8_t *) buffer, 0x2000);
+      ee.read(addr, addr + 0x1FFF, buffer);
+      file->write(buffer, 0x2000);
 
       return tch.is_touching();
     }
@@ -202,20 +202,20 @@ bool ProgrammerFileCore::write_from_file(FileCtrl *file, uint16_t addr) {
 
 void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
   uint16_t cur_addr = addr;
-  uint8_t this_page[256];
+  uint8_t *buffer = (uint8_t *) xram::access(XRAM_8K_BUF);
 
   tft.drawText_P(10, 10, Strings::W_IFILE, TftColor::CYAN, 3);
 
-  Gui::ProgressIndicator bar(ceil((float) file->size() / 256.0), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(ceil((float) file->size() / 0x2000), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
   bar.for_each(
-    [&this_page, &file, &cur_addr] GUI_PROGRESS_INDICATOR_LAMBDA {
+    [&buffer, &file, &cur_addr] GUI_PROGRESS_INDICATOR_LAMBDA {
       UNUSED_VAR(progress);
 
-      uint16_t len = file->read(this_page, 256);
-      ee.write(cur_addr, this_page, len);
+      uint16_t len = file->read(buffer, 0x2000);
+      ee.write(cur_addr, buffer, len);
 
-      cur_addr += 0x0100;  // Next page
+      cur_addr += 0x2000;  // Next page
 
       return tch.is_touching();
     }
@@ -229,17 +229,18 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   auto *file = (FileCtrl *) data;
   file->seek(0);
 
-  uint8_t expected[256], reality[256];
+  uint8_t *expected = (uint8_t *) xram::access(XRAM_8K_BUF + 0x0000);
+  uint8_t *reality  = (uint8_t *) xram::access(XRAM_8K_BUF + 0x1000);
 
   tft.drawText(10, 10, STRFMT_P_NOBUF(Strings::W_VERIFY, file->name(), addr), TftColor::CYAN);
 
-  Gui::ProgressIndicator bar(ceil((float) file->size() / 256.0), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
+  Gui::ProgressIndicator bar(ceil((float) file->size() / 0x1000), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
   bool complete = bar.for_each(
     [&expected, &reality, &file, &addr] GUI_PROGRESS_INDICATOR_LAMBDA {
       UNUSED_VAR(progress);
 
-      uint16_t nbytes = file->read(expected, 256);
+      uint16_t nbytes = file->read(expected, 0x1000);
 
       if (nbytes == 0) {
         return false;  // Nothing to check
@@ -247,15 +248,12 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
 
       ee.read(addr, (addr + nbytes) - 1, reality);
 
-      Util::hexdump(expected, nbytes);
-      Util::hexdump(reality, nbytes);
-
       if (memcmp(expected, reality, nbytes) != 0) {
-        tft.drawText(10, 150, STRFMT_P_NOBUF(Strings::E_MISMATCH, addr, addr + 0xFF), TftColor::RED);
+        tft.drawText(10, 150, STRFMT_P_NOBUF(Strings::E_MISMATCH, addr, addr + 0x0FFF), TftColor::RED);
         return true;  // Request to quit loop
       }
 
-      addr += 0x0100;  // Next page
+      addr += 0x2000;  // Next sector
       return false;
     }
   );
@@ -353,11 +351,12 @@ Status ProgrammerMultiCore::read() {
 
   uint16_t nbytes = (addr2 - addr1 + 1);
 
-  auto *data = (uint8_t *) malloc(nbytes * sizeof(uint8_t));
-  if (data == nullptr) {
+  if (nbytes > 0x2000) {
     tft.fillScreen(TftColor::BLACK);
     return Status::ERR_MEMORY;
   }
+
+  uint8_t *data = (uint8_t *) xram::access(XRAM_8K_BUF);
 
   read_operation_core(data, addr1, addr2);
   tft.fillScreen(TftColor::BLACK);
@@ -559,7 +558,7 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
 }
 
 void ProgrammerMultiCore::store_file_operation_core(uint8_t *data, uint16_t len, FileCtrl *file) {
-  tft.drawText_P(10, 10, Strings::W_OFILE, TftColor::CYAN, 3);
+  tft.drawText_P(10, 10, Strings::W_WAIT, TftColor::CYAN, 3);
 
   Gui::ProgressIndicator bar(ceil((float) len / 256.0), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
 
@@ -567,7 +566,7 @@ void ProgrammerMultiCore::store_file_operation_core(uint8_t *data, uint16_t len,
     [&data, &len, &file] GUI_PROGRESS_INDICATOR_LAMBDA {
       UNUSED_VAR(progress);
 
-      file->write(data, min(0xFF, len));
+      file->write(data, min(256, len));
 
       if (len < 0x0100) {
         return false;  // Request to quit loop

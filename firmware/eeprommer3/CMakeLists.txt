@@ -33,7 +33,7 @@ set(
   -ffunction-sections
   -fdata-sections
   -fno-threadsafe-statics
-  #  -flto
+  -flto
   -Os
 )
 
