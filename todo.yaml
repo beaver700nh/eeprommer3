@@ -20,9 +20,6 @@ FIRMWARE:
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
-    make progress bars look better:
-      unsatisfying off-by-one stuff
-      optimize drawing?
   start work on serial file io:
     add FileCtrlSerial
   add EEPROM SDP feature?

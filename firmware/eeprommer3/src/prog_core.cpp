@@ -352,11 +352,18 @@ Status ProgrammerMultiCore::read() {
   read_operation_core(data, addr1, addr2);
   tft.fillScreen(TftColor::BLACK);
 
-  Status status = Status::OK;
-  bool done = false;
+  Gui::MenuChoice menu(10, 10, 50, 10, 1, 30, true);
 
-  while (!done) {
-    status = handle_data(data, addr1, addr2, &done);
+  menu.add_btn_calc(Strings::L_VM_HEX,  TftColor::PINKK,  TftColor::RED   );
+  menu.add_btn_calc(Strings::L_VM_CHAR, TftColor::LGREEN, TftColor::DGREEN);
+  menu.add_btn_calc(Strings::L_VM_FILE, TftColor::CYAN,   TftColor::BLUE  );
+  menu.add_btn_calc(Strings::L_CLOSE,   TftColor::BLACK,  TftColor::WHITE );
+  menu.add_btn_confirm(true);
+
+  Status status = Status::OK;
+
+  while (menu.get_choice() != menu.get_num_btns() - 2) {
+    status = handle_data(data, addr1, addr2, &menu);
     tft.fillScreen(TftColor::BLACK);
   }
 
@@ -395,23 +402,10 @@ void ProgrammerMultiCore::read_operation_core(uint8_t *data, uint16_t addr1, uin
   TftUtil::wait_continue();
 }
 
-Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, bool *done) {
+Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, Gui::MenuChoice *menu) {
   tft.drawText_P(10, 10, Strings::P_VIEW_METH, TftColor::CYAN, 3);
 
-  static Gui::MenuChoice menu(10, 10, 50, 10, 1, 30, true);
-  static bool first_time = true;
-
-  if (first_time) {
-    menu.add_btn_calc(Strings::L_VM_HEX,  TftColor::BLACK,  TftColor::ORANGE);
-    menu.add_btn_calc(Strings::L_VM_CHAR, TftColor::LGREEN, TftColor::DGREEN);
-    menu.add_btn_calc(Strings::L_VM_FILE, TftColor::CYAN,   TftColor::BLUE  );
-    menu.add_btn_calc(Strings::L_CLOSE,   TftColor::BLACK,  TftColor::WHITE );
-    menu.add_btn_confirm(true);
-
-    first_time = false;
-  }
-
-  uint8_t viewing_method = menu.wait_for_value();
+  uint8_t viewing_method = menu->wait_for_value();
 
   tft.fillScreen(TftColor::BLACK);
 
@@ -419,7 +413,7 @@ Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t 
   case 0:  return (show_range(data, addr1, addr2, &multi_byte_repr_hex),   Status::OK);
   case 1:  return (show_range(data, addr1, addr2, &multi_byte_repr_chars), Status::OK);
   case 2:  return store_file(data, addr2 - addr1 + 1);
-  case 3:  return (*done = true, Status::OK);
+  case 3:  return Status::OK;
   default: return Status::ERR_INVALID;
   }
 }

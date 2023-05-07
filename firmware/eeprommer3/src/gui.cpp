@@ -400,7 +400,7 @@ Gui::Btn *Gui::MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t 
   uint16_t col = m_num_btns % m_num_cols;
   uint16_t row = m_num_btns / m_num_cols;
 
-  uint16_t w = TftCalc::fraction((uint16_t) tft.width() - 2 * (uint16_t)m_marg_h + 2 * (uint16_t)m_pad_h, (uint16_t)m_pad_h, (uint8_t)m_num_cols);
+  uint16_t w = TftCalc::fraction((uint16_t) tft.width() - 2 * (uint16_t)m_marg_h + 2 * (uint16_t)m_pad_h, (uint16_t)m_pad_h, (uint8_t)m_num_cols); // TODO
   uint16_t h = (m_btn_height_px ? (uint16_t) m_btn_height : (float) w * m_btn_height);
 
   uint16_t x = m_marg_h + col * (w + m_pad_h);
@@ -420,6 +420,7 @@ Gui::Btn *Gui::MenuChoice::add_btn_confirm(bool force_bottom, uint16_t fg, uint1
 
 void Gui::MenuChoice::set_confirm_btn(uint8_t btn_id) {
   m_confirm_btn = btn_id;
+  select(m_cur_choice);
 }
 
 uint8_t Gui::MenuChoice::wait_for_value() {
@@ -443,15 +444,19 @@ uint8_t Gui::MenuChoice::wait_for_value() {
   return m_cur_choice;
 }
 
+void Gui::MenuChoice::set_choice(uint8_t btn) {
+  m_old_choice = m_cur_choice;
+  m_cur_choice = btn;
+}
+
+uint8_t Gui::MenuChoice::get_choice() {
+  return m_cur_choice;
+}
+
 void Gui::MenuChoice::select(uint8_t choice) {
   set_choice(choice);
   get_btn(m_old_choice)->highlight(false);
   get_btn(choice)->highlight(true);
-}
-
-void Gui::MenuChoice::set_choice(uint8_t btn) {
-  m_old_choice = m_cur_choice;
-  m_cur_choice = btn;
 }
 
 void Gui::MenuChoice::update() {

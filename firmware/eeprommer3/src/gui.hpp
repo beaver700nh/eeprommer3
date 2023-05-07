@@ -391,7 +391,7 @@ public:
   ) :
     m_pad_v(pad_v), m_pad_h(pad_h), m_marg_v(marg_v), m_marg_h(marg_h), m_num_cols(num_cols),
     m_btn_height(btn_height), m_btn_height_px(btn_height_px) {
-    select(initial_choice);
+    set_choice(initial_choice);
   }
 
   ~MenuChoice() {}  // Ensure that base destructor(s) are called.
@@ -403,6 +403,7 @@ public:
   Callback get_callback();
 
   void set_choice(uint8_t choice);
+  uint8_t get_choice();
   void select(uint8_t btn);
 
   void update();
