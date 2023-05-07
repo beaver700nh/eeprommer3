@@ -213,6 +213,11 @@ void ProgrammerFileCore::write_operation_core(FileCtrl *file, uint16_t addr) {
       UNUSED_VAR(progress);
 
       uint16_t len = file->read(buffer, 0x2000);
+
+      if (len == 0) {
+        return false;  // Nothing to write
+      }
+
       ee.write(cur_addr, buffer, len);
 
       cur_addr += 0x2000;  // Next page

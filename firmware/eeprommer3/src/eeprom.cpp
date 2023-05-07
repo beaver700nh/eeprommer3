@@ -91,7 +91,7 @@ void EepromCtrl::write(uint16_t addr, uint8_t *buf, uint16_t len) {
   set_addr_and_oe(0x8000);  // ~OE is on to disable output
 
   do {
-    write(i, buf[i - addr], true);
+    write(i, buf[i - addr], false);
   }
   while ((i - addr + 1) < len && ++i);
 
@@ -107,7 +107,7 @@ void EepromCtrl::write(AddrDataArray *buf) {
   uint16_t i = 0;
 
   while (buf->get_pair(i++, &pair) == true) {
-    write(pair.addr, pair.data, true);
+    write(pair.addr, pair.data, false);
   }
 
   // Delay to be sure that the next operation is treated as a different operation than this one
