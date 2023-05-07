@@ -21,32 +21,7 @@ extern TftCtrl tft;
 extern TouchCtrl tch;
 
 Programmer::Programmer() : m_menu(10, 10, 50, 10, 2, 30, true) {
-  static ProgrammerBaseCore
-    *core_byte   = new ProgrammerByteCore,
-    *core_file   = new ProgrammerFileCore,
-    *core_vector = new ProgrammerVectorCore,
-    *core_multi  = new ProgrammerMultiCore,
-    *core_other  = new ProgrammerOtherCore;
-
-  m_cores[ 0] = core_byte;
-  m_cores[ 1] = core_byte;
-  m_cores[ 2] = core_file;
-  m_cores[ 3] = core_file;
-  m_cores[ 4] = core_vector;
-  m_cores[ 5] = core_vector;
-  m_cores[ 6] = core_multi;
-  m_cores[ 7] = core_multi;
-  m_cores[ 8] = core_other;
-  m_cores[ 9] = core_other;
-  m_cores[10] = core_other;
-  m_cores[11] = core_other;
-}
-
-Programmer::~Programmer() {
-  for (uint8_t i = 0; i < NUM_ACTIONS; ++i) {
-    delete m_cores[i];
-    m_cores[i] = nullptr;
-  }
+  // Empty body because all work done in init list
 }
 
 void show_help(uint8_t btn_id, bool is_confirm) {
@@ -131,12 +106,11 @@ void Programmer::run() {
 
     ProgrammerBaseCore::Status status_code = ProgrammerBaseCore::Status::ERR_INVALID;
 
-    auto the_core   = m_cores[cur_choice];
-    auto the_action = action_map[cur_choice];
+    auto action = action_map[cur_choice];
 
     // Run the action function if available
     if (cur_choice < NUM_ACTIONS) {
-      status_code = (the_core->*the_action)();
+      status_code = (*action)();
     }
 
     SER_LOG_PRINT("Action returned status code %d.\n", status_code);

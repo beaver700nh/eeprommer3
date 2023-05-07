@@ -531,21 +531,49 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
   AFStatus substatus;
   FileCtrl *file = Dialog::ask_file(Strings::P_STORE, O_WRITE | O_CREAT | O_TRUNC, &substatus, false);
 
-  if (substatus == AFStatus::OK) {
-    tft.fillScreen(TftColor::BLACK);
-    tft.drawText_P(10, 10, Strings::W_WAIT, TftColor::PURPLE);
+  tft.fillScreen(TftColor::BLACK);
 
-    file->write(data, len);
-    file->flush();
+  if (substatus == AFStatus::OK) {
+    store_file_operation_core(data, len, file);
     file->close();
   }
 
   delete file;
-  return (
-    substatus == AFStatus::OK ||
-    substatus == AFStatus::CANCELED ?
-    Status::OK : Status::ERR_FILE
+
+  if (substatus == AFStatus::FNAME_TOO_LONG || substatus == AFStatus::FSYS_INVALID) {
+    return Status::ERR_FILE;
+  }
+  else {
+    return Status::OK;
+  }
+}
+
+void ProgrammerMultiCore::store_file_operation_core(uint8_t *data, uint16_t len, FileCtrl *file) {
+  tft.drawText_P(10, 10, Strings::W_OFILE, TftColor::CYAN, 3);
+
+  Gui::ProgressIndicator bar(ceil((float) len / 256.0), 10, 50, TftCalc::fraction_x(tft, 10, 1), 40);
+
+  bar.for_each(
+    [&data, &len, &file] GUI_PROGRESS_INDICATOR_LAMBDA {
+      UNUSED_VAR(progress);
+
+      file->write(data, min(0xFF, len));
+
+      if (len < 0x0100) {
+        return false;  // Request to quit loop
+      }
+
+      data += 0x0100;
+      len -= 0x0100;
+
+      return tch.is_touching();
+    }
   );
+
+  file->flush();
+
+  tft.drawText_P(10, 110, Strings::F_READ, TftColor::CYAN);
+  TftUtil::wait_continue();
 }
 
 Status ProgrammerMultiCore::write() {

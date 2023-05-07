@@ -20,7 +20,6 @@ class ProgrammerBaseCore;
 class Programmer {
 public:
   Programmer();
-  ~Programmer();
 
   void init();
 
@@ -28,8 +27,6 @@ public:
   void show_status(ProgrammerBaseCore::Status code);
 
   static constexpr uint8_t NUM_ACTIONS = 12;
-
-  ProgrammerBaseCore *m_cores[NUM_ACTIONS];
 
 #define FUNC(type, name) ((ProgrammerBaseCore::Func) &Programmer##type##Core::name)
 

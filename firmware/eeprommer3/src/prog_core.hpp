@@ -12,22 +12,20 @@
 #include "tft.hpp"
 #include "touch.hpp"
 
-#define ADD_RWV_METHODS                        \
-  public:                                      \
-    Status read();                             \
-    Status write();                            \
-                                               \
-  protected:                                   \
-    Status verify(uint16_t addr, void *data);
+#define ADD_RWV_METHODS                               \
+  public:                                             \
+    static Status read();                             \
+    static Status write();                            \
+                                                      \
+  protected:                                          \
+    static Status verify(uint16_t addr, void *data);
 
 /*
- * ProgrammerBaseCore is an ABC that contains functions for manipulating EEPROM
- * (EepromCtrl &ee) in a way which is defined in the child classes.
+ * ProgrammerBaseCore is an ABC that contains functions for manipulating
+ * EEPROM (EepromCtrl ee) in a way which is defined in the child classes.
  */
 class ProgrammerBaseCore {
 public:
-  ProgrammerBaseCore() {};
-
   // These status codes are returned by `Func`s.
   enum Status : uint8_t {
     OK,           // There were no errors
@@ -37,9 +35,9 @@ public:
     ERR_MEMORY,   // Memory allocator returned null
   };
 
-  typedef Status (ProgrammerBaseCore::*Func)();
+  typedef Status (*Func)();
 
-  Status nop();
+  static Status nop();
 };
 
 /*************************************************/
@@ -48,45 +46,33 @@ public:
 
 /*** Manipulates a single byte at a time ***/
 class ProgrammerByteCore : public ProgrammerBaseCore {
-public:
-  ProgrammerByteCore() {};
-
   ADD_RWV_METHODS
 };
 
 /*** Reads files to and from EEPROM ***/
 class ProgrammerFileCore : public ProgrammerBaseCore {
-public:
-  ProgrammerFileCore() {};
-
   ADD_RWV_METHODS
 
 private:
-  void read_operation_core(FileCtrl *file);
+  static void read_operation_core(FileCtrl *file);
 
-  bool write_from_file(FileCtrl *file, uint16_t addr);
-  void write_operation_core(FileCtrl *file, uint16_t addr);
+  static bool write_from_file(FileCtrl *file, uint16_t addr);
+  static void write_operation_core(FileCtrl *file, uint16_t addr);
 };
 
 // Manipulates one 6502 jump vector at a time (NMI, RESET, IRQ)
 class ProgrammerVectorCore : public ProgrammerBaseCore {
-public:
-  ProgrammerVectorCore() {};
-
   ADD_RWV_METHODS
 };
 
 // Reads ranges and writes arrays of pairs
 class ProgrammerMultiCore : public ProgrammerBaseCore {
-public:
-  ProgrammerMultiCore() {};
-
   ADD_RWV_METHODS
 
 private:
   /******************************** READ RANGE HELPERS ********************************/
 
-  void read_operation_core(uint8_t *data, uint16_t addr1, uint16_t addr2);
+  static void read_operation_core(uint8_t *data, uint16_t addr1, uint16_t addr2);
 
   // Contains info for customizing a byte's representation
   struct ByteRepr {
@@ -102,40 +88,40 @@ private:
   static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte);    // Shows byte as white raw hex
   static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte);  // Shows byte as white char if printable, gray "?" if not
 
-  Status handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, Gui::MenuChoice *menu);  // Shows read data to user nicely
+  static Status handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, Gui::MenuChoice *menu);  // Shows read data to user nicely
 
-  void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);                                     // Show whole range on TFT
-  void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page);  // One page at a time
+  static void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);                                     // Show whole range on TFT
+  static void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page);  // One page at a time
 
-  void draw_page_axis_labels();  // Draws markers: 00, 10, ..., F0; 00, 01, ..., 0F
+  static void draw_page_axis_labels();  // Draws markers: 00, 10, ..., F0; 00, 01, ..., 0F
 
-  Status store_file(uint8_t *data, uint16_t len);  // Stores data to SD card
+  static Status store_file(uint8_t *data, uint16_t len);  // Stores data to SD card
+
+  static void store_file_operation_core(uint8_t *data, uint16_t len, FileCtrl *file);
 
   /******************************** WRITE RANGE HELPERS ********************************/
 
   // Helper that draws the pairs to be written to EEPROM
-  void draw_pairs(
+  static void draw_pairs(
     uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
     uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, Gui::Menu &del_btns
   );
 
   // Helper that polls `menu` and reacts to it: deletes/adds buttons, scrolls menu, and writes to EEPROM as requested
-  bool poll_menus_and_react(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll);
+  static bool poll_menus_and_react(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, const uint16_t max_scroll);
 
   // Helper function of poll_menus_and_react() that requests and adds a pair to `buf`
-  void add_pair_from_user(AddrDataArray *buf);
+  static void add_pair_from_user(AddrDataArray *buf);
 };
 
 // Miscellaneous other functions
 class ProgrammerOtherCore : public ProgrammerBaseCore {
 public:
-  ProgrammerOtherCore() {};
+  static Status paint();
+  static Status debug();
 
-  Status paint();
-  Status debug();
-
-  Status about();
-  Status restart();
+  static Status about();
+  static Status restart();
 
 private:
   // Helper functions of debug()
@@ -154,12 +140,12 @@ private:
     ACTION_AUX2,          // Customizable auxiliary action
   };
 
-  void do_debug_action(DebugAction action);
-  void show_data_bus();
-  void monitor_data_bus();
-  void set_data_dir();
-  void debug_action_aux1();
-  void debug_action_aux2();
+  static void do_debug_action(DebugAction action);
+  static void show_data_bus();
+  static void monitor_data_bus();
+  static void set_data_dir();
+  static void debug_action_aux1();
+  static void debug_action_aux2();
 };
 
 #undef ADD_RWV_METHODS
