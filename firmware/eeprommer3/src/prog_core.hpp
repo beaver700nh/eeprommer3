@@ -74,29 +74,9 @@ private:
 
   static void read_operation_core(uint8_t *data, uint16_t addr1, uint16_t addr2);
 
-  // Contains info for customizing a byte's representation
-  struct ByteRepr {
-    uint8_t offset;
-    char text[3];
-    uint16_t color;
-  };
-
-  // Returns a `ByteRepr` for a given byte, tells how to format it
-  typedef ByteRepr (*ByteReprFunc)(uint8_t input_byte);
-
-  // These are `ByteReprFunc`s
-  static inline ByteRepr multi_byte_repr_hex(uint8_t input_byte);    // Shows byte as white raw hex
-  static inline ByteRepr multi_byte_repr_chars(uint8_t input_byte);  // Shows byte as white char if printable, gray "?" if not
-
   static Status handle_data(uint8_t *data, uint16_t addr1, uint16_t addr2, Gui::MenuChoice *menu);  // Shows read data to user nicely
 
-  static void show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);                                     // Show whole range on TFT
-  static void show_page(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page);  // One page at a time
-
-  static void draw_page_axis_labels();  // Draws markers: 00, 10, ..., F0; 00, 01, ..., 0F
-
   static Status store_file(uint8_t *data, uint16_t len);  // Stores data to SD card
-
   static void store_file_operation_core(uint8_t *data, uint16_t len, FileCtrl *file);
 
   /******************************** WRITE RANGE HELPERS ********************************/

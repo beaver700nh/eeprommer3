@@ -521,6 +521,39 @@ private:
   char m_buffer[32] = {'\0'};
 };
 
+/*
+ * `PageDisplay` shows a data buffer one page (256 bytes) at a time. It takes up most of the screen.
+ */
+class PageDisplay {
+public:
+  // Contains info for customizing a byte's representation
+  struct ByteRepr {
+    uint8_t offset;
+    char text[3];
+    uint16_t color;
+  };
+
+  // Returns a `ByteRepr` for a given byte, tells how to format it
+  typedef ByteRepr (*ByteReprFunc)(uint8_t input_byte);
+
+  PageDisplay(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);
+
+  // These are `ByteReprFunc`s
+  static inline ByteRepr repr_hex(uint8_t input_byte);    // Shows byte as white raw hex
+  static inline ByteRepr repr_chars(uint8_t input_byte);  // Shows byte as white char if printable, gray "?" if not
+
+  void show_range();                                   // Show whole range on TFT
+  void show_page(uint8_t cur_page, uint8_t max_page);  // One page at a time
+
+  void draw_page_axis_labels();  // Draws markers: 00, 10, ..., F0; 00, 01, ..., 0F
+
+private:
+  uint8_t *m_data;
+  uint16_t m_addr1, m_addr2;
+
+  ByteReprFunc m_repr;
+};
+
 };
 
 #endif

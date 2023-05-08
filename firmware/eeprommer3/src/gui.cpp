@@ -15,11 +15,13 @@
 extern TftCtrl tft;
 extern TouchCtrl tch;
 
-Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg) :
+namespace Gui {
+
+Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t tx, uint16_t ty, const char *text, uint16_t fg, uint16_t bg) :
   m_x(x), m_y(y), m_w(w), m_h(h), m_tx(tx), m_ty(ty), m_fg(fg), m_bg(bg), m_text(text) {
 }
 
-Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg) :
+Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, uint16_t fg, uint16_t bg) :
   Btn(x, y, w, h, 0, 0, text, fg, bg) {
   flags.auto_center = true;
 
@@ -28,7 +30,7 @@ Gui::Btn::Btn(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *text, 
   do_auto_center();
 }
 
-void Gui::Btn::draw() {
+void Btn::draw() {
   appearance.was_highlighted = appearance.is_highlighted;
   appearance.was_visible     = appearance.is_visible;
 
@@ -46,7 +48,7 @@ void Gui::Btn::draw() {
   draw_highlight();
 }
 
-void Gui::Btn::erase() {
+void Btn::erase() {
   if (!appearance.was_visible) return;  // If it was invisible, there is nothing to erase.
 
   if (appearance.was_highlighted) {
@@ -57,7 +59,7 @@ void Gui::Btn::erase() {
   }
 }
 
-void Gui::Btn::draw_highlight() {
+void Btn::draw_highlight() {
   uint16_t color = (
     !appearance.is_highlighted     ? TftColor::BLACK :
     !flags.operational             ? TftColor::LGRAY :
@@ -68,13 +70,13 @@ void Gui::Btn::draw_highlight() {
   tft.drawThickRect(m_x - 3, m_y - 3, m_w + 6, m_h + 6, color, 3);
 }
 
-void Gui::Btn::wait_for_press() {
+void Btn::wait_for_press() {
   while (!is_pressed()) {
     /* wait for press */;
   }
 }
 
-bool Gui::Btn::is_pressed() {
+bool Btn::is_pressed() {
   if (!flags.operational) return false;  // Ignore presses if non-operational.
 
   TSPoint p = tch.get_tft_point(TS_MINX, TS_MAXX, TS_MINY, TS_MAXY, tft.width(), tft.height());
@@ -86,12 +88,12 @@ bool Gui::Btn::is_pressed() {
   );
 }
 
-Gui::Menu::~Menu() {
+Menu::~Menu() {
   purge_btns();
   SER_LOG_PRINT("[Menu destructor called.]\n");
 }
 
-Gui::Btn *Gui::Menu::add_btn(Btn *btn) {
+Btn *Menu::add_btn(Btn *btn) {
   auto new_arr = (Btn **) malloc((m_num_btns + 1) * sizeof(Btn *));
 
   if (new_arr == nullptr) return nullptr;
@@ -107,7 +109,7 @@ Gui::Btn *Gui::Menu::add_btn(Btn *btn) {
   return btn;
 }
 
-bool Gui::Menu::rm_btn(uint8_t btn_idx) {
+bool Menu::rm_btn(uint8_t btn_idx) {
   if (btn_idx >= m_num_btns) return false;
 
   auto new_arr = (Btn **) malloc((m_num_btns - 1) * sizeof(Btn *));
@@ -125,20 +127,20 @@ bool Gui::Menu::rm_btn(uint8_t btn_idx) {
   return true;
 }
 
-bool Gui::Menu::set_btn(uint8_t btn_idx, Btn *btn) {
+bool Menu::set_btn(uint8_t btn_idx, Btn *btn) {
   if (btn_idx >= m_num_btns) return false;
 
   m_btns[btn_idx] = btn;
   return true;
 }
 
-Gui::Btn *Gui::Menu::get_btn(uint8_t btn_idx) {
+Btn *Menu::get_btn(uint8_t btn_idx) {
   if (btn_idx >= m_num_btns) return nullptr;
 
   return m_btns[btn_idx];
 }
 
-bool Gui::Menu::purge_btn(uint8_t btn_idx) {
+bool Menu::purge_btn(uint8_t btn_idx) {
   if (btn_idx >= m_num_btns) return false;
 
   Btn *to_del = m_btns[btn_idx];
@@ -149,7 +151,7 @@ bool Gui::Menu::purge_btn(uint8_t btn_idx) {
   return true;
 }
 
-void Gui::Menu::purge_btns() {
+void Menu::purge_btns() {
   while (m_num_btns > 0) {
     purge_btn(m_num_btns - 1);  // Purge last button in array
   }
@@ -157,23 +159,23 @@ void Gui::Menu::purge_btns() {
   m_num_btns = 0;
 }
 
-uint8_t Gui::Menu::get_num_btns() {
+uint8_t Menu::get_num_btns() {
   return m_num_btns;
 }
 
-void Gui::Menu::draw() {
+void Menu::draw() {
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     m_btns[i]->draw();
   }
 }
 
-void Gui::Menu::erase() {
+void Menu::erase() {
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     m_btns[i]->erase();
   }
 }
 
-uint8_t Gui::Menu::wait_for_press() {
+uint8_t Menu::wait_for_press() {
   int16_t btn = 0;
 
   do {
@@ -184,7 +186,7 @@ uint8_t Gui::Menu::wait_for_press() {
   return btn;
 }
 
-int16_t Gui::Menu::get_pressed() {
+int16_t Menu::get_pressed() {
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     if (m_btns[i]->is_pressed()) {
       return i;
@@ -194,29 +196,29 @@ int16_t Gui::Menu::get_pressed() {
   return -1;
 }
 
-void Gui::Menu::deselect_all() {
+void Menu::deselect_all() {
   for (uint8_t i = 0; i < m_num_btns; ++i) {
     m_btns[i]->highlight(false);
   }
 }
 
-const uint8_t *Gui::KeyboardLayout::get_layout() {
+const uint8_t *KeyboardLayout::get_layout() {
   return m_layout;
 }
 
-uint8_t Gui::KeyboardLayout::get_width() {
+uint8_t KeyboardLayout::get_width() {
   return m_width;
 }
 
-uint8_t Gui::KeyboardLayout::get_height() {
+uint8_t KeyboardLayout::get_height() {
   return ceil((float) m_length / (float) m_width);
 }
 
-const char *Gui::KeyboardLayout::get_ptr_char(uint8_t x, uint8_t y) {
+const char *KeyboardLayout::get_ptr_char(uint8_t x, uint8_t y) {
   return (char *) m_layout + ptrdiff_t(2 * (y * m_width + x));
 }
 
-char Gui::KeyboardLayout::get_char(uint8_t x, uint8_t y) {
+char KeyboardLayout::get_char(uint8_t x, uint8_t y) {
   return pgm_read_byte_near(get_ptr_char(x, y));
 }
 
@@ -230,7 +232,7 @@ static const uint16_t glob_kbd_hex_layout_data[] PROGMEM {
   0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46,
 };
 
-Gui::KeyboardLayout Gui::glob_kbd_hex_layout((const uint8_t *) glob_kbd_hex_layout_data, 16, 8);
+KeyboardLayout glob_kbd_hex_layout((const uint8_t *) glob_kbd_hex_layout_data, 16, 8);
 
 static const uint16_t glob_kbd_str_layout_data[] PROGMEM {
   0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x11,
@@ -239,9 +241,9 @@ static const uint16_t glob_kbd_str_layout_data[] PROGMEM {
   0x7f, 0x5a, 0x58, 0x43, 0x56, 0x42, 0x4e, 0x4d, 0xb0, 0x2e, 0x2f,
 };
 
-Gui::KeyboardLayout Gui::glob_kbd_str_layout((const uint8_t *) glob_kbd_str_layout_data, 44, 11);
+KeyboardLayout glob_kbd_str_layout((const uint8_t *) glob_kbd_str_layout_data, 44, 11);
 
-Gui::MenuKeyboard::MenuKeyboard(
+MenuKeyboard::MenuKeyboard(
   uint16_t t_debounce, uint16_t pad_v, uint16_t pad_h,
   uint16_t marg_v, uint16_t marg_h, KeyboardLayout &layout, float btn_height
 ) :
@@ -262,11 +264,11 @@ Gui::MenuKeyboard::MenuKeyboard(
   add_btn(new Btn(BOTTOM_BTN(Strings::L_CONTINUE)));
 }
 
-Gui::MenuKeyboard::~MenuKeyboard() {
+MenuKeyboard::~MenuKeyboard() {
   free(m_val);
 };
 
-void Gui::MenuKeyboard::update_val(char c) {
+void MenuKeyboard::update_val(char c) {
   uint8_t len = strlen(m_val);
 
   if (len >= BUF_LEN()) return;
@@ -275,7 +277,7 @@ void Gui::MenuKeyboard::update_val(char c) {
   m_val[len + 1] = '\0';
 }
 
-void Gui::MenuKeyboard::show_val(uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg) {
+void MenuKeyboard::show_val(uint16_t x, uint16_t y, uint8_t len, uint8_t size, uint16_t fg, uint16_t bg) {
   tft.fillRect(x, y, tft.width() - x, 8 * size, bg);
 
   char fmt_str[16];
@@ -283,19 +285,19 @@ void Gui::MenuKeyboard::show_val(uint16_t x, uint16_t y, uint8_t len, uint8_t si
   tft.drawText(x, y, STRFMT_NOBUF(fmt_str, m_val), fg, size);
 }
 
-void Gui::MenuKeyboard::get_val(char *buf, uint8_t len) {
+void MenuKeyboard::get_val(char *buf, uint8_t len) {
   strncpy(buf, m_val, len);
 }
 
-char *Gui::MenuKeyboard::get_ptr_val() {
+char *MenuKeyboard::get_ptr_val() {
   return m_val;
 }
 
-void Gui::MenuKeyboard::set_val(const char *buf, uint8_t len) {
+void MenuKeyboard::set_val(const char *buf, uint8_t len) {
   strncpy(m_val, buf, len);
 }
 
-bool Gui::MenuKeyboard::handle_key(uint8_t key) {
+bool MenuKeyboard::handle_key(uint8_t key) {
   UNUSED_VAR(key);
 
   unsigned long t_since_last_press = millis() - m_t_last_press;
@@ -308,11 +310,11 @@ bool Gui::MenuKeyboard::handle_key(uint8_t key) {
   return false;
 }
 
-Gui::KeyboardLayout &Gui::MenuKeyboard::get_layout() {
+KeyboardLayout &MenuKeyboard::get_layout() {
   return m_layout;
 }
 
-Gui::MenuStrInput::MenuStrInput(
+MenuStrInput::MenuStrInput(
   uint16_t debounce, uint16_t pad_v, uint16_t pad_h,
   uint16_t marg_v, uint16_t marg_h, uint8_t buf_len
 ) :
@@ -321,7 +323,7 @@ Gui::MenuStrInput::MenuStrInput(
   m_val[0] = '\0';
 }
 
-void Gui::MenuStrInput::update_val(char c) {
+void MenuStrInput::update_val(char c) {
   uint8_t len = strlen(m_val);
 
   switch (c) {
@@ -352,7 +354,7 @@ void Gui::MenuStrInput::update_val(char c) {
   }
 }
 
-void Gui::MenuStrInput::show_val(uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
+void MenuStrInput::show_val(uint16_t x, uint16_t y, uint8_t size, uint16_t fg, uint16_t bg) {
   // Show caps indicator
   tft.drawTextBg_P(TftCalc::right(tft, 10, 10), 10, (m_capitalize ? Strings::L_INDIC_MAJ : Strings::L_INDIC_MIN));
 
@@ -364,7 +366,7 @@ void Gui::MenuStrInput::show_val(uint16_t x, uint16_t y, uint8_t size, uint16_t 
   MenuKeyboard::show_val(x, y, working_text_len, size, fg, bg);
 }
 
-bool Gui::MenuStrInput::handle_key(uint8_t key) {
+bool MenuStrInput::handle_key(uint8_t key) {
   if (!MenuKeyboard::handle_key(key)) return false;
 
   auto w  = get_layout().get_width();
@@ -374,19 +376,19 @@ bool Gui::MenuStrInput::handle_key(uint8_t key) {
   return true;
 }
 
-char Gui::MenuStrInput::capitalize(char c) {
+char MenuStrInput::capitalize(char c) {
   return (m_capitalize ? toupper : tolower)(c);
 }
 
-void Gui::MenuChoice::set_callback(Callback callback) {
+void MenuChoice::set_callback(Callback callback) {
   m_callback = callback;
 }
 
-Gui::MenuChoice::Callback Gui::MenuChoice::get_callback() {
+MenuChoice::Callback MenuChoice::get_callback() {
   return m_callback;
 }
 
-Gui::Btn *Gui::MenuChoice::add_btn(Btn *btn) {
+Btn *MenuChoice::add_btn(Btn *btn) {
   Btn *added = Menu::add_btn(btn);
 
   if (added == nullptr) return nullptr;
@@ -398,7 +400,7 @@ Gui::Btn *Gui::MenuChoice::add_btn(Btn *btn) {
   return added;
 }
 
-Gui::Btn *Gui::MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t bg) {
+Btn *MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t bg) {
   uint16_t col = m_num_btns % m_num_cols;
   uint16_t row = m_num_btns / m_num_cols;
 
@@ -411,7 +413,7 @@ Gui::Btn *Gui::MenuChoice::add_btn_calc(const char *text, uint16_t fg, uint16_t 
   return add_btn(new Btn(x, y, w, h, text, fg, bg));
 }
 
-Gui::Btn *Gui::MenuChoice::add_btn_confirm(bool force_bottom, uint16_t fg, uint16_t bg) {
+Btn *MenuChoice::add_btn_confirm(bool force_bottom, uint16_t fg, uint16_t bg) {
   set_confirm_btn(m_num_btns);
 
   uint16_t y = TftCalc::bottom(tft, 24, (force_bottom ? 10 : m_marg_v));
@@ -420,12 +422,12 @@ Gui::Btn *Gui::MenuChoice::add_btn_confirm(bool force_bottom, uint16_t fg, uint1
   return add_btn(new Btn(m_marg_h, y, w, 24, Strings::L_CONFIRM, fg, bg));
 }
 
-void Gui::MenuChoice::set_confirm_btn(uint8_t btn_id) {
+void MenuChoice::set_confirm_btn(uint8_t btn_id) {
   m_confirm_btn = btn_id;
   select(m_cur_choice);
 }
 
-uint8_t Gui::MenuChoice::wait_for_value() {
+uint8_t MenuChoice::wait_for_value() {
   draw();
 
   while (true) {
@@ -446,36 +448,36 @@ uint8_t Gui::MenuChoice::wait_for_value() {
   return m_cur_choice;
 }
 
-void Gui::MenuChoice::set_choice(uint8_t btn) {
+void MenuChoice::set_choice(uint8_t btn) {
   m_old_choice = m_cur_choice;
   m_cur_choice = btn;
 }
 
-uint8_t Gui::MenuChoice::get_choice() {
+uint8_t MenuChoice::get_choice() {
   return m_cur_choice;
 }
 
-void Gui::MenuChoice::select(uint8_t choice) {
+void MenuChoice::select(uint8_t choice) {
   set_choice(choice);
   get_btn(m_old_choice)->highlight(false);
   get_btn(choice)->highlight(true);
 }
 
-void Gui::MenuChoice::update() {
+void MenuChoice::update() {
   get_btn(m_old_choice)->draw_highlight();
   get_btn(m_cur_choice)->draw_highlight();
 }
 
-Gui::MenuYesNo::MenuYesNo(
+MenuYesNo::MenuYesNo(
   uint8_t pad_v, uint8_t pad_h, uint8_t marg_v, uint8_t marg_h, bool force_bottom, uint8_t initial_choice
 ) :
-  Gui::MenuChoice(pad_v, pad_h, marg_v, marg_h, 2, 0.7, false, initial_choice) {
+  MenuChoice(pad_v, pad_h, marg_v, marg_h, 2, 0.7, false, initial_choice) {
   add_btn_calc(Strings::L_YES, TftColor::BLACK, TftColor::GREEN);
   add_btn_calc(Strings::L_NO, TftColor::WHITE, TftColor::RED);
   add_btn_confirm(force_bottom);
 }
 
-Gui::MenuPairs::MenuPairs(uint8_t marg_u, uint8_t marg_d, uint8_t marg_s, uint8_t pair_height, uint8_t pair_pad, uint8_t num_pairs, AddrDataArray *buf)
+MenuPairs::MenuPairs(uint8_t marg_u, uint8_t marg_d, uint8_t marg_s, uint8_t pair_height, uint8_t pair_pad, uint8_t num_pairs, AddrDataArray *buf)
   : m_marg_u(marg_u), m_marg_d(marg_d), m_marg_s(marg_s), m_pair_height(pair_height), m_pair_pad(pair_pad), m_num_pairs(num_pairs), m_buf(buf) {
   const uint16_t w1 = TftCalc::fraction_x(tft, marg_s, 1);
   const uint16_t w2 = TftCalc::fraction_x(tft, marg_s, 2);
@@ -502,13 +504,13 @@ Gui::MenuPairs::MenuPairs(uint8_t marg_u, uint8_t marg_d, uint8_t marg_s, uint8_
   }
 }
 
-void Gui::MenuPairs::draw() {
+void MenuPairs::draw() {
   Menu::draw();
   draw_pairs();
   m_deleters.draw();
 }
 
-Gui::MenuPairs::Status Gui::MenuPairs::poll() {
+MenuPairs::Status MenuPairs::poll() {
   uint16_t max_scroll = (m_num_pairs > m_buf->get_len()) ? 0 : (m_buf->get_len() - m_num_pairs);
   int16_t pressed, deleted;
 
@@ -538,7 +540,7 @@ Gui::MenuPairs::Status Gui::MenuPairs::poll() {
   return Status::RUNNING;
 }
 
-void Gui::MenuPairs::draw_pairs() {
+void MenuPairs::draw_pairs() {
   // Clear the pairs area
   const uint16_t x = m_marg_s + 24 + 10;
   const uint16_t y = m_marg_u + 24 + 10;
@@ -578,7 +580,7 @@ void Gui::MenuPairs::draw_pairs() {
   while (this_pair++ != last_pair);
 }
 
-void Gui::MenuPairs::add_pair_from_user() {
+void MenuPairs::add_pair_from_user() {
   tft.fillScreen(TftColor::BLACK);
   auto addr = Dialog::ask_addr(Strings::P_ADDR_GEN);
   tft.fillScreen(TftColor::BLACK);
@@ -588,12 +590,12 @@ void Gui::MenuPairs::add_pair_from_user() {
   m_buf->append((AddrDataArrayPair) {addr, data});
 }
 
-Gui::ProgressIndicator::ProgressIndicator(uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+ProgressIndicator::ProgressIndicator(uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
   : m_max_val(max_val ? max_val : 1), m_x(x), m_y(y), m_w(w), m_h(h) {
   tft.drawThickRect(x, y, w, h, TftColor::DGRAY, 2);
 }
 
-void Gui::ProgressIndicator::show() {
+void ProgressIndicator::show() {
   const double fraction = (double) m_cur_val / m_max_val;
 
   if (fraction > 1.0) return;
@@ -623,6 +625,118 @@ void Gui::ProgressIndicator::show() {
   tft.drawText(m_tx, m_ty, m_buffer, TftColor::BLACK);
 }
 
-void Gui::ProgressIndicator::next() {
+void ProgressIndicator::next() {
   ++m_cur_val;
 }
+
+PageDisplay::PageDisplay(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr)
+  : m_data(data), m_addr1(addr1), m_addr2(addr2), m_repr(repr) {
+  // Nothing
+}
+
+inline PageDisplay::ByteRepr PageDisplay::repr_hex(uint8_t input_byte) {
+  ByteRepr repr;
+
+  repr.offset = 0;
+  repr.color  = TftColor::WHITE;
+  sprintf_P(repr.text, PSTR("%02X"), input_byte);
+
+  return repr;
+}
+
+inline PageDisplay::ByteRepr PageDisplay::repr_chars(uint8_t input_byte) {
+  const bool printable = isprint(input_byte);
+  ByteRepr repr;
+
+  repr.offset = 3;
+  repr.color  = (printable ? TftColor::WHITE : TftColor::GRAY);
+  sprintf_P(repr.text, PSTR("%c"), (printable ? input_byte : '?'));
+
+  return repr;
+}
+
+void PageDisplay::show_range() {
+  // Draw frame for the data
+  tft.drawText(10, 10, STRFMT_P_NOBUF(Strings::T_N_BYTES, m_addr2 - m_addr1 + 1), TftColor::CYAN, 3);
+  tft.drawThickRect(tft.width() / 2 - 147, 55, 295, 166, TftColor::WHITE, 2);
+  tft.drawFastVLine(tft.width() / 2, 57, 162, TftColor::GRAY);
+
+  draw_page_axis_labels();
+
+  const uint16_t x2 = tft.width() - 55;
+
+  Gui::Menu menu;
+  menu.add_btn(new Gui::Btn(15, 60, 40, 150, 15, 68, Strings::L_ARROW_L));
+  menu.add_btn(new Gui::Btn(x2, 60, 40, 150, 15, 68, Strings::L_ARROW_R));
+  menu.add_btn(new Gui::Btn(BOTTOM_BTN(Strings::L_CLOSE)));
+  menu.draw();
+
+  const uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
+  uint8_t cur_page = 0;
+
+  while (true) {
+    show_page(cur_page, max_page);
+
+    switch (menu.wait_for_press()) {
+    case 0: cur_page = (cur_page == 0 ? max_page : cur_page - 1); break;  // Left
+    case 1: cur_page = (cur_page == max_page ? 0 : cur_page + 1); break;  // Right
+    case 2: return;                                                       // Close
+    }
+  }
+}
+
+void PageDisplay::show_page(uint8_t cur_page, uint8_t max_page) {
+  tft.fillRect(tft.width() / 2 - 145, 57, 145, 162, TftColor::DGRAY);
+  tft.fillRect(tft.width() / 2 +   1, 57, 145, 162, TftColor::DGRAY);
+
+  tft.drawTextBg(
+    10, 256, STRFMT_P_NOBUF(Strings::L_PAGE_N_N, cur_page, max_page),
+    TftColor::PURPLE, TftColor::BLACK
+  );
+
+  uint16_t glob_range_start = m_addr1 >> 8;
+  uint16_t glob_page_start  = MAX(((cur_page + glob_range_start + 0) << 8) + 0, m_addr1);
+  uint16_t glob_page_end    = MIN(((cur_page + glob_range_start + 1) << 8) - 1, m_addr2);
+
+  tft.drawTextBg(
+    TftCalc::right(tft, 130, 12), 12, STRFMT_P_NOBUF(PSTR("%04X - %04X"), glob_page_start, glob_page_end),
+    TftColor::ORANGE, TftColor::BLACK
+  );
+
+  for (uint16_t i = glob_page_start; i <= glob_page_end; ++i) {
+    uint8_t tft_byte_col = (i & 0x0F);
+    uint8_t tft_byte_row = (i & 0xFF) >> 4;
+
+    ByteRepr br          = (*m_repr)(m_data[i - m_addr1]);
+
+    uint8_t split_offset = (tft_byte_col < 8 ? 0 : 3);
+    uint16_t tft_byte_x  = tft.width() / 2 - 141 + 18 * tft_byte_col + br.offset + split_offset;
+    uint16_t tft_byte_y  = tft.height() / 2 - 100 + 10 * tft_byte_row;
+
+    tft.drawText(tft_byte_x, tft_byte_y, br.text, br.color, 1);
+  }
+}
+
+void PageDisplay::draw_page_axis_labels() {
+  for (uint8_t row = 0x00; row < 0x10; ++row) {
+    const uint16_t x1 = tft.width() / 2 - 161;
+    const uint16_t x2 = tft.width() / 2 + 151;
+
+    const uint16_t y = tft.height() / 2 - 100 + 10 * row;
+
+    char label[3];
+    STRFMT_P_sz(label, PSTR("%1Xx"), row);
+
+    tft.drawText(x1, y, label, TftColor::DCYAN, 1);
+    tft.drawText(x2, y, label, TftColor::DCYAN, 1);
+  }
+
+  for (uint8_t col = 0x00; col < 0x10; ++col) {
+    const uint8_t split_offset = (col < 8 ? 0 : 3);
+    const uint16_t x = tft.width() / 2 - 141 + 18 * col + split_offset;
+
+    tft.drawText(x, tft.height() / 2 + 64, STRFMT_P_NOBUF(PSTR("x%1X"), col), TftColor::DCYAN, 1);
+  }
+}
+
+};

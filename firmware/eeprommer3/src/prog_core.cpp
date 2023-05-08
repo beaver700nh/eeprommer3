@@ -424,119 +424,12 @@ Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t 
   tft.fillScreen(TftColor::BLACK);
 
   switch (viewing_method) {
-  case 0:  return (show_range(data, addr1, addr2, &multi_byte_repr_hex),   Status::OK);
+  case 0:  return (show_range(data, addr1, addr2, &multi_byte_repr_hex),   Status::OK); // TODO
   case 1:  return (show_range(data, addr1, addr2, &multi_byte_repr_chars), Status::OK);
   case 2:  return store_file(data, addr2 - addr1 + 1);
   case 3:  return Status::OK;
   default: return Status::ERR_INVALID;
   }
-}
-
-void ProgrammerMultiCore::show_range(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr) {
-  // Draw frame for the data
-  tft.drawText(10, 10, STRFMT_P_NOBUF(Strings::T_N_BYTES, addr2 - addr1 + 1), TftColor::CYAN, 3);
-  tft.drawThickRect(tft.width() / 2 - 147, 55, 295, 166, TftColor::WHITE, 2);
-  tft.drawFastVLine(tft.width() / 2, 57, 162, TftColor::GRAY);
-
-  draw_page_axis_labels();
-
-  const uint16_t x2 = tft.width() - 55;
-
-  Gui::Menu menu;
-  menu.add_btn(new Gui::Btn(15, 60, 40, 150, 15, 68, Strings::L_ARROW_L));
-  menu.add_btn(new Gui::Btn(x2, 60, 40, 150, 15, 68, Strings::L_ARROW_R));
-  menu.add_btn(new Gui::Btn(BOTTOM_BTN(Strings::L_CONTINUE)));
-  menu.draw();
-
-  const uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
-  uint8_t cur_page = 0;
-
-  while (true) {
-    show_page(data, addr1, addr2, repr, cur_page, max_page);
-
-    switch (menu.wait_for_press()) {
-    case 0: cur_page = (cur_page == 0 ? max_page : cur_page - 1); break;  // Left
-    case 1: cur_page = (cur_page == max_page ? 0 : cur_page + 1); break;  // Right
-    case 2: return;                                                       // Continue
-    }
-  }
-}
-
-void ProgrammerMultiCore::draw_page_axis_labels() {
-  for (uint8_t row = 0x00; row < 0x10; ++row) {
-    const uint16_t x1 = tft.width() / 2 - 161;
-    const uint16_t x2 = tft.width() / 2 + 151;
-
-    const uint16_t y = tft.height() / 2 - 100 + 10 * row;
-
-    char label[3];
-    STRFMT_P_sz(label, PSTR("%1Xx"), row);
-
-    tft.drawText(x1, y, label, TftColor::DCYAN, 1);
-    tft.drawText(x2, y, label, TftColor::DCYAN, 1);
-  }
-
-  for (uint8_t col = 0x00; col < 0x10; ++col) {
-    const uint8_t split_offset = (col < 8 ? 0 : 3);
-    const uint16_t x = tft.width() / 2 - 141 + 18 * col + split_offset;
-
-    tft.drawText(x, tft.height() / 2 + 64, STRFMT_P_NOBUF(PSTR("x%1X"), col), TftColor::DCYAN, 1);
-  }
-}
-
-void ProgrammerMultiCore::show_page(
-  uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr, uint8_t cur_page, uint8_t max_page
-) {
-  tft.fillRect(tft.width() / 2 - 145, 57, 145, 162, TftColor::DGRAY);
-  tft.fillRect(tft.width() / 2 +   1, 57, 145, 162, TftColor::DGRAY);
-
-  tft.drawTextBg(
-    10, 256, STRFMT_P_NOBUF(Strings::L_PAGE_N_N, cur_page, max_page),
-    TftColor::PURPLE, TftColor::BLACK
-  );
-
-  uint16_t glob_range_start = addr1 >> 8;
-  uint16_t glob_page_start  = MAX(((cur_page + glob_range_start + 0) << 8) + 0, addr1);
-  uint16_t glob_page_end    = MIN(((cur_page + glob_range_start + 1) << 8) - 1, addr2);
-
-  tft.drawTextBg(
-    TftCalc::right(tft, 130, 12), 12, STRFMT_P_NOBUF(PSTR("%04X - %04X"), glob_page_start, glob_page_end),
-    TftColor::ORANGE, TftColor::BLACK
-  );
-
-  for (uint16_t i = glob_page_start; i <= glob_page_end; ++i) {
-    uint8_t tft_byte_col = (i & 0x0F);
-    uint8_t tft_byte_row = (i & 0xFF) >> 4;
-
-    ByteRepr br          = (*repr)(data[i - addr1]);
-
-    uint8_t split_offset = (tft_byte_col < 8 ? 0 : 3);
-    uint16_t tft_byte_x  = tft.width() / 2 - 141 + 18 * tft_byte_col + br.offset + split_offset;
-    uint16_t tft_byte_y  = tft.height() / 2 - 100 + 10 * tft_byte_row;
-
-    tft.drawText(tft_byte_x, tft_byte_y, br.text, br.color, 1);
-  }
-}
-
-inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_hex(uint8_t input_byte) {
-  ByteRepr repr;
-
-  repr.offset = 0;
-  repr.color  = TftColor::WHITE;
-  sprintf_P(repr.text, PSTR("%02X"), input_byte);
-
-  return repr;
-}
-
-inline ProgrammerMultiCore::ByteRepr ProgrammerMultiCore::multi_byte_repr_chars(uint8_t input_byte) {
-  const bool printable = isprint(input_byte);
-  ByteRepr repr;
-
-  repr.offset = 3;
-  repr.color  = (printable ? TftColor::WHITE : TftColor::GRAY);
-  sprintf_P(repr.text, PSTR("%c"), (printable ? input_byte : '?'));
-
-  return repr;
 }
 
 Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
