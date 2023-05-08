@@ -424,11 +424,18 @@ Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t 
   tft.fillScreen(TftColor::BLACK);
 
   switch (viewing_method) {
-  case 0:  return (show_range(data, addr1, addr2, &multi_byte_repr_hex),   Status::OK); // TODO
-  case 1:  return (show_range(data, addr1, addr2, &multi_byte_repr_chars), Status::OK);
-  case 2:  return store_file(data, addr2 - addr1 + 1);
-  case 3:  return Status::OK;
-  default: return Status::ERR_INVALID;
+  case 0:
+    Gui::PageDisplay(data, addr1, addr2, &Gui::PageDisplay::repr_hex);
+    return Status::OK;
+  case 1:
+    Gui::PageDisplay(data, addr1, addr2, &Gui::PageDisplay::repr_chars);
+    return Status::OK;
+  case 2:
+    return store_file(data, addr2 - addr1 + 1);
+  case 3:
+    return Status::OK;
+  default:
+    return Status::ERR_INVALID;
   }
 }
 
