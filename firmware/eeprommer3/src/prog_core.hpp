@@ -107,8 +107,14 @@ private:
     uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, Gui::Menu &del_btns
   );
 
+  enum PairMenuStatus : uint8_t {
+    RUNNING,  // User is still inputting pairs
+    DONE,     // User has confirmed write action
+    CANCELED, // User pressed `Cancel`
+  };
+
   // Helper that polls `menu` and reacts to it: deletes/adds buttons, scrolls menu, and writes to EEPROM as requested
-  static bool poll_menus_and_react(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll);
+  static PairMenuStatus handle_menus(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll);
 
   static void write_operation_core(AddrDataArray *buf);
 

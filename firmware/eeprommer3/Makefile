@@ -102,7 +102,7 @@ del:
 .SILENT: search
 .PHONY: search
 search:
-	result=`grep -Gn --color=always '$(PATTERN)' src/*.?pp`
+	result=`grep -Gn --color=always '$(PATTERN)' src/*.?pp $$(find ../.. -name '*.md')`
 	
 	if [ $$? = 1 ]; then
 		@$(call PrintFancy, "No matches found.")

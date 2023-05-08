@@ -7,8 +7,6 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
-    update documentation:
-      fix TODOs
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears

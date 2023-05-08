@@ -258,7 +258,7 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
         return true;  // Request to quit loop
       }
 
-      addr += 0x2000;  // Next sector
+      addr += 0x1000;  // Next sector
       return false;
     }
   );
@@ -615,10 +615,10 @@ Status ProgrammerMultiCore::write() {
     del_btns.add_btn(new Gui::Btn(TftCalc::right(tft, 18, 44), 76 + 30 * i, 18, 18, Strings::L_X_CLOSE, TftColor::YELLOW, TftColor::RED));
   }
 
+  PairMenuStatus status = PairMenuStatus::RUNNING;
   uint16_t scroll = 0;
-  bool done = false;
 
-  while (!done) {
+  do {
     tft.drawText_P(10, 10, Strings::T_WMULTI, TftColor::CYAN, 3);
 
     menu.draw();
@@ -627,12 +627,17 @@ Status ProgrammerMultiCore::write() {
 
     uint16_t max_scroll = MAX(0, (int32_t) buf.get_len() - num_pairs);
 
-    done = poll_menus_and_react(menu, del_btns, &buf, &scroll, max_scroll);
+    status = handle_menus(menu, del_btns, &buf, &scroll, max_scroll);
   }
+  while (status == PairMenuStatus::RUNNING);
 
   tft.fillScreen(TftColor::BLACK);
 
-  RETURN_VERIFICATION_OR_OK(0, (void *) &buf)
+  if (status == PairMenuStatus::CANCELED) {
+    return Status::OK;
+  }
+
+  RETURN_VERIFICATION_OR_OK(0 /* dummy addr */, (void *) &buf)
 }
 
 void ProgrammerMultiCore::draw_pairs(
@@ -680,9 +685,7 @@ void ProgrammerMultiCore::draw_pairs(
   while (this_pair++ != last_pair);
 }
 
-bool ProgrammerMultiCore::poll_menus_and_react(
-  Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll
-) {
+ProgrammerMultiCore::PairMenuStatus ProgrammerMultiCore::handle_menus(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll) {
   int16_t pressed, deleted;
 
   while (true) {
@@ -700,15 +703,15 @@ bool ProgrammerMultiCore::poll_menus_and_react(
       case 0: if (*scroll > 0)          --*scroll; break;
       case 1: if (*scroll < max_scroll) ++*scroll; break;
       case 2: add_pair_from_user(buf);             break;
-      case 3: write_operation_core(buf); [[fallthrough]];
-      default: return true;
+      case 3: write_operation_core(buf); return PairMenuStatus::DONE;
+      default: return PairMenuStatus::CANCELED;
       }
 
       break;
     }
   }
 
-  return false;
+  return PairMenuStatus::RUNNING;
 }
 
 void ProgrammerMultiCore::write_operation_core(AddrDataArray *buf) {
