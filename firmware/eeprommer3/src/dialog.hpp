@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "ad_array.hpp"
 #include "gui.hpp"
 #include "tft.hpp"
 #include "touch.hpp"
@@ -42,6 +43,11 @@ T ask_int(const char *prompt) {
 }
 
 /*
+ * This is a helper function to get an address; same as `ask_val<uint16_t>` but has built-in validation.
+ */
+uint16_t ask_addr(const char *prompt);
+
+/*
  * This is a function to ask the user to pick from one of `num` choices using a `MenuChoice`.
  *
  * This function is variadic, so be careful that you provide a valid `num`.
@@ -58,6 +64,11 @@ bool ask_yesno(const char *prompt, int16_t initial_choice = -1);
  * This is a helper function to ask the user for an arbitrarily-sized string, using a `MenuStrInput`.
  */
 void ask_str(const char *prompt, char *buf, uint8_t len);
+
+/*
+ * This is a function to ask the user for arbitrarily-sized `AddrDataArray`.
+ */
+bool ask_pairs(const char *prompt, AddrDataArray *buf);
 
 };
 

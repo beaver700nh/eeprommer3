@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "ad_array.hpp"
+#include "dialog.hpp"
 #include "strfmt.hpp"
 #include "tft.hpp"
 #include "tft_calc.hpp"
@@ -471,6 +473,119 @@ Gui::MenuYesNo::MenuYesNo(
   add_btn_calc(Strings::L_YES, TftColor::BLACK, TftColor::GREEN);
   add_btn_calc(Strings::L_NO, TftColor::WHITE, TftColor::RED);
   add_btn_confirm(force_bottom);
+}
+
+Gui::MenuPairs::MenuPairs(uint8_t marg_u, uint8_t marg_d, uint8_t marg_s, uint8_t pair_height, uint8_t pair_pad, uint8_t num_pairs, AddrDataArray *buf)
+  : m_marg_u(marg_u), m_marg_d(marg_d), m_marg_s(marg_s), m_pair_height(pair_height), m_pair_pad(pair_pad), m_num_pairs(num_pairs), m_buf(buf) {
+  const uint16_t w1 = TftCalc::fraction_x(tft, marg_s, 1);
+  const uint16_t w2 = TftCalc::fraction_x(tft, marg_s, 2);
+  const uint16_t _h = tft.height() - marg_u - marg_d - 2 * (24 + 10);
+  const uint16_t x1 = marg_s;
+  const uint16_t x2 = 2 * marg_s + w2;
+  const uint16_t x3 = TftCalc::right(tft, 24, marg_s);
+  const uint16_t y1 = marg_u;
+  const uint16_t y2 = y1 + 24 + 10;
+  const uint16_t y3 = TftCalc::bottom(tft, 24, marg_d);
+
+  add_btn(new Btn(x1, y2, 24, _h, Strings::L_ARROW_U,  TftColor::WHITE, TftColor::DGRAY ));
+  add_btn(new Btn(x3, y2, 24, _h, Strings::L_ARROW_D,  TftColor::WHITE, TftColor::DGRAY ));
+  add_btn(new Btn(x1, y1, w1, 24, Strings::L_ADD_PAIR, TftColor::WHITE, TftColor::PURPLE));
+  add_btn(new Btn(x1, y3, w2, 24, Strings::L_CONFIRM,  TftColor::PINKK, TftColor::RED   ));
+  add_btn(new Btn(x2, y3, w2, 24, Strings::L_CANCEL,   TftColor::CYAN,  TftColor::BLUE  ));
+
+  for (uint8_t i = 0; i < num_pairs; ++i) {
+    const uint16_t right_space = marg_s + 24 + 10;
+    const uint16_t x = TftCalc::right(tft, 18, right_space);
+    const uint16_t y = y2 + 2 + i * (pair_height + pair_pad);
+    const uint16_t w = pair_height - 4;
+    m_deleters.add_btn(new Btn(x, y, w, w, Strings::L_X_CLOSE, TftColor::YELLOW, TftColor::RED));
+  }
+}
+
+void Gui::MenuPairs::draw() {
+  Menu::draw();
+  draw_pairs();
+  m_deleters.draw();
+}
+
+Gui::MenuPairs::Status Gui::MenuPairs::poll() {
+  uint16_t max_scroll = (m_num_pairs > m_buf->get_len()) ? 0 : (m_buf->get_len() - m_num_pairs);
+  int16_t pressed, deleted;
+
+  while (true) {
+    deleted = m_deleters.get_pressed();
+
+    if (deleted >= 0) {
+      m_buf->remove(deleted + m_scroll);
+      break;
+    }
+
+    pressed = get_pressed();
+
+    if (pressed >= 0) {
+      switch (pressed) {
+      case 0:  if (m_scroll > 0)          --m_scroll; break;
+      case 1:  if (m_scroll < max_scroll) ++m_scroll; break;
+      case 2:  add_pair_from_user();                  break;
+      case 3:  return Status::DONE;
+      default: return Status::CANCELED;
+      }
+
+      break;
+    }
+  }
+
+  return Status::RUNNING;
+}
+
+void Gui::MenuPairs::draw_pairs() {
+  // Clear the pairs area
+  const uint16_t x = m_marg_s + 24 + 10;
+  const uint16_t y = m_marg_u + 24 + 10;
+  const uint16_t w = TftCalc::fraction(tft.width(), x, 1);
+  const uint16_t h = tft.height() - m_marg_u - m_marg_d - 2 * (24 + 10);
+  tft.fillRect(x, y, w, h, TftColor::BLACK);
+
+  for (uint8_t i = 0; i < m_num_pairs; ++i) {
+    // Hide all the delete buttons here, later show the ones that are needed
+    m_deleters.get_btn(i)->visibility(false)->operation(false);
+  }
+
+  if (m_buf->get_len() == 0) {
+    tft.drawText_P(x, y +  0, Strings::L_NO_PAIRS1, TftColor::LGRAY);
+    tft.drawText_P(x, y + 30, Strings::L_NO_PAIRS2, TftColor::LGRAY);
+    return;
+  }
+
+  uint16_t this_pair = m_scroll;
+  uint16_t last_pair = MIN(m_num_pairs + m_scroll, m_buf->get_len()) - 1U;
+
+  do {
+    const uint16_t _y = y + (this_pair - m_scroll) * (m_pair_height + m_pair_pad);
+    const uint16_t _h = m_pair_height;
+    const uint16_t tx = x + 3;
+    const uint16_t ty = _y + TftCalc::t_center_y(_h, 2);
+
+    AddrDataArrayPair pair {0, 0};
+    m_buf->get_pair(this_pair, &pair);
+
+    tft.fillRect(x, _y, w, _h, TftColor::ORANGE);
+    tft.drawText(tx, ty, STRFMT_P_NOBUF(Strings::L_FMT_PAIR, this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
+
+    // Show all buttons that have pairs
+    m_deleters.get_btn(this_pair - m_scroll)->visibility(true)->operation(true);
+  }
+  while (this_pair++ != last_pair);
+}
+
+void Gui::MenuPairs::add_pair_from_user() {
+  tft.fillScreen(TftColor::BLACK);
+  auto addr = Dialog::ask_addr(Strings::P_ADDR_GEN);
+  tft.fillScreen(TftColor::BLACK);
+  auto data = Dialog::ask_int<uint8_t>(Strings::P_DATA_GEN);
+  tft.fillScreen(TftColor::BLACK);
+
+  m_buf->append((AddrDataArrayPair) {addr, data});
 }
 
 Gui::ProgressIndicator::ProgressIndicator(uint16_t max_val, uint16_t x, uint16_t y, uint16_t w, uint16_t h)

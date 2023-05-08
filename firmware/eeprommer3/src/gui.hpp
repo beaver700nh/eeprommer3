@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
+#include "ad_array.hpp"
 #include "tft.hpp"
 #include "tft_calc.hpp"
 #include "touch.hpp"
@@ -444,6 +445,41 @@ public:
   );
 
   ~MenuYesNo() {}  // Ensure that base destructor(s) are called.
+};
+
+/*
+ * `MenuPairs` is a `Menu` specifically designed to obtain an `AddrDataArray` from the user
+ * for use in `ProgrammerMultiCore`'s write action.
+ */
+class MenuPairs : public Menu {
+public:
+  MenuPairs(uint8_t marg_u, uint8_t marg_d, uint8_t marg_s, uint8_t pair_height, uint8_t pair_pad, uint8_t num_pairs, AddrDataArray *buf);
+
+  enum Status : uint8_t {
+    RUNNING,   // User is still interacting with menu
+    DONE,      // User has pressed "Confirm"
+    CANCELED,  // User has pressed "Cancel"
+  };
+
+  void draw();
+
+  Status poll();
+
+protected:
+  // Helper function of `draw()` that draws the pairs in `buf`
+  void draw_pairs();
+
+  // Helper function of `poll()` that requests and adds a pair to `buf`
+  void add_pair_from_user();
+
+  uint8_t m_marg_u, m_marg_d, m_marg_s;
+  uint8_t m_pair_height, m_pair_pad;
+  uint8_t m_num_pairs;
+  uint16_t m_scroll = 0;
+
+  AddrDataArray *m_buf;
+
+  Menu m_deleters;
 };
 
 // Should return true to request cancel of loop.

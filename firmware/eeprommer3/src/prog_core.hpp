@@ -101,25 +101,7 @@ private:
 
   /******************************** WRITE RANGE HELPERS ********************************/
 
-  // Helper that draws the pairs to be written to EEPROM
-  static void draw_pairs(
-    uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-    uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, Gui::Menu &del_btns
-  );
-
-  enum PairMenuStatus : uint8_t {
-    RUNNING,  // User is still inputting pairs
-    DONE,     // User has confirmed write action
-    CANCELED, // User pressed `Cancel`
-  };
-
-  // Helper that polls `menu` and reacts to it: deletes/adds buttons, scrolls menu, and writes to EEPROM as requested
-  static PairMenuStatus handle_menus(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll);
-
   static void write_operation_core(AddrDataArray *buf);
-
-  // Helper function of poll_menus_and_react() that requests and adds a pair to `buf`
-  static void add_pair_from_user(AddrDataArray *buf);
 };
 
 // Miscellaneous other functions
@@ -157,10 +139,5 @@ private:
 };
 
 #undef ADD_RWV_METHODS
-
-namespace Dialog {
-  // Helper function to get an address; same as `ask_val<uint16_t>` but has built-in validation
-  uint16_t ask_addr(const char *prompt);
-};
 
 #endif

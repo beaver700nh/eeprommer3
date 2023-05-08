@@ -593,125 +593,19 @@ void ProgrammerMultiCore::store_file_operation_core(uint8_t *data, uint16_t len,
 Status ProgrammerMultiCore::write() {
   AddrDataArray buf;
 
-  const uint16_t w1 = TftCalc::fraction_x(tft, 10, 1);
-  const uint16_t w2 = TftCalc::fraction_x(tft, 10, 2);
-  const uint16_t _h = TftCalc::fraction_y(tft, 59, 1);
-  const uint16_t x1 = TftCalc::right(tft, 24, 10);
-  const uint16_t x2 = 10 + w2 + 10;
-  const uint16_t _y = TftCalc::bottom(tft, 24, 10);
-
-  Gui::Menu menu;
-  menu.add_btn(new Gui::Btn(10, 74, 24, _h, Strings::L_ARROW_U,  TftColor::WHITE, TftColor::DGRAY ));
-  menu.add_btn(new Gui::Btn(x1, 74, 24, _h, Strings::L_ARROW_D,  TftColor::WHITE, TftColor::DGRAY ));
-  menu.add_btn(new Gui::Btn(10, 40, w1, 24, Strings::L_ADD_PAIR, TftColor::WHITE, TftColor::PURPLE));
-  menu.add_btn(new Gui::Btn(10, _y, w2, 24, Strings::L_CONFIRM,  TftColor::PINKK, TftColor::RED   ));
-  menu.add_btn(new Gui::Btn(x2, _y, w2, 24, Strings::L_CANCEL,   TftColor::CYAN,  TftColor::BLUE  ));
-
-  Gui::Menu del_btns;
-
-  const uint8_t num_pairs = 7;
-
-  for (uint8_t i = 0; i < num_pairs; ++i) {
-    del_btns.add_btn(new Gui::Btn(TftCalc::right(tft, 18, 44), 76 + 30 * i, 18, 18, Strings::L_X_CLOSE, TftColor::YELLOW, TftColor::RED));
-  }
-
-  PairMenuStatus status = PairMenuStatus::RUNNING;
-  uint16_t scroll = 0;
-
-  do {
-    tft.drawText_P(10, 10, Strings::T_WMULTI, TftColor::CYAN, 3);
-
-    menu.draw();
-    draw_pairs(44, 44, 74, 44, 22, 8, num_pairs, scroll, buf, del_btns);
-    del_btns.draw();
-
-    uint16_t max_scroll = MAX(0, (int32_t) buf.get_len() - num_pairs);
-
-    status = handle_menus(menu, del_btns, &buf, &scroll, max_scroll);
-  }
-  while (status == PairMenuStatus::RUNNING);
+  bool confirmed = Dialog::ask_pairs(Strings::T_WMULTI, &buf);
 
   tft.fillScreen(TftColor::BLACK);
 
-  if (status == PairMenuStatus::CANCELED) {
+  if (!confirmed) {
     return Status::OK;
   }
 
+  write_operation_core(&buf);
+
+  tft.fillScreen(TftColor::BLACK);
+
   RETURN_VERIFICATION_OR_OK(0 /* dummy addr */, (void *) &buf)
-}
-
-void ProgrammerMultiCore::draw_pairs(
-  uint16_t margin_l, uint16_t margin_r, uint16_t margin_u, uint16_t margin_d,
-  uint16_t height, uint16_t padding, uint8_t n, uint8_t offset, AddrDataArray &buf, Gui::Menu &del_btns
-) {
-  // Clear the pairs area
-  tft.fillRect(margin_l, margin_u, tft.width() - margin_l - margin_r, tft.height() - margin_u - margin_d, TftColor::BLACK);
-
-  for (uint8_t i = 0; i < n; ++i) {
-    // Hide all the delete buttons here, later show the ones that are needed
-    auto *cur_btn = del_btns.get_btn(i);
-    cur_btn->visibility(false);
-    cur_btn->operation(false);
-  }
-
-  if (buf.get_len() == 0) {
-    tft.drawText_P(margin_l, margin_u +  0, Strings::L_NO_PAIRS1, TftColor::LGRAY);
-    tft.drawText_P(margin_l, margin_u + 30, Strings::L_NO_PAIRS2, TftColor::LGRAY);
-    return;
-  }
-
-  uint16_t this_pair = offset;
-  uint16_t last_pair = MIN(offset + n - 1U, buf.get_len() - 1U);
-
-  do {
-    const uint16_t x  = margin_l;
-    const uint16_t y  = margin_u + (this_pair - offset) * (height + padding);
-    const uint16_t w  = tft.width() - margin_l - margin_r;
-    const uint16_t h  = height;
-    const uint16_t tx = margin_l + 3;
-    const uint16_t ty = TftCalc::t_center_y(h, 2) + y;
-
-    AddrDataArrayPair pair {0, 0};
-    buf.get_pair(this_pair, &pair);
-
-    tft.fillRect(x, y, w, h, TftColor::ORANGE);
-    tft.drawText(tx, ty, STRFMT_P_NOBUF(Strings::L_FMT_PAIR, this_pair, pair.addr, pair.data), TftColor::BLACK, 2);
-
-    // Show all buttons that have pairs
-    auto *cur_btn = del_btns.get_btn(this_pair - offset);
-    cur_btn->visibility(true);
-    cur_btn->operation(true);
-  }
-  while (this_pair++ != last_pair);
-}
-
-ProgrammerMultiCore::PairMenuStatus ProgrammerMultiCore::handle_menus(Gui::Menu &menu, Gui::Menu &del_btns, AddrDataArray *buf, uint16_t *scroll, uint16_t max_scroll) {
-  int16_t pressed, deleted;
-
-  while (true) {
-    deleted = del_btns.get_pressed();
-
-    if (deleted >= 0) {
-      buf->remove(deleted + *scroll);
-      break;
-    }
-
-    pressed = menu.get_pressed();
-
-    if (pressed >= 0) {
-      switch (pressed) {
-      case 0: if (*scroll > 0)          --*scroll; break;
-      case 1: if (*scroll < max_scroll) ++*scroll; break;
-      case 2: add_pair_from_user(buf);             break;
-      case 3: write_operation_core(buf); return PairMenuStatus::DONE;
-      default: return PairMenuStatus::CANCELED;
-      }
-
-      break;
-    }
-  }
-
-  return PairMenuStatus::RUNNING;
 }
 
 void ProgrammerMultiCore::write_operation_core(AddrDataArray *buf) {
@@ -730,16 +624,6 @@ void ProgrammerMultiCore::write_operation_core(AddrDataArray *buf) {
     ErrorLevel::INFO, 0x3,
     Strings::F_WRITE, Strings::L_CONTINUE
   );
-}
-
-void ProgrammerMultiCore::add_pair_from_user(AddrDataArray *buf) {
-  tft.fillScreen(TftColor::BLACK);
-  auto addr = Dialog::ask_addr(Strings::P_ADDR_GEN);
-  tft.fillScreen(TftColor::BLACK);
-  auto data = Dialog::ask_int<uint8_t>(Strings::P_DATA_GEN);
-  tft.fillScreen(TftColor::BLACK);
-
-  buf->append((AddrDataArrayPair) {addr, data});
 }
 
 Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
@@ -911,13 +795,6 @@ Status ProgrammerOtherCore::restart() {
   Util::restart();
 
   return Status::OK;
-}
-
-uint16_t Dialog::ask_addr(const char *prompt) {
-  uint16_t addr = ask_int<uint16_t>(prompt);
-  Util::validate_addr(&addr);
-
-  return addr;
 }
 
 #undef RETURN_VERIFICATION_OR_VALUE

@@ -11,6 +11,13 @@
 extern TftCtrl tft;
 extern TouchCtrl tch;
 
+uint16_t Dialog::ask_addr(const char *prompt) {
+  uint16_t addr = ask_int<uint16_t>(prompt);
+  Util::validate_addr(&addr);
+
+  return addr;
+}
+
 uint8_t Dialog::ask_choice(const char *prompt, int8_t cols, int32_t btn_height, int16_t initial_choice, uint8_t num, ...) {
   va_list args;
   va_start(args, num);
@@ -69,4 +76,21 @@ void Dialog::ask_str(const char *prompt, char *buf, uint8_t len) {
   }
 
   menu.get_val(buf, len);
+}
+
+bool Dialog::ask_pairs(const char *prompt, AddrDataArray *buf) {
+  using PStatus = Gui::MenuPairs::Status;
+
+  Gui::MenuPairs menu(40, 10, 10, 22, 8, 7, buf);
+  PStatus status = PStatus::RUNNING;
+
+  do {
+    tft.drawText_P(10, 10, prompt, TftColor::CYAN, 3);
+    menu.draw();
+
+    status = menu.poll();
+  }
+  while (status == PStatus::RUNNING);
+
+  return status == PStatus::DONE;
 }
