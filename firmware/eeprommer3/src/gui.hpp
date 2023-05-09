@@ -539,8 +539,8 @@ public:
   PageDisplay(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteReprFunc repr);
 
   // These are `ByteReprFunc`s
-  static inline ByteRepr repr_hex(uint8_t input_byte);    // Shows byte as white raw hex
-  static inline ByteRepr repr_chars(uint8_t input_byte);  // Shows byte as white char if printable, gray "?" if not
+  static ByteRepr repr_hex(uint8_t input_byte);    // Shows byte as white raw hex
+  static ByteRepr repr_chars(uint8_t input_byte);  // Shows byte as white char if printable, gray "?" if not
 
   void show_range();                                   // Show whole range on TFT
   void show_page(uint8_t cur_page, uint8_t max_page);  // One page at a time

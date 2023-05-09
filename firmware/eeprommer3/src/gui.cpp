@@ -634,7 +634,7 @@ PageDisplay::PageDisplay(uint8_t *data, uint16_t addr1, uint16_t addr2, ByteRepr
   // Nothing
 }
 
-inline PageDisplay::ByteRepr PageDisplay::repr_hex(uint8_t input_byte) {
+PageDisplay::ByteRepr PageDisplay::repr_hex(uint8_t input_byte) {
   ByteRepr repr;
 
   repr.offset = 0;
@@ -644,7 +644,7 @@ inline PageDisplay::ByteRepr PageDisplay::repr_hex(uint8_t input_byte) {
   return repr;
 }
 
-inline PageDisplay::ByteRepr PageDisplay::repr_chars(uint8_t input_byte) {
+PageDisplay::ByteRepr PageDisplay::repr_chars(uint8_t input_byte) {
   const bool printable = isprint(input_byte);
   ByteRepr repr;
 
@@ -671,7 +671,7 @@ void PageDisplay::show_range() {
   menu.add_btn(new Gui::Btn(BOTTOM_BTN(Strings::L_CLOSE)));
   menu.draw();
 
-  const uint8_t max_page = (addr2 >> 8) - (addr1 >> 8);
+  const uint8_t max_page = (m_addr2 >> 8) - (m_addr1 >> 8);
   uint8_t cur_page = 0;
 
   while (true) {

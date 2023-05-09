@@ -425,10 +425,10 @@ Status ProgrammerMultiCore::handle_data(uint8_t *data, uint16_t addr1, uint16_t 
 
   switch (viewing_method) {
   case 0:
-    Gui::PageDisplay(data, addr1, addr2, &Gui::PageDisplay::repr_hex);
+    Gui::PageDisplay(data, addr1, addr2, &Gui::PageDisplay::repr_hex).show_range();
     return Status::OK;
   case 1:
-    Gui::PageDisplay(data, addr1, addr2, &Gui::PageDisplay::repr_chars);
+    Gui::PageDisplay(data, addr1, addr2, &Gui::PageDisplay::repr_chars).show_range();
     return Status::OK;
   case 2:
     return store_file(data, addr2 - addr1 + 1);
