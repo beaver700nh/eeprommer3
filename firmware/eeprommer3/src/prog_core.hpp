@@ -111,9 +111,13 @@ private:
   };
 
   static void do_debug_action(DebugAction action);
-  static void show_data_bus();
-  static void monitor_data_bus();
+
+  static void set_addr_and_oe();
+  static void read_data_bus();
+  static void write_data_bus();
   static void set_data_dir();
+  static void monitor_data_bus();
+  static void print_charset_wait();
   static void debug_action_aux1();
   static void debug_action_aux2();
 };

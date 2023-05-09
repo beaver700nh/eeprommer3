@@ -606,24 +606,46 @@ Status ProgrammerOtherCore::debug() {
 
 void ProgrammerOtherCore::do_debug_action(DebugAction action) {
   switch (action) {
-  case DebugAction::DISABLE_WRITE:       ee.set_we(true);                                                   return;
-  case DebugAction::ENABLE_WRITE:        ee.set_we(false);                                                  return;
-  case DebugAction::SET_ADDR_BUS_AND_OE: ee.set_addr_and_oe(Dialog::ask_int<uint16_t>(Strings::P_VAL_GEN)); return;
-  case DebugAction::READ_DATA_BUS:       show_data_bus();                                                   return;
-  case DebugAction::WRITE_DATA_BUS:      ee.set_data(Dialog::ask_int<uint8_t>(Strings::P_VAL_GEN));         return;
-  case DebugAction::SET_DATA_DIR:        set_data_dir();                                                    return;
-  case DebugAction::MONITOR_DATA_BUS:    monitor_data_bus();                                                return;
-  case DebugAction::PRINT_CHARSET:       tft_print_chars(); tch.wait_for_press();                           return;
-  case DebugAction::SHOW_COLORS:         tft_show_colors();                                                 return;
-  case DebugAction::ACTION_AUX1:         debug_action_aux1();                                               return;
-  case DebugAction::ACTION_AUX2:         debug_action_aux2();                                               return;
+  case DebugAction::DISABLE_WRITE:       ee.set_we(true);      return;
+  case DebugAction::ENABLE_WRITE:        ee.set_we(false);     return;
+  case DebugAction::SET_ADDR_BUS_AND_OE: set_addr_and_oe();    return;
+  case DebugAction::READ_DATA_BUS:       read_data_bus();      return;
+  case DebugAction::WRITE_DATA_BUS:      write_data_bus();     return;
+  case DebugAction::SET_DATA_DIR:        set_data_dir();       return;
+  case DebugAction::MONITOR_DATA_BUS:    monitor_data_bus();   return;
+  case DebugAction::PRINT_CHARSET:       print_charset_wait(); return;
+  case DebugAction::SHOW_COLORS:         tft_show_colors();    return;
+  case DebugAction::ACTION_AUX1:         debug_action_aux1();  return;
+  case DebugAction::ACTION_AUX2:         debug_action_aux2();  return;
   }
 }
 
-void ProgrammerOtherCore::show_data_bus() {
+void ProgrammerOtherCore::set_addr_and_oe() {
+  ee.set_addr_and_oe(
+    Dialog::ask_int<uint16_t>(Strings::P_VAL_GEN)
+  );
+}
+
+void ProgrammerOtherCore::read_data_bus() {
   Dialog::show_error(
     ErrorLevel::INFO, 0x1, Strings::T_VALUE,
     STRFMT_P_NOBUF(PSTR(BYTE_FMT), BYTE_FMT_VAL(ee.get_data()))
+  );
+}
+
+void ProgrammerOtherCore::write_data_bus() {
+  ee.set_data(
+    Dialog::ask_int<uint8_t>(Strings::P_VAL_GEN)
+  );
+}
+
+void ProgrammerOtherCore::set_data_dir() {
+  ee.set_ddr(
+    Dialog::ask_choice(
+      Strings::P_DATA_DIR, 1, 45, 0, 2,
+      Strings::L_INPUT, TftColor::CYAN, TftColor::BLUE,
+      Strings::L_OUTPUT, TftColor::PINKK, TftColor::RED
+    )
   );
 }
 
@@ -649,14 +671,9 @@ void ProgrammerOtherCore::monitor_data_bus() {
 #endif
 }
 
-void ProgrammerOtherCore::set_data_dir() {
-  ee.set_ddr(
-    Dialog::ask_choice(
-      Strings::P_DATA_DIR, 1, 45, 0, 2,
-      Strings::L_INPUT, TftColor::CYAN, TftColor::BLUE,
-      Strings::L_OUTPUT, TftColor::PINKK, TftColor::RED
-    )
-  );
+void ProgrammerOtherCore::print_charset_wait() {
+  tft_print_chars();
+  tch.wait_for_press();
 }
 
 void ProgrammerOtherCore::debug_action_aux1() {
