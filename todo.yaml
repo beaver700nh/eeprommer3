@@ -7,6 +7,8 @@ SOFTWARE:
 
 FIRMWARE:
   last changes before v0.0.1-rc1:
+    fix crashes:
+      e.g. file verify
     fix anything that seems broken:
       test more thoroughly
       find and fix double screen clears
