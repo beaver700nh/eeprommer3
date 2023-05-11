@@ -8,11 +8,23 @@ set(CMAKE_CROSSCOMPILING 1)
 set(CMAKE_CXX_COMPILER avr-g++)
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> <TARGET>")
+
 set(CMAKE_C_COMPILER avr-gcc)
 set(CMAKE_C_STANDARD 17)
 
+set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> <TARGET>")
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
+
+if("$ENV{DISABLE_LTO}" MATCHES "YES")
+set(LTO_OPTION)
+else()
+set(LTO_OPTION -flto)
+endif()
 
 set(
   COMPILE_OPTIONS
@@ -33,7 +45,7 @@ set(
   -ffunction-sections
   -fdata-sections
   -fno-threadsafe-statics
-  -flto
+  ${LTO_OPTION}
   -Os
 )
 
@@ -41,6 +53,16 @@ set(
   COMPILE_INCLUDES
   $ENV{ARDUINO_DIR}/cores/arduino
   $ENV{ARDUINO_DIR}/variants/mega
+)
+
+set(
+  LINK_OPTIONS 
+  -g
+  -mmcu=$ENV{MMCU_NAME}
+  -fuse-linker-plugin
+  ${LTO_OPTION}
+  -O1
+  -Wl,-m$ENV{MMCU_ARCH},--gc-sections,-Map,${CMAKE_RUNTIME_OUTPUT_DIRECTORY},--defsym,__heap_start=0x808000,--defsym,__heap_end=0x80DFFF
 )
 
 project(${PROJECT_NAME})
@@ -136,6 +158,7 @@ target_include_directories(
   ${PROJECT_NAME}.libSD
   PUBLIC
   ${COMPILE_INCLUDES}
+  $ENV{ARDUINO_DIR}/libraries/SPI/src
   $ENV{ARDUINO_DIR_3RDPARTY}/libraries/SD/src
 )
 
@@ -143,6 +166,13 @@ target_compile_options(
   ${PROJECT_NAME}.libSD
   PUBLIC
   ${COMPILE_OPTIONS}
+)
+
+target_link_libraries(
+  ${PROJECT_NAME}.libSD
+  PUBLIC
+  ${PROJECT_NAME}.libSPI
+  ${LINK_OPTIONS}
 )
 
 add_library(
@@ -270,10 +300,5 @@ target_link_libraries(
   ${PROJECT_NAME}.libMCUFRIEND_kbv
   ${PROJECT_NAME}.libAdafruit_GFX_Library
   ${PROJECT_NAME}.libAdafruit_TouchScreen
-  -g
-  -mmcu=$ENV{MMCU_NAME}
-  -fuse-linker-plugin
-  -flto
-  -O1
-  -Wl,-m$ENV{MMCU_ARCH},--gc-sections,-Map,${CMAKE_RUNTIME_OUTPUT_DIRECTORY},--defsym,__heap_start=0x808000,--defsym,__heap_end=0x80DFFF
+  ${LINK_OPTIONS}
 )
