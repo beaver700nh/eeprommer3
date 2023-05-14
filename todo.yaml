@@ -6,15 +6,11 @@ SOFTWARE:
     start reimplementation
 
 FIRMWARE:
-  last changes before v0.0.1-rc1:
-    fix crashes:
-      e.g. file verify
-    fix anything that seems broken:
-      test more thoroughly
-      find and fix double screen clears
   start work on serial file io:
     add FileCtrlSerial
-  add EEPROM SDP feature?
+  quality-of-life:
+    crashes e.g. file verify
+    find and fix double screen clears
   fix page write (low priority):
     quick mode in eeprom.cpp - remove delay between bytes
     find way to optimize it
