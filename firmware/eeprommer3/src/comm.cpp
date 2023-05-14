@@ -10,7 +10,12 @@ void Packet::copy(Packet *dst, Packet *src) {
   memcpy(dst->buffer, src->buffer, src->end);
 }
 
-bool blocking_recv(Packet *pkt, uint16_t timeout_ms) {
+void send(Packet *pkt) {
+  Serial.write(pkt->end);
+  Serial.write(pkt->buffer, (uint16_t) pkt->end + 1);
+}
+
+bool recv(Packet *pkt, uint16_t timeout_ms) {
   unsigned long t1 = millis();
   bool header = true;
   uint8_t index = 0;
@@ -38,8 +43,9 @@ bool blocking_recv(Packet *pkt, uint16_t timeout_ms) {
 }
 
 bool ping() {
-  Packet pkt;
-  return blocking_recv(&pkt, PING_TIMEOUT);
+  Packet pkt = {0x00, {PKT_PING}};
+  send(&pkt);
+  return recv(&pkt, PING_TIMEOUT);
 }
 
 };

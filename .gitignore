@@ -1,3 +1,4 @@
 .vscode
 workspace.code-workspace
 firmware/eeprommer3/build
+software/.venv

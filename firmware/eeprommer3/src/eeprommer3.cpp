@@ -66,9 +66,11 @@ SdCtrl::Status initialize() {
   Wire.begin();
 
   Serial.begin(115200);
+#ifdef LOGGING
   Serial.println(F("=== EEPROMMER3 ==="));
   Serial.println(F("> Starting up... <"));
   Serial.println(F(""));
+#endif
 
   SER_LOG_PRINT(
     "Heap configured at addresses 0x%X-0x%X.\n",  // Using %X because the output is more customizable than %p

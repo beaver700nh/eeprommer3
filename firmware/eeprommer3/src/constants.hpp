@@ -17,7 +17,7 @@ extern HardwareSerial Serial;
 
 #define DEBUG_MODE
 
-#define LOGGING
+// #define LOGGING
 
 /*****************************************/
 /** Macros *******************************/

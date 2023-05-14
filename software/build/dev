@@ -1,7 +1,0 @@
-#!/bin/bash
-
-make -j4 && make run
-
-if [[ "$1" = "clean" ]]; then
-  make clean
-fi
