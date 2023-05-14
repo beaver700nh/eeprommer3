@@ -4,30 +4,25 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-enum class PacketState {
-  NONE, ESCAPED,
-  DATA_START, DATA, DATA_END,
-  CMD_START,  CMD,  CMD_END,
-};
+#define PING_TIMEOUT 200
 
-enum class PacketMarker {
-  DSA = '\x3c', DSB = '\x3c', DEA = '\x3e', DEB = '\x3e',
-  CSA = '\x5b', CSB = '\x5b', CEA = '\x5d', CEB = '\x5d',
-  ESC = '\x5c'
-};
-
-enum class PacketType {
-  NONE, WAITING, DATA, CMD
-};
+namespace Comm {
 
 struct Packet {
-  PacketType type = PacketType::NONE;
-  char contents[17];
+  uint8_t end;
+  uint8_t buffer[256];
+
+  static void copy(Packet *dst, Packet *src);
 };
 
-bool read_packet(Packet *buf);
-void copy_packet(Packet *to, Packet *from);
+// Blocks while reading a packet from Serial.
+// Returns true if packet was read successfully, false if timeout occurred.
+// Set `timeout_ms` to 0 to disable timeout.
+bool blocking_recv(Packet *pkt, uint16_t timeout_ms = 0);
 
-void read_serial_until_end_marker(PacketState state);
+// Pings connected computer over Serial, returns whether a response was recieved.
+bool ping();
+
+};
 
 #endif

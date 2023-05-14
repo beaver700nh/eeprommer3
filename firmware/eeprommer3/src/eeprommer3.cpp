@@ -17,8 +17,6 @@ SdCtrl::Status initialize();
 void draw_intro(uint16_t x, uint16_t y, Gui::Btn *skip_btn);
 void mainprog();
 
-void check_packet();
-
 // Global
 
 TftCtrl tft;
@@ -128,24 +126,6 @@ void mainprog() {
   Programmer prog;
   prog.init();
   prog.run();
-}
-
-void check_packet() {
-  Packet this_packet;
-
-  if (Serial.available() > 0 && read_packet(&this_packet)) {
-    uint16_t color = TftColor::RED;
-
-    switch (this_packet.type) {
-    case PacketType::NONE:    color = TftColor::MAGENTA; break;
-    case PacketType::WAITING: color = TftColor::YELLOW;  break;
-    case PacketType::DATA:    color = TftColor::CYAN;    break;
-    case PacketType::CMD:     color = TftColor::GREEN;   break;
-    }
-
-    tft.fillScreen(TftColor::BLACK);
-    tft.drawText(0, 0, this_packet.contents, color);
-  }
 }
 
 // Empty and unused loop function

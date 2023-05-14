@@ -113,7 +113,7 @@ namespace Strings {
   ADD_STRING(E, CANCELED,  "Operation was canceled.");
   ADD_STRING(E, TOO_BIG,   "File would be too large\nto fit into EEPROM there!\nAborted.");
   ADD_STRING(E, TOO_LONG,  "File name was too long\nto fit in the buffer.");
-  ADD_STRING(E, INV_FSYS,  "The selected filesystem\ndoes not exist.");
+  ADD_STRING(E, INV_FSYS,  "The selected filesystem: `%d'\ndoes not exist.");
   ADD_STRING(E, NO_DB_MON, "Data bus monitor is not\nsupported because DEBUG_MODE\nis disabled.");
   ADD_STRING(E, MISMATCH,  "Mismatch between %04X and %04X!");
 

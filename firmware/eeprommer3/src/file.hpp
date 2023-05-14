@@ -18,7 +18,6 @@ class TftCtrl;
 class TouchCtrl;
 class SdCtrl;
 class FileCtrl;
-class TftChoiceMenu;
 
 /*
  * Set of flags to represent types of files.
@@ -70,7 +69,7 @@ public:
 };
 
 /*
- * Specialization of `FileCtrl` for accessing SD card files.
+ * Implementation of `FileCtrl` for accessing SD card files.
  */
 class FileCtrlSd : public FileCtrl {
 public:
@@ -97,6 +96,33 @@ public:
 
 private:
   File m_file;
+};
+
+/*
+ * Implementation of `FileCtrl` for accessing Serial files.
+ */
+class FileCtrlSerial : public FileCtrl {
+public:
+  FileCtrlSerial(const char *path, uint8_t access);
+  ~FileCtrlSerial() override;
+
+  bool is_open() override;
+
+  const char *name() override;
+
+  uint16_t size() override;
+
+  bool seek(uint16_t position) override;
+
+  uint8_t read() override;
+  uint16_t read(uint8_t *buf, uint16_t size) override;
+
+  void write(uint8_t val) override;
+  uint16_t write(const uint8_t *buf, uint16_t size) override;
+
+  void flush() override;
+
+  void close() override;
 };
 
 namespace Gui {
@@ -159,14 +185,21 @@ enum AskFileStatus : uint8_t {
   FSYS_INVALID,    // Selected filesystem does not exist
 };
 
-// Get path to any file on any available file system, returns FileCtrl * for the file. Puts resulting status into `status`.
+// Get path to any file on any available file system, returns `FileCtrl *` for the file.
+// Puts resulting status into `status`.
 FileCtrl *ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist);
 
-// Asks user to select a file on SD card, writes the file's path into `out`. Returns resulting status.
+// Asks user to select a file on SD card, writes the file's path into `out`.
+// Returns resulting status.
 AskFileStatus ask_file_sd(const char *prompt, char *out, uint8_t len, bool must_exist);
 
-// Asks user to select an existing file on SD card, writes the file's path into `out`. Returns resulting status.
+// Asks user to select an existing file on SD card, writes the file's path into `out`.
+// Returns resulting status.
 Gui::MenuSdFileSel::Status ask_sel_file_sd(const char *prompt, char *out, uint8_t len);
+
+// Asks user to select a file in the software, writes the file's path into `out`.
+// Returns resulting status.
+AskFileStatus ask_file_serial(const char *prompt, char *out, uint8_t len, bool must_exist);
 
 // Asks user to select a file system out of all the ones that are detected.
 FileSystem ask_fsys(const char *prompt);
