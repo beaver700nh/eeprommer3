@@ -665,9 +665,9 @@ void ProgrammerOtherCore::monitor_data_bus() {
 #else
   // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
 
-  Dialog::show_error(tft, tch, ErrorLevel::ERROR, 0x3, Strings::T_NOT_SUPP, Strings::E_NO_DB_MON);
+  Dialog::show_error(ErrorLevel::ERROR, 0x3, Strings::T_NOT_SUPP, Strings::E_NO_DB_MON);
 
-  close_btn.wait_for_press(tch, tft);
+  close_btn.wait_for_press();
 #endif
 }
 

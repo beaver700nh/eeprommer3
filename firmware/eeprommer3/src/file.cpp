@@ -87,12 +87,13 @@ Gui::MenuSdFileSel::Status Gui::MenuSdFileSel::wait_for_value(char *file_path, u
 }
 
 FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bool must_exist) {
-  SER_DEBUG_PRINT(must_exist, 'd');
   FileSystem fsys = ask_fsys(Strings::P_FILE_TYPE);
   tft.fillScreen(TftColor::BLACK);
 
   char fpath[64];
   Memory::print_ram_analysis();
+
+  SER_LOG_PRINT("Filesystem: %d\n", fsys);
 
   switch (fsys) {
   case FileSystem::NONE:
@@ -101,7 +102,6 @@ FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *st
     return nullptr;
 
   case FileSystem::ON_SD_CARD:
-    SER_LOG_PRINT("Getting file path...\n");
     *status = ask_file_sd(prompt, fpath, ARR_LEN(fpath), must_exist);
     return FileCtrl::create_file(fsys, fpath, access);
 
@@ -113,21 +113,16 @@ FileCtrl *Dialog::ask_file(const char *prompt, uint8_t access, AskFileStatus *st
 }
 
 Dialog::AskFileStatus Dialog::ask_file_sd(const char *prompt, char *out, uint8_t len, bool must_exist) {
-  SER_DEBUG_PRINT(must_exist, 'd');
   using FSStatus = Gui::MenuSdFileSel::Status;
 
   Memory::print_ram_analysis();
-  SER_LOG_PRINT("A\n");
 
   FSStatus substatus;
-  SER_LOG_PRINT("B\n");
 
   if (must_exist) {
-    SER_LOG_PRINT("must_exist == true\n");
     substatus = ask_sel_file_sd(prompt, out, len);
   }
   else {
-    SER_LOG_PRINT("must_exist == false\n");
     ask_str(prompt, out, len);
     substatus = FSStatus::OK;
   }
@@ -145,7 +140,6 @@ Dialog::AskFileStatus Dialog::ask_file_sd(const char *prompt, char *out, uint8_t
 }
 
 Gui::MenuSdFileSel::Status Dialog::ask_sel_file_sd(const char *prompt, char *out, uint8_t len) {
-  SER_LOG_PRINT("GOT HERE\n");
   constexpr uint8_t rows = 6, cols = 6;
 
   Memory::print_ram_analysis();

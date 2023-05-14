@@ -15,7 +15,7 @@ extern HardwareSerial Serial;
 /** Compile-Time Constants ***************/
 /*****************************************/
 
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 #define LOGGING
 
