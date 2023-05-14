@@ -4,7 +4,15 @@
 #include <Arduino.h>
 #include "constants.hpp"
 
-#define PKT_PING 0x00
+#define PKT_PING     0x00
+#define PKT_FILEOPEN 0x10
+#define PKT_FILECONF 0x11
+#define PKT_FILESIZE 0x12
+#define PKT_FILESEEK 0x13
+#define PKT_FILEREAD 0x14
+#define PKT_FILEWRIT 0x15
+#define PKT_FILEFLUS 0x16
+#define PKT_FILECLOS 0x17
 
 #define PING_TIMEOUT 200
 
@@ -15,6 +23,8 @@ struct Packet {
   uint8_t buffer[256];
 
   static void copy(Packet *dst, Packet *src);
+  static void copy_str(Packet *pkt, const char *str);
+  static void copy_str_P(Packet *pkt, const char *str);
 };
 
 // Sends a packet over Serial.

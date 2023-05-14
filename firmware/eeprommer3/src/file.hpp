@@ -197,9 +197,9 @@ AskFileStatus ask_file_sd(const char *prompt, char *out, uint8_t len, bool must_
 // Returns resulting status.
 Gui::MenuSdFileSel::Status ask_sel_file_sd(const char *prompt, char *out, uint8_t len);
 
-// Asks user to select a file in the software, writes the file's path into `out`.
+// Asks user to select a file in the software.
 // Returns resulting status.
-AskFileStatus ask_file_serial(const char *prompt, char *out, uint8_t len, bool must_exist);
+AskFileStatus ask_file_serial(const char *prompt, bool must_exist);
 
 // Asks user to select a file system out of all the ones that are detected.
 FileSystem ask_fsys(const char *prompt);

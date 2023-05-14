@@ -112,6 +112,10 @@ FileCtrl *ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bo
     *status = ask_file_sd(prompt, fpath, ARR_LEN(fpath), must_exist);
     return FileCtrl::create_file(fsys, fpath, access);
 
+  case FileSystem::ON_SERIAL:
+    *status = ask_file_serial(prompt, must_exist);
+    return FileCtrl::create_file(fsys, "", access);
+
   default:
     *status = AskFileStatus::FSYS_INVALID;
     show_error(ErrorLevel::ERROR, 0x1, Strings::T_INV_FSYS, STRFMT_P_NOBUF(Strings::E_INV_FSYS, (uint8_t) fsys));
@@ -156,8 +160,16 @@ Gui::MenuSdFileSel::Status ask_sel_file_sd(const char *prompt, char *out, uint8_
   return menu.wait_for_value(out, len);
 }
 
-AskFileStatus ask_file_serial(const char *prompt, char *out, uint8_t len, bool must_exist) {
-  //
+AskFileStatus ask_file_serial(const char *prompt, bool must_exist) {
+  Comm::Packet pkt = {0x01, {PKT_FILEOPEN, must_exist}};
+  Comm::send(&pkt);
+
+  Comm::Packet::copy_str_P(&pkt, prompt);
+  Comm::send(&pkt);
+
+  show_error(ErrorLevel::INFO, 0x3, Strings::W_SOFTWARE, Strings::L_SOFTWARE);
+
+  return AskFileStatus::OK;
 }
 
 FileSystem ask_fsys(const char *prompt) {
@@ -192,6 +204,7 @@ FileSystem ask_fsys(const char *prompt) {
 FileCtrl *FileCtrl::create_file(FileSystem fsys, const char *path, uint8_t access) {
   switch (fsys) {
   case FileSystem::ON_SD_CARD: return new FileCtrlSd(path, access);
+  case FileSystem::ON_SERIAL:  return new FileCtrlSerial(path, access);
   case FileSystem::NONE:
   default:
     return nullptr;
@@ -252,31 +265,57 @@ void FileCtrlSd::close() {
 }
 
 FileCtrlSerial::FileCtrlSerial(const char *path, uint8_t access) {
+  UNUSED_VAR(path);
+
+  Comm::Packet pkt = {0x01, {PKT_FILECONF, access}};
+  Comm::send(&pkt);
+
   fsys = FileSystem::ON_SERIAL;
 }
 
 FileCtrlSerial::~FileCtrlSerial() {
-  //
+  // Empty
 }
 
 bool FileCtrlSerial::is_open() {
-  //
+  return true;
 }
 
 const char *FileCtrlSerial::name() {
-  //
+  return "<serial-file>";
 }
 
 uint16_t FileCtrlSerial::size() {
-  //
+  Comm::Packet pkt = {0x00, {PKT_FILESIZE}};
+  Comm::send(&pkt);
+  Comm::recv(&pkt);
+
+  if (pkt.buffer[0] != PKT_FILESIZE) {
+    return 0; // Recieved the wrong packet, error
+  }
+
+  tft.drawText(0, 150, STRFMT_NOBUF("buf %d %d", pkt.buffer[1], pkt.buffer[2]), TftColor::WHITE, 1);
+
+  return pkt.buffer[1] | (pkt.buffer[2] << 8);
 }
 
 bool FileCtrlSerial::seek(uint16_t position) {
-  //
+  Comm::Packet pkt = {0x02, {PKT_FILESEEK, position & 0xFF, position >> 8}};
+  Comm::send(&pkt);
+
+  return true;
 }
 
 uint8_t FileCtrlSerial::read() {
-  //
+  Comm::Packet pkt = {0x00, {PKT_FILEREAD}};
+  Comm::send(&pkt);
+  Comm::recv(&pkt);
+
+  if (pkt.buffer[0] != PKT_FILEREAD) {
+    return 0; // Recieved the wrong packet, error
+  }
+
+  return pkt.buffer[1];
 }
 
 uint16_t FileCtrlSerial::read(uint8_t *buf, uint16_t size) {
@@ -284,7 +323,8 @@ uint16_t FileCtrlSerial::read(uint8_t *buf, uint16_t size) {
 }
 
 void FileCtrlSerial::write(uint8_t val) {
-  //
+  Comm::Packet pkt = {0x01, {PKT_FILEWRIT, val}};
+  Comm::send(&pkt);
 }
 
 uint16_t FileCtrlSerial::write(const uint8_t *buf, uint16_t size) {
@@ -292,11 +332,13 @@ uint16_t FileCtrlSerial::write(const uint8_t *buf, uint16_t size) {
 }
 
 void FileCtrlSerial::flush() {
-  //
+  Comm::Packet pkt = {0x00, {PKT_FILEFLUS}};
+  Comm::send(&pkt);
 }
 
 void FileCtrlSerial::close() {
-  //
+  Comm::Packet pkt = {0x00, {PKT_FILECLOS}};
+  Comm::send(&pkt);
 }
 
 uint8_t get_available_file_systems() {

@@ -448,6 +448,10 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
   tft.fillScreen(TftColor::BLACK);
 
   if (substatus == AFStatus::OK) {
+    tft.drawText(0, 100, STRFMT_NOBUF("is_open %d", file->is_open()), TftColor::WHITE, 1);
+    tft.drawText(0, 110, STRFMT_NOBUF("name %s", file->name()), TftColor::WHITE, 1);
+    tft.drawText(0, 120, STRFMT_NOBUF("size %u", file->size()), TftColor::WHITE, 1);
+    tft.drawText(0, 130, STRFMT_NOBUF("seek %d", file->seek(0x4321)), TftColor::WHITE, 1);
     store_file_operation_core(data, len, file);
     file->close();
   }
@@ -471,7 +475,10 @@ void ProgrammerMultiCore::store_file_operation_core(uint8_t *data, uint16_t len,
     [&data, &len, &file] GUI_PROGRESS_INDICATOR_LAMBDA {
       UNUSED_VAR(progress);
 
+      tft.fillRect(0, 0, 20, 20, TftColor::RED);
+      while (true);
       file->write(data, min(256, len));
+      tft.drawText(0, 0, STRFMT_NOBUF("%d", progress), TftColor::WHITE, 1);
 
       if (len < 0x0100) {
         return false;  // Request to quit loop

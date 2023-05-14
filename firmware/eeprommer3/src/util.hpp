@@ -141,6 +141,7 @@ namespace Strings {
   ADD_STRING(W, WAIT,      "Please wait...");
   ADD_STRING(W, LOAD,      "Loading...");
   ADD_STRING(W, VERIFY,    "Verifying `%s' at %04X...");
+  ADD_STRING(W, SOFTWARE,  "See software...");
 
   ADD_STRING(F, READ,      "Done reading!");
   ADD_STRING(F, WRITE,     "Done writing!");
@@ -178,6 +179,7 @@ namespace Strings {
   ADD_STRING(L, VM_FILE,   "Write Data to a File");
   ADD_STRING(L, NO_HELP,   "No help text available.");
   ADD_STRING(L, UNK_REAS,  "Unknown reason.");
+  ADD_STRING(L, SOFTWARE,  "Please follow the\ninstructions on your\ncomputer.");
   ADD_STRING(L, FILE_SD,   "SD Card File");
   ADD_STRING(L, FILE_SER,  "Serial File");
   ADD_STRING(L, NO_FILES,  "Hmm, no files here...");

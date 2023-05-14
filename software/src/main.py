@@ -35,11 +35,43 @@ def wait_port(port: str):
     print("Ready.")
 
 def main_loop(com: comm.Comm):
+    active = None
+    filename = None
+    fileexist = None
+    fileaccess = None
+    file = None
+
     while True:
         pkt = com.recv()
 
-        if pkt[:1] == comm.PKT_PING:
-            com.send(comm.PKT_PING);
+        if active is None:
+            if pkt[0] == comm.PKT_PING:
+                com.send(comm.PKT_PING)
+            elif pkt[0] == comm.PKT_FILEOPEN:
+                active = comm.PKT_FILEOPEN
+                fileexist = pkt[1]
+        elif active == comm.PKT_FILEOPEN:
+            print("Open", pkt.decode("ascii"))
+
+            pkt = com.recv()
+
+            if pkt[0] == comm.PKT_FILECONF:
+                active = comm.PKT_FILECONF
+                fileaccess = pkt[1]
+        elif active == comm.PKT_FILECONF:
+            if pkt[0] == comm.PKT_FILESIZE:
+                com.send(comm.PKT_FILESIZE, b"\xCD\xAB")
+            elif pkt[0] == comm.PKT_FILESEEK:
+                print("Seek", pkt[1] | (pkt[2] << 8))
+            elif pkt[0] == comm.PKT_FILEREAD:
+                com.send(comm.PKT_FILEREAD, b"\xA5")
+            elif pkt[0] == comm.PKT_FILEWRIT:
+                print("Write", pkt[1])
+            elif pkt[0] == comm.PKT_FILEFLUS:
+                print("Flush")
+            elif pkt[0] == comm.PKT_FILECLOS:
+                active = None
+                print("Close")
 
 if __name__ == "__main__":
     main()
