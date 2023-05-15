@@ -105,7 +105,7 @@ FileCtrl *ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bo
   switch (fsys) {
   case FileSystem::NONE:
     *status = AskFileStatus::CANCELED;
-    show_error(ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
+    wait_error(ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
     return nullptr;
 
   case FileSystem::ON_SD_CARD:
@@ -118,7 +118,7 @@ FileCtrl *ask_file(const char *prompt, uint8_t access, AskFileStatus *status, bo
 
   default:
     *status = AskFileStatus::FSYS_INVALID;
-    show_error(ErrorLevel::ERROR, 0x1, Strings::T_INV_FSYS, STRFMT_P_NOBUF(Strings::E_INV_FSYS, (uint8_t) fsys));
+    wait_error(ErrorLevel::ERROR, 0x1, Strings::T_INV_FSYS, STRFMT_P_NOBUF(Strings::E_INV_FSYS, (uint8_t) fsys));
     return nullptr;
   }
 }
@@ -141,10 +141,10 @@ AskFileStatus ask_file_sd(const char *prompt, char *out, uint8_t len, bool must_
   tft.fillScreen(TftColor::BLACK);
 
   if (substatus == FSStatus::CANCELED) {
-    show_error(ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
+    wait_error(ErrorLevel::INFO, 0x3, Strings::T_CANCELED, Strings::E_CANCELED);
   }
   else if (substatus == FSStatus::FNAME_TOO_LONG) {
-    show_error(ErrorLevel::ERROR, 0x3, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
+    wait_error(ErrorLevel::ERROR, 0x3, Strings::T_TOO_LONG, Strings::E_TOO_LONG);
   }
 
   return (AskFileStatus) substatus;
@@ -168,6 +168,11 @@ AskFileStatus ask_file_serial(const char *prompt, bool must_exist) {
   Comm::send(&pkt);
 
   show_error(ErrorLevel::INFO, 0x3, Strings::W_SOFTWARE, Strings::L_SOFTWARE);
+
+  do {
+    Comm::recv(&pkt);
+  }
+  while (pkt.buffer[0] != PKT_FILEOPEN);
 
   return AskFileStatus::OK;
 }
@@ -294,8 +299,6 @@ uint16_t FileCtrlSerial::size() {
     return 0; // Recieved the wrong packet, error
   }
 
-  tft.drawText(0, 150, STRFMT_NOBUF("buf %d %d", pkt.buffer[1], pkt.buffer[2]), TftColor::WHITE, 1);
-
   return pkt.buffer[1] | (pkt.buffer[2] << 8);
 }
 
@@ -323,12 +326,13 @@ uint16_t FileCtrlSerial::read(uint8_t *buf, uint16_t size) {
 }
 
 void FileCtrlSerial::write(uint8_t val) {
+  tft.fillRect(20, 0, 20, 20, TftColor::YELLOW);
   Comm::Packet pkt = {0x01, {PKT_FILEWRIT, val}};
   Comm::send(&pkt);
 }
 
 uint16_t FileCtrlSerial::write(const uint8_t *buf, uint16_t size) {
-  //
+  tft.fillRect(20, 0, 20, 20, TftColor::GREEN);
 }
 
 void FileCtrlSerial::flush() {

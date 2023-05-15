@@ -140,5 +140,5 @@ void Programmer::show_status(ProgrammerBaseCore::Status code) {
 
   const char *const status_text = (code < ARR_LEN(details) ? (const char *) pgm_read_word_near(details + code) : Strings::L_UNK_REAS);
 
-  Dialog::show_error(ErrorLevel::INFO, 0x3, Strings::T_RESULT, status_text);
+  Dialog::wait_error(ErrorLevel::INFO, 0x3, Strings::T_RESULT, status_text);
 }

@@ -25,6 +25,7 @@ namespace ErrorLevel {
 
 namespace Dialog {
   void show_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg);
+  void wait_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg);
 };
 
 #endif

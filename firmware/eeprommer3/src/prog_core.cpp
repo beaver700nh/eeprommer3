@@ -49,7 +49,7 @@ Status ProgrammerByteCore::read() {
   char title[32];
   snprintf_P_sz(title, Strings::T_VALUE_AT, addr);
 
-  Dialog::show_error(
+  Dialog::wait_error(
     ErrorLevel::INFO, 0x0, title,
     STRFMT_P_NOBUF(Strings::G_REPR_8, BYTE_FMT_VAL(data), data, data, data, (data == '\0' ? ' ' : data))
   );
@@ -68,7 +68,7 @@ Status ProgrammerByteCore::write() {
 
   tft.fillScreen(TftColor::BLACK);
 
-  Dialog::show_error(
+  Dialog::wait_error(
     ErrorLevel::INFO, 0x1, Strings::T_DONE,
     STRFMT_P_NOBUF(Strings::G_W_BYTE, data, addr)
   );
@@ -82,7 +82,7 @@ Status ProgrammerByteCore::verify(uint16_t addr, void *data) {
   uint8_t actual = ee.read(addr);
 
   if (actual != *(uint8_t *) data) {
-    Dialog::show_error(
+    Dialog::wait_error(
       ErrorLevel::INFO, 0x1, Strings::T_MSMCH,
       STRFMT_NOBUF(Strings::G_VERIFY_8, *(uint8_t *) data, actual)
     );
@@ -192,7 +192,7 @@ Status ProgrammerFileCore::write() {
 
 bool ProgrammerFileCore::write_from_file(FileCtrl *file, uint16_t addr) {
   if (file->size() > (0x7FFF - addr + 1)) {
-    Dialog::show_error(ErrorLevel::WARNING, 0x3, Strings::T_TOO_BIG, Strings::E_TOO_BIG);
+    Dialog::wait_error(ErrorLevel::WARNING, 0x3, Strings::T_TOO_BIG, Strings::E_TOO_BIG);
     return false;
   }
 
@@ -288,7 +288,7 @@ Status ProgrammerVectorCore::read() {
 
   free((void *) name);
 
-  Dialog::show_error(
+  Dialog::wait_error(
     ErrorLevel::INFO, 0x0, title,
     STRFMT_P_NOBUF(Strings::G_REPR_16, BYTE_FMT_VAL(vec.m_hi), BYTE_FMT_VAL(vec.m_lo), vec.m_val, vec.m_val, vec.m_val)
   );
@@ -312,7 +312,7 @@ Status ProgrammerVectorCore::write() {
 
   const char *const name = Util::strdup_P(Vector::NAMES[vec.m_id]);
 
-  Dialog::show_error(
+  Dialog::wait_error(
     ErrorLevel::INFO, 0x1, Strings::T_DONE,
     STRFMT_P_NOBUF(Strings::G_W_VECTOR, new_val, name, vec.m_addr, vec.m_addr + 1)
   );
@@ -328,7 +328,7 @@ Status ProgrammerVectorCore::verify(uint16_t addr, void *data) {
   uint16_t actual = (ee.read(addr + 1) << 8) | ee.read(addr);
 
   if (actual != *(uint16_t *) data) {
-    Dialog::show_error(
+    Dialog::wait_error(
       ErrorLevel::ERROR, 0x1, Strings::T_MSMCH,
       STRFMT_P_NOBUF(Strings::G_VERIFY_16, *(uint16_t *) data, actual)
     );
@@ -448,10 +448,6 @@ Status ProgrammerMultiCore::store_file(uint8_t *data, uint16_t len) {
   tft.fillScreen(TftColor::BLACK);
 
   if (substatus == AFStatus::OK) {
-    tft.drawText(0, 100, STRFMT_NOBUF("is_open %d", file->is_open()), TftColor::WHITE, 1);
-    tft.drawText(0, 110, STRFMT_NOBUF("name %s", file->name()), TftColor::WHITE, 1);
-    tft.drawText(0, 120, STRFMT_NOBUF("size %u", file->size()), TftColor::WHITE, 1);
-    tft.drawText(0, 130, STRFMT_NOBUF("seek %d", file->seek(0x4321)), TftColor::WHITE, 1);
     store_file_operation_core(data, len, file);
     file->close();
   }
@@ -476,7 +472,6 @@ void ProgrammerMultiCore::store_file_operation_core(uint8_t *data, uint16_t len,
       UNUSED_VAR(progress);
 
       tft.fillRect(0, 0, 20, 20, TftColor::RED);
-      while (true);
       file->write(data, min(256, len));
       tft.drawText(0, 0, STRFMT_NOBUF("%d", progress), TftColor::WHITE, 1);
 
@@ -518,7 +513,7 @@ Status ProgrammerMultiCore::write() {
 void ProgrammerMultiCore::write_operation_core(AddrDataArray *buf) {
   tft.fillScreen(TftColor::BLACK);
 
-  Dialog::show_error(
+  Dialog::wait_error(
     ErrorLevel::INFO, 0x1,
     Strings::W_WMULTI, STRFMT_P_NOBUF(Strings::L_W_N_PAIRS, buf->get_len())
   );
@@ -527,7 +522,7 @@ void ProgrammerMultiCore::write_operation_core(AddrDataArray *buf) {
 
   tft.fillScreen(TftColor::BLACK);
 
-  Dialog::show_error(
+  Dialog::wait_error(
     ErrorLevel::INFO, 0x3,
     Strings::F_WRITE, Strings::L_CONTINUE
   );
@@ -548,7 +543,7 @@ Status ProgrammerMultiCore::verify(uint16_t addr, void *data) {
       char title[32];
       snprintf_P_sz(title, Strings::T_MSMCH_AT, pair.addr);
 
-      Dialog::show_error(
+      Dialog::wait_error(
         ErrorLevel::ERROR, 0x0, title,
         STRFMT_P_NOBUF(Strings::G_VERIFY_8, pair.data, real_data)
       );
@@ -634,7 +629,7 @@ void ProgrammerOtherCore::set_addr_and_oe() {
 }
 
 void ProgrammerOtherCore::read_data_bus() {
-  Dialog::show_error(
+  Dialog::wait_error(
     ErrorLevel::INFO, 0x1, Strings::T_VALUE,
     STRFMT_P_NOBUF(PSTR(BYTE_FMT), BYTE_FMT_VAL(ee.get_data()))
   );
@@ -672,7 +667,7 @@ void ProgrammerOtherCore::monitor_data_bus() {
 #else
   // EepromCtrl::get_io_exp() only exists in DEBUG_MODE
 
-  Dialog::show_error(ErrorLevel::ERROR, 0x3, Strings::T_NOT_SUPP, Strings::E_NO_DB_MON);
+  Dialog::wait_error(ErrorLevel::ERROR, 0x3, Strings::T_NOT_SUPP, Strings::E_NO_DB_MON);
 
   close_btn.wait_for_press();
 #endif

@@ -49,7 +49,9 @@ def main_loop(com: comm.Comm):
                 com.send(comm.PKT_PING)
             elif pkt[0] == comm.PKT_FILEOPEN:
                 active = comm.PKT_FILEOPEN
+                input("Press enter.")
                 fileexist = pkt[1]
+                com.send(comm.PKT_FILEOPEN)
         elif active == comm.PKT_FILEOPEN:
             print("Open", pkt.decode("ascii"))
 

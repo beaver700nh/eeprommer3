@@ -10,7 +10,9 @@
 
 extern TftCtrl tft;
 
-void Dialog::show_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg) {
+namespace Dialog {
+
+void show_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg) {
   TftCtrl::drawText_t printer = (str_types & 0x1 ? &TftCtrl::drawText_P : &TftCtrl::drawText);
   
   (tft.*printer)(10, 10, title, TftColor::CYAN, 3);
@@ -43,6 +45,12 @@ void Dialog::show_error(uint8_t lvl, uint8_t str_types, const char *title, const
   }
 
   free(_msg);
+}
+
+void wait_error(uint8_t lvl, uint8_t str_types, const char *title, const char *msg) {
+  show_error(lvl, str_types, title, msg);
 
   TftUtil::wait_bottom_btn(lvl >= ErrorLevel::WARNING ? Strings::L_OK : Strings::L_CONTINUE);
 }
+
+};

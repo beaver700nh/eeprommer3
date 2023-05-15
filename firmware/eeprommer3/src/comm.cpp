@@ -2,9 +2,6 @@
 #include "constants.hpp"
 
 #include "comm.hpp"
-#include "tft.hpp"
-
-extern TftCtrl tft;
 
 namespace Comm {
 
@@ -43,12 +40,10 @@ bool recv(Packet *pkt, uint16_t timeout_ms) {
 
     if (header) {
       pkt->end = Serial.read();
-      tft.drawText(0, 170, STRFMT_NOBUF("val %d", pkt->end), TftColor::CYAN, 1);
       header = false;
     }
     else {
       pkt->buffer[index] = Serial.read();
-      tft.drawText(0, 180 + (index * 8), STRFMT_NOBUF("val %d", pkt->buffer[index]), TftColor::GREEN, 1);
 
       if (index++ == pkt->end) {
         break;
