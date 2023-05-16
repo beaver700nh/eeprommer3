@@ -471,9 +471,7 @@ void ProgrammerMultiCore::store_file_operation_core(uint8_t *data, uint16_t len,
     [&data, &len, &file] GUI_PROGRESS_INDICATOR_LAMBDA {
       UNUSED_VAR(progress);
 
-      tft.fillRect(0, 0, 20, 20, TftColor::RED);
       file->write(data, min(256, len));
-      tft.drawText(0, 0, STRFMT_NOBUF("%d", progress), TftColor::WHITE, 1);
 
       if (len < 0x0100) {
         return false;  // Request to quit loop
