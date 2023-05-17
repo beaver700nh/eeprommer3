@@ -13,17 +13,12 @@ in an external RAM chip.
 
 ## Prerequisites
 
-CMake
-avr-gcc toolchain
-avrdude
-picocom
-Arduino Core
-Arduino Libraries
-- SD
-- MCUFRIEND_kbv
-- Adafruit-GFX-Library
-- Adafruit_BUSIO
-- Adafruit_TouchScreen
+- CMake
+- avr-gcc toolchain
+- avrdude
+- picocom
+- Arduino Core
+- Arduino Libraries: SD, MCUFRIEND_kbv, Adafruit-GFX-Library, Adafruit_BUSIO, Adafruit_TouchScreen
 
 ## Compiling
 
