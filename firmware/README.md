@@ -3,9 +3,7 @@
 ## Brief Description
 
 This directory contains code for the hardware (an Arduino Mega 2560 and a 3.5"
-TFT LCD touchscreen). The code is in C++ with a C-like style and uses the SPI,
-Wire, SD, MCUFRIEND\_kbv, and Adafruit\_TouchScreen, libraries, as well as AVR's
-`<util/delay.h>` header.
+TFT LCD touchscreen with more custom parts - see hardware/README.md).
 
 Due to the heavy RAM consumption of so much GUI code, and also to help speed up
 large data transfer operations, the heap has been relocated by the linker to reside
