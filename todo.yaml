@@ -1,13 +1,8 @@
 SOFTWARE:
-  add more pictures/icons for window
-  scrap most of it?:
-    a lot is already implemented in FIRMWARE so unnecessary to rewrite here
-    should make much more simple SOFTWARE that only does what FIRMWARE can't
-    start reimplementation
+  check for bugs
+  update docs
 
 FIRMWARE:
-  start work on serial file io:
-    add FileCtrlSerial
   quality-of-life:
     crashes e.g. file verify
     find and fix double screen clears

@@ -140,7 +140,7 @@ namespace Strings {
   ADD_STRING(W, WMULTI,    "Writing EEPROM bytes...");
   ADD_STRING(W, WAIT,      "Please wait...");
   ADD_STRING(W, LOAD,      "Loading...");
-  ADD_STRING(W, VERIFY,    "Verifying `%s' at %04X...");
+  ADD_STRING(W, VERIFY,    "Vrf. `%s' @ %04X~");
   ADD_STRING(W, SOFTWARE,  "See software...");
 
   ADD_STRING(F, READ,      "Done reading!");

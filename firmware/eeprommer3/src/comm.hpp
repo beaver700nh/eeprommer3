@@ -14,7 +14,8 @@
 #define PKT_FILEFLUS 0x16
 #define PKT_FILECLOS 0x17
 
-#define PING_TIMEOUT 200
+#define TIMEOUT_PING      200
+#define TIMEOUT_FILEREAD 1000
 
 namespace Comm {
 

@@ -18,11 +18,12 @@ class Comm:
         end = self.ser.read()
         return self.ser.read(ord(end) + 1)
 
+    def send_raw(self, data: bytes):
+        self.ser.write(bytes([len(data) - 1]))
+        self.ser.write(data)
+
     def send(self, header: int, buffer: bytes | None = None):
         if buffer is None:
-            self.ser.write(b"\x00")
-            self.ser.write(bytes([header]))
-        else:
-            self.ser.write(bytes([len(buffer)]))
-            self.ser.write(bytes([header]))
-            self.ser.write(buffer)
+            buffer = b""
+
+        self.send_raw(bytes([header]) + buffer)

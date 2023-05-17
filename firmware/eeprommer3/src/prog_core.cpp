@@ -266,7 +266,6 @@ Status ProgrammerFileCore::verify(uint16_t addr, void *data) {
   tft.drawText_P(10, 110, Strings::F_VERIFY, TftColor::CYAN);
   TftUtil::wait_continue();
 
-  file->close();
   tft.fillScreen(TftColor::BLACK);
   return (complete ? Status::OK : Status::ERR_VERIFY);
 }

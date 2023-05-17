@@ -57,7 +57,7 @@ bool recv(Packet *pkt, uint16_t timeout_ms) {
 bool ping() {
   Packet pkt = {0x00, {PKT_PING}};
   send(&pkt);
-  return recv(&pkt, PING_TIMEOUT);
+  return recv(&pkt, TIMEOUT_PING);
 }
 
 };

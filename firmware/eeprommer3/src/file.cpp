@@ -318,28 +318,28 @@ uint8_t FileCtrlSerial::read() {
 }
 
 uint16_t FileCtrlSerial::read(uint8_t *buf, uint16_t size) {
-  Comm::Packet pkt = {0x01, {PKT_FILEREAD}};
+  Comm::Packet pkt = {0x01, {PKT_FILEREAD, 0xFF /* dummy */}};
   Comm::Packet data;
 
   uint16_t offset = 0;
 
   while (size > offset) {
-    if ((size - offset) >= 0x0100) {
-      pkt.buffer[1] = 0xFF;
-      offset += 0x0100;
-    }
-    else {
-      pkt.buffer[1] = (uint8_t) (size & 0xFF) - 1;
-      offset = size;
-    }
+    bool full_page = (size - offset) >= 0x0100;
+    pkt.buffer[1] = full_page ? 0xFF : (uint8_t) (size & 0xFF) - 1;
 
     Comm::send(&pkt);
-    Comm::recv(&data);
+    if (!Comm::recv(&data, TIMEOUT_FILEREAD)) {
+      break;  // Abort (file exhausted)
+    }
 
     memcpy(buf + offset, data.buffer, (uint16_t) data.end + 1);
 
+    offset = full_page ? offset + 0x0100 : size;
+
+    // Didn't get enough data
     if (data.end < pkt.buffer[1]) {
       offset += (uint16_t) data.end + 1;
+      break;  // Abort (file exhausted) after updating offset
     }
   }
 
@@ -351,26 +351,34 @@ void FileCtrlSerial::write(uint8_t val) {
   Comm::send(&pkt);
   pkt.buffer[0] = val;
   Comm::send(&pkt);
+
+  // Wait for operation to finish
+  Comm::recv(&pkt);
 }
 
 uint16_t FileCtrlSerial::write(const uint8_t *buf, uint16_t size) {
   Comm::Packet pkt = {0x00, {PKT_FILEWRIT}};
-  Comm::send(&pkt);
+  Comm::Packet data;
 
   uint16_t offset = 0;
 
   while (size > offset) {
     if ((size - offset) >= 0x0100) {
-      pkt.end = 0xFF;
+      data.end = 0xFF;
+      memcpy(data.buffer, buf + offset, 0x0100);
       offset += 0x0100;
     }
     else {
-      pkt.end = (uint8_t) (size & 0xFF) - 1;
+      data.end = (uint8_t) (size & 0xFF) - 1;
+      memcpy(data.buffer, buf + offset, size & 0xFF);
       offset = size;
     }
 
-    memcpy(pkt.buffer, buf, (uint16_t) pkt.end + 1);
     Comm::send(&pkt);
+    Comm::send(&data);
+
+    // Wait for operation to finish
+    Comm::recv(&data);
   }
 
   return size;

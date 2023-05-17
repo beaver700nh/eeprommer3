@@ -42,7 +42,7 @@ def main_loop(com: comm.Comm):
         try:
             active = cmds[pkt[0]](com, pkt[1:])
         except KeyError:
-            print(f"Error: Action {pkt[0]} is invalid in current context.")
+            print(f"Error: Action 0x{pkt[0] :02x} is invalid in current context.")
 
 def cmd_none_ping(com: comm.Comm, args: bytes):
     print("Ping!")
@@ -54,7 +54,7 @@ def cmd_none_ping(com: comm.Comm, args: bytes):
 
 def cmd_none_fileopen(com: comm.Comm, args: bytes):
     prompt = com.recv().decode("ascii")
-    input(f"Prompt: {prompt} (press enter)")
+    input(f"Prompt: `{prompt}' (press enter)")
 
     path = file_dialog(prompt, args[0])
     current_file.path = path
@@ -66,9 +66,11 @@ def cmd_none_fileopen(com: comm.Comm, args: bytes):
     return comm.PKT_FILEOPEN
 
 def cmd_fileopen_fileconf(com: comm.Comm, args: bytes):
-    print(f"-> File is configured with flags 0x{args[0] :02X}")
+    flags = translate_flags(args[0])
+    print(f"Configuring file with flags 0x{args[0] :02X} -> 0x{flags :02X}")
 
-    current_file.descriptor = os.open(current_file.path, args[0])
+    current_file.descriptor = os.open(current_file.path, flags, 0o666)
+    print(f"-> File descriptor: {current_file.descriptor}")
 
     return comm.PKT_FILECONF
 
@@ -83,10 +85,10 @@ def cmd_fileconf_filesize(com: comm.Comm, args: bytes):
     return comm.PKT_FILECONF
 
 def cmd_fileconf_fileseek(com: comm.Comm, args: bytes):
-    position = args[1] | (args[2] << 8)
+    position = args[0] | (args[1] << 8)
 
     print(f"Seeking to position 0x{position :04X}")
-    os.lseek(current_file.descriptor, position, os.SEEK_START)
+    os.lseek(current_file.descriptor, position, os.SEEK_SET)
 
     return comm.PKT_FILECONF
 
@@ -94,9 +96,13 @@ def cmd_fileconf_fileread(com: comm.Comm, args: bytes):
     print(f"Reading 0x{args[0] + 1 :04X} bytes from file")
 
     data = os.read(current_file.descriptor, args[0] + 1)
-    print(f"-> Data is {hexdump(data, '-- ........ ')}")
 
-    com.send(comm.PKT_FILEREAD, data)
+    if data:
+        print(f"-> Data is {hexdump(data, '-- ....... ')}")
+        com.send_raw(data)
+    else:
+        print("-> No data!")
+        time.sleep(1) # Trigger timeout to signify no data
 
     return comm.PKT_FILECONF
 
@@ -108,6 +114,8 @@ def cmd_fileconf_filewrit(com: comm.Comm, args: bytes):
     print(f"-> Data is {hexdump(pkt, '-- ....... ')}")
 
     os.write(current_file.descriptor, pkt)
+
+    com.send(comm.PKT_FILEWRIT) # Signify that operation is done
 
     return comm.PKT_FILECONF
 
@@ -134,6 +142,20 @@ def file_dialog(prompt: str, must_exist: bool):
             return path
 
         input("The file must exist! (press enter)")
+
+def translate_flags(arduino_flags: int):
+    rdwr = arduino_flags & 0x03
+    out = arduino_flags & ~0x03
+
+    match rdwr:
+        case 0x01:  # O_READ, O_RDONLY
+            out |= os.O_RDONLY
+        case 0x02:  # O_WRITE, O_WRONLY
+            out |= os.O_WRONLY
+        case 0x03:  # O_RDWR
+            out |= os.O_RDWR
+
+    return out
 
 def hexdump(data: bytes, prefix: str):
     buffer = [
