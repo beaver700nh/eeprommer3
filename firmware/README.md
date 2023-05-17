@@ -23,9 +23,6 @@ The `eeprommer3/` directory contains code for the actual firmware.
 The `memory/` directory contains a small test program to print some memory
 tracking variables, for the purpose of calculating memory usage.
 
-The `serialcxx/` directory contains code for a basic test of the serial
-communication between the firmware and the software.
-
 The `xmem/` directory contains code to test the external RAM interface to
 make sure it is working separately, as the main program does not function
 without a functioning heap.
@@ -40,9 +37,10 @@ class which holds multiple `AddrDataPair`s.
 
 ### `comm.cpp`/`comm.hpp`
 
-These files contain code for a basic protocol for communication with a host
-device over the serial port. Note that the code here is very old and is not
-guaranteed to work properly. It is also not being used at the moment.
+These files contain code for a basic protocol for serial communication with
+a computer over USB. The `Comm` namespace can send and recieve packets, defined
+as an 8-bit packet length (0x00 for 1 byte, 0xFF for 256 bytes) followed by the
+packet contents. Recieving is blocking, with an optional timeout.
 
 ### `constants.hpp`
 
