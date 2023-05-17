@@ -11,6 +11,37 @@ Due to the heavy RAM consumption of so much GUI code, and also to help speed up
 large data transfer operations, the heap has been relocated by the linker to reside
 in an external RAM chip.
 
+## Prerequisites
+
+CMake
+avr-gcc toolchain
+avrdude
+picocom
+Arduino Core
+Arduino Libraries
+- SD
+- MCUFRIEND_kbv
+- Adafruit-GFX-Library
+- Adafruit_BUSIO
+- Adafruit_TouchScreen
+
+## Compiling
+
+```shell
+$ pwd
+~/eeprommer3/firmware/eeprommer3/
+$ make build -j$(nproc) ARDUINO_DIR=/path/to/arduino-core ARDUINO_DIR_3RDPARTY=/path/to/arduino-libs
+```
+```shell
+$ make upload PORT=/dev/ttyYOURPORT
+```
+
+## Running
+
+```shell
+$ make run PORT=/dev/ttyYOURPORT
+```
+
 ## Directories
 
 The `addrlatchtest/` directory contains a test program for the latch chip
